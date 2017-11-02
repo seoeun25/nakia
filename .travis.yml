@@ -1,12 +1,14 @@
-sudo: required
 dist: trusty
 group: edge
 language: java
 jdk:
   - oraclejdk8
+sudo: required
+services:
+  - docker
+before_script:
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" docker.lezhin.com
 cache:
   directories:
-  - $HOME/.m2
-notifications:
-  slack: lezhin:1IcnOz9kST2wBUeVsHRk29yt
-script: ./gradlew clean test
+    - $HOME/.gradle
+script: ./build.sh
