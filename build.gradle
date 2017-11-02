@@ -1,0 +1,89 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.M5'
+		junitPlatformVersion = '1.0.1'
+		junitJupiterVersion = '5.0.1'
+	}
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("org.junit.platform:junit-platform-gradle-plugin:${junitPlatformVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.junit.platform.gradle.plugin'
+
+group = 'com.lezhin'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+	maven { url "http://nexus.lezhin.net/repository/maven-public/" }
+}
+
+junitPlatform {
+	// platformVersion '1.0.1'
+	filters {
+		engines {
+			// include 'junit-jupiter', 'junit-vintage'
+			// exclude 'custom-engine'
+		}
+		tags {
+			// include 'fast'
+			exclude 'slow'
+		}
+		// includeClassNamePattern '.*Test'
+	}
+	// enableStandardTestTask true
+	// reportsDir file('build/test-results/junit-platform') // this is the default
+	logManager 'org.apache.logging.log4j.jul.LogManager'
+}
+
+dependencies {
+	compile('com.lezhin.server:lz-model:0.0.10-SNAPSHOT')
+	compile('com.google.guava:guava:22.0')
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile('org.springframework.boot:spring-boot-starter-aop')
+	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+	compile('org.springframework.boot:spring-boot-starter-web')
+
+	compile("org.mariadb.jdbc:mariadb-java-client:2.1.0")
+
+	compileOnly('org.projectlombok:lombok')
+	runtime('org.springframework.boot:spring-boot-devtools')
+	testCompile('com.h2database:h2')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+
+	// JUnit Jupiter API and TestEngine implementation
+	testCompile("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
+	testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+	// To avoid compiler warnings about @API annotations in JUnit code
+	testCompileOnly('org.apiguardian:apiguardian-api:1.0.0')
+	// To use Log4J's LogManager
+	testRuntime("org.apache.logging.log4j:log4j-core:2.9.0")
+	testRuntime("org.apache.logging.log4j:log4j-jul:2.9.0")
+	// Only needed to run tests in an (IntelliJ) IDE(A) that bundles an older version
+	testRuntime("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}")
+}
+
+test {
+	testLogging {
+		events "passed", "skipped", "failed"
+		exceptionFormat = 'full'
+	}
+}
+
+bootRun() {
+	args = ["--spring.profiles.active=local"]
+}

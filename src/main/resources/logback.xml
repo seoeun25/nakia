@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+    <property name="LOGS_ABSOLUTE_PATH" value="./logs"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}][%thread][%-5level][%logger{35}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_ABSOLUTE_PATH}/panther.log</file>
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}][%thread][%-5level][%logger{35}] - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_ABSOLUTE_PATH}/panther.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="ROLLING"/>
+    </root>
+
+</configuration>
