@@ -3,6 +3,7 @@ package com.lezhin.avengers.panther.command;
 import com.lezhin.avengers.panther.Context;
 import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.executor.Executor;
+import com.lezhin.avengers.panther.happypoint.HappyPointPayment;
 import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.RequestInfo;
 
@@ -32,8 +33,9 @@ public abstract class Command<P extends Payment> {
     }
 
     public void loadState() throws PreconditionException {
-        // TODO set pay from InteranlPaymentService(GCS)
-        // pay = internalService.getPayment();
+        // TODO set payment from InteranlPaymentService(GCS)
+        // payment = internalService.getPayment(); 임시로 executor 에서.
+        payment = (P) requestInfo.getExecutorType().createPayment(context);
         verifyPrecondition();
     }
 

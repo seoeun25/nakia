@@ -31,6 +31,7 @@ public class CommandService {
     }
 
     public <P extends Payment> P doCommand(final Command.Type type, final RequestInfo requestInfo) {
+        logger.info("doCommand = {}, {}", type, requestInfo.getExecutorType());
         P resultPayment = null;
         Command<P> command = null;
         try {

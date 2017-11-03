@@ -1,7 +1,10 @@
 package com.lezhin.avengers.panther.executor;
 
 import com.lezhin.avengers.panther.Context;
+import com.lezhin.avengers.panther.dummy.DummyExecutor;
+import com.lezhin.avengers.panther.dummy.DummyPayment;
 import com.lezhin.avengers.panther.happypoint.HappyPointExecutor;
+import com.lezhin.avengers.panther.happypoint.HappyPointPayment;
 import com.lezhin.avengers.panther.model.Payment;
 
 /**
@@ -11,16 +14,26 @@ import com.lezhin.avengers.panther.model.Payment;
 public abstract class Executor<P extends Payment> {
 
     public enum Type {
-        UNKNOWN("unknown") {
+        DUMMY("dummy") {
             @Override
             public Executor createExecutor(Context context) {
-                return null;
+                return new DummyExecutor.DummyExecutorBuilder(context).build();
+            }
+
+            @Override
+            public Payment createPayment(Context context) {
+                return new DummyPayment(System.currentTimeMillis());
             }
         },
         HAPPYPOINT("happypoint") {
             @Override
             public Executor createExecutor(Context context) {
                 return new HappyPointExecutor.HappyPointExecutorBuilder(context).build();
+            }
+
+            @Override
+            public Payment createPayment(Context context) {
+                return new HappyPointPayment(System.currentTimeMillis());
             }
         };
 
@@ -33,6 +46,7 @@ public abstract class Executor<P extends Payment> {
         }
 
         public abstract Executor createExecutor(Context context);
+        public abstract Payment createPayment(Context context);
     }
 
     protected Type type;
@@ -47,16 +61,16 @@ public abstract class Executor<P extends Payment> {
         this.context = builder.context;
     }
 
-    public void prepare() {
-
+    public P prepare() {
+        return context.getPayment();
     }
 
-    public void reserve() {
-
+    public P reserve() {
+        return context.getPayment();
     }
 
-    public void authenticate() {
-
+    public P authenticate() {
+        return context.getPayment();
     }
 
     public P pay() {

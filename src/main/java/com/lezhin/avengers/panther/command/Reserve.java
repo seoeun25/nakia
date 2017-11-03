@@ -6,6 +6,7 @@ import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.RequestInfo;
 
 /**
+ * PG에 결제요청하기. 결제 요청을 한 후 {@linkplain PaymentState#R}로 셋팅.
  * @author seoeun
  * @since 2017.10.24
  */
@@ -15,14 +16,7 @@ public class Reserve<P extends Payment> extends Command<P> {
     }
 
     public void verifyPrecondition() throws PreconditionException {
-        try {
-            if (payment.getState() != PaymentState.R) {
-                throw new PreconditionException(String.format("Payment state should be %s but %s", PaymentState.R,
-                        payment.getState()));
-            }
-        } catch (Exception e) {
-            throw new PreconditionException(e);
-        }
+        // TODO reqeustInfo check.
     }
 
     @Override

@@ -27,12 +27,25 @@ public class HappyPointExecutor<P extends Payment> extends Executor<P> {
         super(builder);
     }
 
-    public void reserve() {
-        // do nothing
+    public P prepare() {
+        P payment = context.getPayment();
+        // TODO request http call
+
+        return payment;
     }
 
-    public void authenticate() {
-        // do nothing
+    public P reserve() {
+        P payment = context.getPayment();
+        // TODO request http call
+
+        return payment;
+    }
+
+    public P authenticate() {
+        P payment = context.getPayment();
+        // TODO request http call
+
+        return payment;
     }
 
     public P pay() {

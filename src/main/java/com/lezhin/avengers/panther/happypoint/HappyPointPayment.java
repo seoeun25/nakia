@@ -11,6 +11,14 @@ import java.util.Map;
  * @since 2017.10.25
  */
 public class HappyPointPayment extends DefaultPayment {
+
+    public HappyPointPayment() {
+        
+    }
+
+    public HappyPointPayment(Long paymentId) {
+        super(paymentId);
+    }
     @Override
     protected Map<String, Object> buildMetaData() {
         return null;

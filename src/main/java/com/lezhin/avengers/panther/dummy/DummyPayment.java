@@ -1,35 +1,24 @@
-package com.lezhin.avengers.panther.model;
+package com.lezhin.avengers.panther.dummy;
 
-import com.lezhin.beans.entity.common.LezhinLocale;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
+import com.lezhin.avengers.panther.model.DefaultPayment;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
  * @author seoeun
- * @since 2017.10.24
+ * @since 2017.10.25
  */
-@Component
-@Qualifier("defaultPayment")
-public class DefaultPayment extends Payment {
+public class DummyPayment extends DefaultPayment {
 
-    public DefaultPayment() {
-        super();
+    public DummyPayment() {
+        
     }
 
-    public DefaultPayment(Long paymentId) {
-        super();
-        super.paymentId = paymentId;
+    public DummyPayment(Long paymentId) {
+        super(paymentId);
     }
-
-    public DefaultPayment(String environment, String lezhinPgUrl, Long paymentId, Boolean
-            isMobile, Boolean isApp, String returnToUrl, LezhinLocale locale) {
-        super(environment, lezhinPgUrl, paymentId, isMobile, isApp, returnToUrl, locale);
-    }
-
     @Override
     protected Map<String, Object> buildMetaData() {
         return null;
@@ -62,6 +51,6 @@ public class DefaultPayment extends Payment {
 
     @Override
     public String getPGId() {
-        return "unknown";
+        return null;
     }
 }
