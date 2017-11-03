@@ -75,4 +75,5 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
 endpoints:
-  enabled: false
+  health:
+    enabled: true
