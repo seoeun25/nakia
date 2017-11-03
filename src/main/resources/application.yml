@@ -48,6 +48,11 @@ spring:
 ---
 spring:
   profiles: local
+  datasource:
+      url: jdbc:mysql://127.0.0.1:3306/panther
+      username: root
+      password:
+      driverClassName: com.mysql.jdbc.Driver
   jpa:
     hibernate.ddl-auto: update
     show-sql: true
