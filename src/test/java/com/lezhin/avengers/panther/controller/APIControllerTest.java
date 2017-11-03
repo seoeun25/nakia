@@ -44,9 +44,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ActiveProfiles(profiles = "test")
-public class PantherControllerTest {
+public class APIControllerTest {
 
-    private static Logger logger = LoggerFactory.getLogger(PantherControllerTest.class);
+    private static Logger logger = LoggerFactory.getLogger(APIControllerTest.class);
 
     @Autowired
     private WebApplicationContext context;
@@ -64,14 +64,14 @@ public class PantherControllerTest {
     @Test
     public void testHealthCheck() throws Exception {
 
-        MockHttpServletRequest request1 = new MockHttpServletRequest("GET", "/panther/spc/reservation");
+        MockHttpServletRequest request1 = new MockHttpServletRequest("GET", "/v1/api/happypoint/reservation");
         Payment mockPayment = new HappyPointPayment();
 
         Mockito.when(commandService.doCommand(Command.Type.RESERVE, new RequestInfo.Builder(request1).build()))
                 .thenReturn(mockPayment);
 
         this.mockMvc.perform(get
-                ("/panther/spc/reservation").accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
+                ("/v1/api/happypoint/reservation").accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"));
@@ -84,7 +84,7 @@ public class PantherControllerTest {
      */
     @Test
     public void testCORS() throws Exception {
-        MockHttpServletRequest request1 = new MockHttpServletRequest("GET", "/panther/spc/reservation");
+        MockHttpServletRequest request1 = new MockHttpServletRequest("GET", "/v1/api/happypoint/reservation");
         Payment mockPayment = new HappyPointPayment();
 
         Mockito.when(commandService.doCommand(Command.Type.RESERVE, new RequestInfo.Builder(request1).build()))
@@ -92,16 +92,17 @@ public class PantherControllerTest {
 
         // PreFlight from www.lezhin.com. OK
         this.mockMvc
-                .perform(options("/panther/spc/reservation")
+                .perform(options("/v1/api/happypoint/reservation")
                         .header("Access-Control-Request-Method", "GET")
                         .header("Origin", "http://www.lezhin.com"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Access-Control-Allow-Methods", "GET"));
+                .andExpect(header().string("Access-Control-Allow-Methods", "GET,HEAD,POST"));
+
 
         // PreFlight from abc.lezhin.com. forbidden.
         this.mockMvc
-                .perform(options("/panther/spc/reservation")
+                .perform(options("/v1/api/happypoint/reservation")
                         .header("Access-Control-Request-Method", "GET")
                         .header("Origin", "http://abc.lezhin.com"))
                 .andDo(print())

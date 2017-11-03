@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,20 +18,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
+ * API controller. Json을 return.
  * @author seoeun
  * @since 2017.10.24
  */
-@CrossOrigin(origins = "http://www.lezhin.com", maxAge = 1800)
 @Controller
-@RequestMapping("/panther")
-public class PantherController {
+@RequestMapping("/v1/api/")
+public class APIController {
 
-    private static final Logger logger = LoggerFactory.getLogger(PantherController.class);
+    private static final Logger logger = LoggerFactory.getLogger(APIController.class);
 
     private CommandService commandService;
 
     @Autowired
-    public PantherController(CommandService commandService) {
+    public APIController(CommandService commandService) {
         this.commandService = commandService;
     }
 
