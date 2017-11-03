@@ -62,6 +62,19 @@ public class RequestInfo {
         return executorType;
     }
 
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("ip", ip)
+                .add("token", token)
+                .add("isMobile", isMobile)
+                .add("isApp", isApp)
+                .add("returnToUrl", returnToUrl)
+                .add("locale", locale)
+                .add("executorType", executorType)
+                .toString();
+    }
+
     public static class Builder {
 
         private String ip;
@@ -103,13 +116,15 @@ public class RequestInfo {
             withIsMobile(request.getParameter("isMobile"));
             withIsApp(request.getParameter("isApp"));
             withReturnToUrl(request.getParameter("returnTo"));
-            withLocale(Optional.ofNullable(request.getParameter("local")).orElse("ko-KR"));
+            withLocale(Optional.ofNullable(request.getParameter("locale")).orElse("ko-KR"));
 
             // TODO executor setting을 뭐 좀 다른 방법으로.
             if (request.getRequestURI().contains("happypoint")) {
                 withExecutor(Executor.Type.HAPPYPOINT);
+            } else if (request.getRequestURI().contains("dummy")) {
+                withExecutor(Executor.Type.DUMMY);
             } else {
-                withExecutor(Executor.Type.UNKNOWN);
+                throw new ParameterException("Unknown PG = " + request.getRequestURI());
             }
 
         }
@@ -154,19 +169,6 @@ public class RequestInfo {
             return requestInfo;
         }
 
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("ip", ip)
-                .add("token", token)
-                .add("isMobile", isMobile)
-                .add("isApp", isApp)
-                .add("returnToUrl", returnToUrl)
-                .add("locale", locale)
-                .add("executorType", executorType)
-                .toString();
     }
 
 }

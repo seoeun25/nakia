@@ -1,7 +1,9 @@
 package com.lezhin.avengers.panther.controller;
 
 import com.lezhin.avengers.panther.CommandService;
+import com.lezhin.avengers.panther.ErrorCode;
 import com.lezhin.avengers.panther.command.Command;
+import com.lezhin.avengers.panther.exception.ExecutorException;
 import com.lezhin.avengers.panther.happypoint.HappyPointPayment;
 import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.RequestInfo;
@@ -9,6 +11,7 @@ import com.lezhin.avengers.panther.model.RequestInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +26,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.regex.Matcher;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -47,7 +53,7 @@ public class PantherControllerTest {
 
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private CommandService commandService;
 
     @BeforeEach
@@ -104,5 +110,20 @@ public class PantherControllerTest {
 
     }
 
+    /**
+     * ParameterException Handle.
+     */
+    @Test
+    public void testParameterException() throws Exception {
+        MockHttpServletRequest request1 = new MockHttpServletRequest("GET", "/v1/api/hello/reservation");
+        Payment mockPayment = new HappyPointPayment();
+
+        this.mockMvc
+                .perform(get("/v1/api/hello/reservation"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("code").value(ErrorCode.LEZHIN_PARAM.getCode()));
+
+    }
 
 }

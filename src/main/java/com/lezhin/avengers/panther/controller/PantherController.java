@@ -36,6 +36,19 @@ public class PantherController {
         this.commandService = commandService;
     }
 
+    @RequestMapping(value = "/{pg}/preparation", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseInfo prepare(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
+
+        RequestInfo requestInfo = new RequestInfo.Builder(request).build();
+
+        logger.info("---- pg = {}, requestInfo = {}", pg, requestInfo);
+
+        commandService.doCommand(Command.Type.PREPARE, requestInfo);
+        //return "reserve";
+        return new ResponseInfo<String>("hello prepare");
+    }
+
     @RequestMapping(value = "/{pg}/reservation", method = RequestMethod.GET)
     @ResponseBody
     public ResponseInfo reserve(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {

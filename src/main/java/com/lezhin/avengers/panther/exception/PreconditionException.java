@@ -6,7 +6,7 @@ package com.lezhin.avengers.panther.exception;
  * @author seoeun
  * @since 2017.10.24
  */
-public class PreconditionException extends RuntimeException{
+public class PreconditionException extends PantherException{
 
     public PreconditionException(String message) {
         super(message);
