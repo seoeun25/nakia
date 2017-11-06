@@ -1,12 +1,6 @@
 ---
 management:
-  context-path: /_/
-security:
-  user:
-    name: lezhin
-endpoints:
-  health:
-    enabled: true
+  contextPath: /_/
 spring:
   datasource:
     url: jdbc:mysql://${lezhin.panther.datasource.serverAddress}/${lezhin.panther.datasource.database}
@@ -27,6 +21,9 @@ lezhin:
   happypoint:
     hpcUrl: http://dev-proxy.lezhin.net/spc/processHpc
     mchtNo: 100015851
+  actuator:
+    security:
+      enabled: true
 ---
 spring:
   profiles: production
@@ -100,6 +97,9 @@ lezhin:
   webUrl: https://beta-www.lezhin.com
   apiUrl: https://beta-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://localhost
+  actuator:
+    security:
+      enabled: false
 ---
 spring:
   profiles: test
@@ -119,3 +119,4 @@ lezhin:
   webUrl: https://t-www.lezhin.com
   apiUrl: https://t-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://localhost
+

@@ -28,6 +28,7 @@ group = 'com.lezhin.avengers'
 sourceCompatibility = 1.8
 
 repositories {
+	mavenLocal()
 	mavenCentral()
 	maven { url "https://repo.spring.io/snapshot" }
 	maven { url "https://repo.spring.io/milestone" }
@@ -54,6 +55,7 @@ junitPlatform {
 
 dependencies {
 	compile('com.lezhin.server:lz-model:0.0.10-SNAPSHOT')
+	compile('com.lezhin.server:lz-spring-boot-actuator-security-autoconfigure:0.0.1-SNAPSHOT')
 	compile('com.google.guava:guava:22.0')
 	compile('org.springframework.boot:spring-boot-starter-actuator')
 	compile('org.springframework.boot:spring-boot-starter-aop')
