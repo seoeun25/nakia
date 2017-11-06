@@ -4,6 +4,9 @@ management:
 security:
   user:
     name: lezhin
+endpoints:
+  health:
+    enabled: true
 spring:
   datasource:
     url: jdbc:mysql://${lezhin.panther.datasource.serverAddress}/${lezhin.panther.datasource.database}
@@ -24,6 +27,13 @@ spring:
     generate-ddl: true
     hibernate.ddl-auto: validate
     show-sql: true
+lezhin:
+  webUrl: https://www.lezhin.com
+  apiUrl: https://www.lezhin.com/api
+  pantherUrl: https://panther.lezhin.com
+  happypoint:
+    hpcUrl: xxx
+    mchtNo: xxx
 ---
 spring:
   profiles: staging
@@ -31,6 +41,27 @@ spring:
     generate-ddl: true
     hibernate.ddl-auto: validate
     show-sql: true
+lezhin:
+  webUrl: https://mirror-www.lezhin.com
+  apiUrl: https://mirror-www.lezhin.com/api
+  pantherUrl: https://staging-panther.lezhin.com
+  happypoint:
+    hpcUrl: https://121.254.240.249:7243/processHpc
+    mchtNo: 100015851
+---
+spring:
+  profiles: qa
+  jpa:
+    generate-ddl: true
+    hibernate.ddl-auto: validate
+    show-sql: true
+lezhin:
+  webUrl: https://q-www.lezhin.com
+  apiUrl: https://q-www.lezhin.com/api
+  pantherUrl: https://qa-panther.lezhin.com
+  happypoint:
+    hpcUrl: https://121.254.240.249:7243/processHpc
+    mchtNo: 100015851
 ---
 spring:
   profiles: beta
@@ -38,6 +69,13 @@ spring:
     generate-ddl: true
     hibernate.ddl-auto: validate
     show-sql: true
+lezhin:
+  webUrl: https://beta-www.lezhin.com
+  apiUrl: https://beta-www.lezhin.com/api
+  pantherUrl: https://beta-panther.lezhin.com
+  happypoint:
+    hpcUrl: https://121.254.240.249:7243/processHpc
+    mchtNo: 100015851
 ---
 spring:
   profiles: alpha
@@ -45,6 +83,13 @@ spring:
     generate-ddl: true
     hibernate.ddl-auto: validate
     show-sql: true
+lezhin:
+  webUrl: https://alpha-www.lezhin.com
+  apiUrl: https://alpha-www.lezhin.com/api
+  pantherUrl: https://alpha-panther.lezhin.com
+  happypoint:
+    hpcUrl: https://121.254.240.249:7243/processHpc
+    mchtNo: 100015851
 ---
 spring:
   profiles: local
@@ -56,10 +101,14 @@ spring:
   jpa:
     hibernate.ddl-auto: update
     show-sql: true
+lezhin:
+  webUrl: https://beta-www.lezhin.com
+  apiUrl: https://beta-www.lezhin.com/api
+  pantherUrl: https://localhost
+  happypoint:
+    hpcUrl: https://121.254.240.249:7243/processHpc
+    mchtNo: 100015851
 ---
-logging:
-  level:
-    com.lezhin: TRACE
 spring:
   profiles: test
   datasource:
@@ -74,6 +123,10 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-endpoints:
-  health:
-    enabled: true
+lezhin:
+  webUrl: https://t-www.lezhin.com
+  apiUrl: https://t-www.lezhin.com/api
+  pantherUrl: https://localhost
+  happypoint:
+    hpcUrl: https://121.254.240.249:7243/processHpc
+    mchtNo: 100015851
