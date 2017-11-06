@@ -1,5 +1,6 @@
 package com.lezhin.avengers.panther.command;
 
+import com.lezhin.avengers.panther.model.PGPayment;
 import com.lezhin.constant.PaymentState;
 import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.model.Payment;
@@ -10,7 +11,8 @@ import com.lezhin.avengers.panther.model.RequestInfo;
  * @author seoeun
  * @since 2017.10.24
  */
-public class Reserve<P extends Payment> extends Command<P> {
+public class Reserve<T extends PGPayment> extends Command<T> {
+
     public Reserve(RequestInfo requestInfo) {
         super(requestInfo);
     }
@@ -20,7 +22,7 @@ public class Reserve<P extends Payment> extends Command<P> {
     }
 
     @Override
-    public P execute() {
+    public Payment<T> execute() {
         initExecutor();
         executor.reserve();
         return null;

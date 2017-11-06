@@ -5,13 +5,14 @@ import com.lezhin.avengers.panther.dummy.DummyExecutor;
 import com.lezhin.avengers.panther.dummy.DummyPayment;
 import com.lezhin.avengers.panther.happypoint.HappyPointExecutor;
 import com.lezhin.avengers.panther.happypoint.HappyPointPayment;
+import com.lezhin.avengers.panther.model.PGPayment;
 import com.lezhin.avengers.panther.model.Payment;
 
 /**
  * @author seoeun
  * @since 2017.10.24
  */
-public abstract class Executor<P extends Payment> {
+public abstract class Executor<T extends PGPayment> {
 
     public enum Type {
         DUMMY("dummy") {
@@ -22,7 +23,7 @@ public abstract class Executor<P extends Payment> {
 
             @Override
             public Payment createPayment(Context context) {
-                return new DummyPayment(System.currentTimeMillis());
+                return new Payment<DummyPayment>(System.currentTimeMillis());
             }
         },
         HAPPYPOINT("happypoint") {
@@ -33,7 +34,7 @@ public abstract class Executor<P extends Payment> {
 
             @Override
             public Payment createPayment(Context context) {
-                return new HappyPointPayment(System.currentTimeMillis());
+                return new Payment<HappyPointPayment>(System.currentTimeMillis());
             }
         };
 
@@ -50,7 +51,7 @@ public abstract class Executor<P extends Payment> {
     }
 
     protected Type type;
-    protected Context<P> context;
+    protected Context<T> context;
 
     public Executor() {
 
@@ -61,19 +62,19 @@ public abstract class Executor<P extends Payment> {
         this.context = builder.context;
     }
 
-    public P prepare() {
+    public Payment<T> prepare() {
         return context.getPayment();
     }
 
-    public P reserve() {
+    public Payment<T> reserve() {
         return context.getPayment();
     }
 
-    public P authenticate() {
+    public Payment<T> authenticate() {
         return context.getPayment();
     }
 
-    public P pay() {
+    public Payment<T> pay() {
 
         return context.getPayment();
     }
@@ -82,15 +83,15 @@ public abstract class Executor<P extends Payment> {
 
     }
 
-    public static abstract class Builder<P extends Payment> {
+    public static abstract class Builder<T extends PGPayment> {
         protected Type type;
-        protected Context<P> context;
+        protected Context<T> context;
 
         public Builder(Context context) {
             this.context = context;
         }
 
-        public abstract Executor<P> build();
+        public abstract Executor<T> build();
 
     }
 

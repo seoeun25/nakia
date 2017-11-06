@@ -2,8 +2,8 @@ package com.lezhin.avengers.panther.controller;
 
 import com.lezhin.avengers.panther.CommandService;
 import com.lezhin.avengers.panther.command.Command;
+import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.RequestInfo;
-import com.lezhin.avengers.panther.model.ResponseInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * API controller. Json을 return.
+ *
  * @author seoeun
  * @since 2017.10.24
  */
@@ -37,50 +38,50 @@ public class APIController {
 
     @RequestMapping(value = "/{pg}/preparation", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseInfo prepare(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
+    public Payment prepare(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
 
-        RequestInfo requestInfo = new RequestInfo.Builder(request).build();
+        RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 
         logger.info("---- pg = {}, requestInfo = {}", pg, requestInfo);
 
-        commandService.doCommand(Command.Type.PREPARE, requestInfo);
+        Payment payment = commandService.doCommand(Command.Type.PREPARE, requestInfo);
         //return "reserve";
-        return new ResponseInfo<String>("hello prepare");
+        return payment;
     }
 
     @RequestMapping(value = "/{pg}/reservation", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseInfo reserve(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
+    public Payment reserve(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
 
-        RequestInfo requestInfo = new RequestInfo.Builder(request).build();
+        RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 
         logger.info("---- pg = {}, requestInfo = {}", pg, requestInfo);
 
-        commandService.doCommand(Command.Type.RESERVE, requestInfo);
+        Payment payment = commandService.doCommand(Command.Type.RESERVE, requestInfo);
         //return "reserve";
-        return new ResponseInfo<String>("hello reserve");
+        return payment;
     }
 
     @RequestMapping(value = "/{pg}/authentication", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseInfo authentication(HttpServletRequest request, HttpServletResponse response, @PathVariable String
+    public Payment authentication(HttpServletRequest request, HttpServletResponse response, @PathVariable String
             pg) {
 
-        RequestInfo requestInfo = new RequestInfo.Builder(request).build();
+        RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 
-        commandService.doCommand(Command.Type.AUTHENTICATE, requestInfo);
-        return new ResponseInfo<String>("hello authentication");
+        Payment payment = commandService.doCommand(Command.Type.AUTHENTICATE, requestInfo);
+        return payment;
     }
 
     @RequestMapping(value = "/{pg}/payment", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseInfo payment(HttpServletRequest request, HttpServletResponse response, @PathVariable String
+    public Payment payment(HttpServletRequest request, HttpServletResponse response, @PathVariable String
             pg) {
 
-        RequestInfo requestInfo = new RequestInfo.Builder(request).build();
+        RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 
-        commandService.doCommand(Command.Type.PAY, requestInfo);
-        return new ResponseInfo<String>("hello payment");
+        Payment payment = commandService.doCommand(Command.Type.PAY, requestInfo);
+        return payment;
     }
 
 }

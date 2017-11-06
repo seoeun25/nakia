@@ -2,12 +2,14 @@ package com.lezhin.avengers.panther.model;
 
 import com.lezhin.avengers.panther.exception.ParameterException;
 import com.lezhin.avengers.panther.executor.Executor;
+import com.lezhin.avengers.panther.happypoint.HappyPointPayment;
 
 import com.google.common.base.MoreObjects;
 import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -16,6 +18,7 @@ import java.util.Optional;
  */
 public class RequestInfo {
 
+    private String pg;
     private String ip;
     private String token;
     private String isMobile;
@@ -23,8 +26,10 @@ public class RequestInfo {
     private String returnToUrl;
     private String locale;
     private Executor.Type executorType;
+    private Payment payment;
 
     RequestInfo(Builder builder) {
+        this.pg = builder.pg;
         this.ip = builder.ip;
         this.token = builder.token;
         this.isMobile = builder.isMobile;
@@ -32,6 +37,7 @@ public class RequestInfo {
         this.returnToUrl = builder.returnToUrl;
         this.locale = builder.locale;
         this.executorType = builder.executorType;
+        this.payment = builder.payment;
     }
 
     public String getIp() {
@@ -62,6 +68,10 @@ public class RequestInfo {
         return executorType;
     }
 
+    public Payment getPayment() {
+        return payment;
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
@@ -77,6 +87,7 @@ public class RequestInfo {
 
     public static class Builder {
 
+        private String pg;
         private String ip;
         private String token;
         private String isMobile;
@@ -84,8 +95,9 @@ public class RequestInfo {
         private String returnToUrl;
         private String locale;
         private Executor.Type executorType;
+        private Payment payment;
 
-        public Builder(HttpServletRequest request) {
+        public Builder(HttpServletRequest request, String pg) {
             Optional.ofNullable(request).orElseThrow(() ->
                     new ParameterException("HttpServletRequest can not be null"));
 
@@ -118,15 +130,37 @@ public class RequestInfo {
             withReturnToUrl(request.getParameter("returnTo"));
             withLocale(Optional.ofNullable(request.getParameter("locale")).orElse("ko-KR"));
 
+            withPg(pg);
             // TODO executor setting을 뭐 좀 다른 방법으로.
-            if (request.getRequestURI().contains("happypoint")) {
+            if ("happypoint".equals(pg)) {
                 withExecutor(Executor.Type.HAPPYPOINT);
-            } else if (request.getRequestURI().contains("dummy")) {
+            } else if ("dummy".equals(pg)) {
                 withExecutor(Executor.Type.DUMMY);
             } else {
-                throw new ParameterException("Unknown PG = " + request.getRequestURI());
+                throw new ParameterException("Unknown PG = " + pg);
             }
 
+            // payment // FIXME Where to check param?
+            if (executorType == Executor.Type.HAPPYPOINT) {
+                Payment payment = new Payment();
+                payment.setUserId(Long.valueOf((Optional.ofNullable(request.getParameter("_lz_userId"))).orElseThrow(
+                        () -> new ParameterException("_lz_userId can not be null")
+                )));
+
+                payment.setExternalStoreProductId(request.getParameter("_lz_externalStoreProductId"));
+                HappyPointPayment pgPayment = new HappyPointPayment();
+                pgPayment.setMbrNo(request.getParameter("meta_mbrNo"));
+                pgPayment.setMbrNm(request.getParameter("meta_mbrNm"));
+                pgPayment.setUseReqPt(request.getParameter("meta_useReqPt"));
+                payment.setPgPayment(pgPayment);
+                withPayment(payment);
+            }
+
+        }
+
+        public Builder withPg(String pg) {
+            this.pg = pg;
+            return this;
         }
 
         public Builder withIp(String ip) {
@@ -161,6 +195,11 @@ public class RequestInfo {
 
         public Builder withExecutor(Executor.Type type) {
             this.executorType = type;
+            return this;
+        }
+
+        public Builder withPayment(Payment payment) {
+            this.payment = payment;
             return this;
         }
 

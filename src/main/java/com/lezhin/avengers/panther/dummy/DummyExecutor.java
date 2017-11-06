@@ -2,6 +2,7 @@ package com.lezhin.avengers.panther.dummy;
 
 import com.lezhin.avengers.panther.Context;
 import com.lezhin.avengers.panther.executor.Executor;
+import com.lezhin.avengers.panther.model.PGPayment;
 import com.lezhin.avengers.panther.model.Payment;
 
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Qualifier("dummy")
-public class DummyExecutor<P extends Payment> extends Executor<P> {
+public class DummyExecutor extends Executor<DummyPayment> {
 
     private static final Logger logger = LoggerFactory.getLogger(DummyExecutor.class);
 
@@ -27,7 +28,7 @@ public class DummyExecutor<P extends Payment> extends Executor<P> {
         super(builder);
     }
 
-    public P reserve() {
+    public Payment<DummyPayment> reserve() {
         // do nothing
         try {
             for (int i = 0; i< 3; i++) {
@@ -40,15 +41,15 @@ public class DummyExecutor<P extends Payment> extends Executor<P> {
         return context.getPayment();
     }
 
-    public P authenticate() {
+    public Payment<DummyPayment> authenticate() {
         // do nothing
         return context.getPayment();
     }
 
-    public P pay() {
+    public Payment pay() {
         // TODO request http call
 
-        P payment = context.getPayment();
+        Payment payment = context.getPayment();
         // TODO request http call
 
         return payment;

@@ -1,0 +1,23 @@
+// panther의 /v1/api/preparation 을 호출 했을 때의 response 예
+{
+  "userId": 9898,
+  "meta": {
+    "rcgnKey": "dd50084c773c417f0b75bf1be857e5ddf9582f7ab8480b38e282938a757bbfe7",
+    "instCd": "ORJN",
+    "tlgmNo": "2000",
+    "tlgmChnlCd": "X0",
+    "trsDt": "20171106",
+    "trsTm": "161021",
+    "tlgmClCd": "ON",
+    "reqClCd": "10",
+    "reqBrndCd": "C083",
+    "reqChnlCd": "20",
+    "mbrAuthMthdCd": "20",
+    "mbrNm": "REDIS_X_NAME",
+    "mbrIdfNo": "REDIS_X_CI",
+    "mbrIdfWayCd": "20",
+    "mchtNo": "100015851",
+    "trxRsnCd": "2001"
+  },
+  "manual": false
+}

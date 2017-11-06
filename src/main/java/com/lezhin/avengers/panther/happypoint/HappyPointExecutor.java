@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Qualifier("happypoint")
-public class HappyPointExecutor<P extends Payment> extends Executor<P> {
+public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
     private static final Logger logger = LoggerFactory.getLogger(HappyPointExecutor.class);
 
@@ -27,34 +27,63 @@ public class HappyPointExecutor<P extends Payment> extends Executor<P> {
         super(builder);
     }
 
-    public P prepare() {
-        P payment = context.getPayment();
+    public Payment<HappyPointPayment> prepare() {
+        Payment<HappyPointPayment> payment = context.getPayment();
+        logger.info("context. payment. userId={}", payment.getUserId());
+        logger.info("context. happyPointPayment 11 = {}", payment.getPgPayment().printCommonRequest());
+        logger.info("context. happyPointPayment 22 = {}", payment.getPgPayment().printA());
+
+        // FIXME context.payment.pgpayment 에 다음 happypoint 를 merge.
+        HappyPointPayment happyPointPayment = HappyPointPayment.API.authentication.createRequest();
+        logger.info("happyPointPayment commonRequest = {}", happyPointPayment.printCommonRequest());
+
+        // FIXME Get the CI from redis
+        String CI = "REDIS_X_CI";
+        String NAME = "REDIS_X_NAME";
+        happyPointPayment.setMbrNm(NAME);
+        happyPointPayment.setMbrIdfNo(CI);
+
+        logger.info("happyPointPayment printA = {}", happyPointPayment.printA());
+
+        // FIXME 회원인증. http call to spc
+
+        // FIXME 포인트조회. http call to spc
+
+        payment.setPgPayment(happyPointPayment);
+
         // TODO request http call
 
         return payment;
     }
 
-    public P reserve() {
-        P payment = context.getPayment();
+    public Payment<HappyPointPayment> reserve() {
+        Payment<HappyPointPayment> payment = context.getPayment();
+        // param check
         // TODO request http call
 
         return payment;
     }
 
-    public P authenticate() {
-        P payment = context.getPayment();
+    public Payment<HappyPointPayment> authenticate() {
+        Payment<HappyPointPayment> payment = context.getPayment();
         // TODO request http call
 
         return payment;
     }
 
-    public P pay() {
+    public Payment<HappyPointPayment> pay() {
         // TODO request http call
 
-        P payment = context.getPayment();
+        Payment<HappyPointPayment> payment = context.getPayment();
         // TODO request http call
 
         return payment;
+    }
+
+    public Payment<HappyPointPayment> checkPoint() {
+        // spc에 포인트 조회
+
+        return context.getPayment();
     }
 
     public void complete() {

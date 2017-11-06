@@ -7,7 +7,9 @@ import com.lezhin.avengers.panther.command.Pay;
 import com.lezhin.avengers.panther.command.Prepare;
 import com.lezhin.avengers.panther.command.Reserve;
 import com.lezhin.avengers.panther.exception.ExecutorException;
+import com.lezhin.avengers.panther.exception.PantherException;
 import com.lezhin.avengers.panther.exception.PreconditionException;
+import com.lezhin.avengers.panther.model.PGPayment;
 import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.RequestInfo;
 
@@ -30,10 +32,10 @@ public class CommandService {
 
     }
 
-    public <P extends Payment> P doCommand(final Command.Type type, final RequestInfo requestInfo) {
+    public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final RequestInfo requestInfo) {
         logger.info("doCommand = {}, {}", type, requestInfo.getExecutorType());
-        P resultPayment = null;
-        Command<P> command = null;
+        Payment<T> resultPayment = null;
+        Command<T> command = null;
         try {
 
             switch (type) {
@@ -58,13 +60,14 @@ public class CommandService {
             resultPayment = command.execute();
 
         } catch (PreconditionException e) {
-            logger.warn("---- precondition check failed", e);
-
+            logger.warn("Precondition check failed !!");
+            throw e;
         } catch (ExecutorException e) {
-            logger.warn("---- execution failed ", e);
-
-        } catch (Exception e) {
-            logger.warn("---- unknown error. failed. ", e);
+            logger.warn("Execution failed !!");
+            throw e;
+        } catch (Throwable e) {
+            logger.warn("Unexpected error. failed !!");
+            throw new PantherException(e);
         }
 
         return resultPayment;
