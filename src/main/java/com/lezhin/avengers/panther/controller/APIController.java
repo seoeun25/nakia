@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
  * @since 2017.10.24
  */
 @Controller
-@RequestMapping("/v1/api/")
+@RequestMapping("/v1/api")
 public class APIController {
 
     private static final Logger logger = LoggerFactory.getLogger(APIController.class);
