@@ -20,6 +20,13 @@ spring:
   redis:
     host: ${lezhin.panther.redis.host}
     port: ${lezhin.panther.redis.host}
+lezhin:
+  webUrl: https://beta-www.lezhin.com
+  apiUrl: https://beta-www.lezhin.com/api/v2/internal/payments
+  pantherUrl: https://beta-panther.lezhin.com
+  happypoint:
+    hpcUrl: http://dev-proxy.lezhin.net/spc/processHpc
+    mchtNo: 100015851
 ---
 spring:
   profiles: production
@@ -29,7 +36,7 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://www.lezhin.com
-  apiUrl: https://www.lezhin.com/api
+  apiUrl: https://www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://panther.lezhin.com
   happypoint:
     hpcUrl: xxx
@@ -43,11 +50,8 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://mirror-www.lezhin.com
-  apiUrl: https://mirror-www.lezhin.com/api
+  apiUrl: https://mirror-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://staging-panther.lezhin.com
-  happypoint:
-    hpcUrl: https://121.254.240.249:7243/processHpc
-    mchtNo: 100015851
 ---
 spring:
   profiles: qa
@@ -57,11 +61,8 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://q-www.lezhin.com
-  apiUrl: https://q-www.lezhin.com/api
+  apiUrl: https://q-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://qa-panther.lezhin.com
-  happypoint:
-    hpcUrl: https://121.254.240.249:7243/processHpc
-    mchtNo: 100015851
 ---
 spring:
   profiles: beta
@@ -71,11 +72,8 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://beta-www.lezhin.com
-  apiUrl: https://beta-www.lezhin.com/api
+  apiUrl: https://beta-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://beta-panther.lezhin.com
-  happypoint:
-    hpcUrl: https://121.254.240.249:7243/processHpc
-    mchtNo: 100015851
 ---
 spring:
   profiles: alpha
@@ -85,11 +83,8 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://alpha-www.lezhin.com
-  apiUrl: https://alpha-www.lezhin.com/api
+  apiUrl: https://alpha-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://alpha-panther.lezhin.com
-  happypoint:
-    hpcUrl: https://121.254.240.249:7243/processHpc
-    mchtNo: 100015851
 ---
 spring:
   profiles: local
@@ -103,11 +98,8 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://beta-www.lezhin.com
-  apiUrl: https://beta-www.lezhin.com/api
+  apiUrl: https://beta-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://localhost
-  happypoint:
-    hpcUrl: https://121.254.240.249:7243/processHpc
-    mchtNo: 100015851
 ---
 spring:
   profiles: test
@@ -125,8 +117,5 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
 lezhin:
   webUrl: https://t-www.lezhin.com
-  apiUrl: https://t-www.lezhin.com/api
+  apiUrl: https://t-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://localhost
-  happypoint:
-    hpcUrl: https://121.254.240.249:7243/processHpc
-    mchtNo: 100015851
