@@ -95,7 +95,7 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://beta-www.lezhin.com
-  apiUrl: https://beta-www.lezhin.com/api/v2/internal/payments
+  apiUrl: https://lezhincomix-beta.appspot.com/api/v2/internal/payments
   pantherUrl: https://localhost
   actuator:
     security:

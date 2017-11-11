@@ -36,7 +36,7 @@ public class APIController {
         this.commandService = commandService;
     }
 
-    @RequestMapping(value = "/{pg}/preparation", method = RequestMethod.GET)
+    @RequestMapping(value = "/{pg}/preparation", method = RequestMethod.POST)
     @ResponseBody
     public Payment prepare(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
 
@@ -49,7 +49,7 @@ public class APIController {
         return payment;
     }
 
-    @RequestMapping(value = "/{pg}/reservation", method = RequestMethod.GET)
+    @RequestMapping(value = "/{pg}/reservation", method = RequestMethod.POST)
     @ResponseBody
     public Payment reserve(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
 

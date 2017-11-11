@@ -3,13 +3,14 @@ package com.lezhin.avengers.panther.model;
 import com.lezhin.avengers.panther.exception.ParameterException;
 import com.lezhin.avengers.panther.executor.Executor;
 import com.lezhin.avengers.panther.happypoint.HappyPointPayment;
+import com.lezhin.avengers.panther.util.Util;
+import com.lezhin.constant.LezhinStore;
 
 import com.google.common.base.MoreObjects;
 import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -25,6 +26,7 @@ public class RequestInfo {
     private String isApp;
     private String returnToUrl;
     private String locale;
+    private String userId;
     private Executor.Type executorType;
     private Payment payment;
 
@@ -36,6 +38,7 @@ public class RequestInfo {
         this.isApp = builder.isApp;
         this.returnToUrl = builder.returnToUrl;
         this.locale = builder.locale;
+        this.userId = builder.userId;
         this.executorType = builder.executorType;
         this.payment = builder.payment;
     }
@@ -62,6 +65,10 @@ public class RequestInfo {
 
     public String getLocale() {
         return locale;
+    }
+
+    public String getUserId() {
+        return this.userId;
     }
 
     public Executor.Type getExecutorType() {
@@ -94,8 +101,22 @@ public class RequestInfo {
         private String isApp;
         private String returnToUrl;
         private String locale;
+        private String userId;
         private Executor.Type executorType;
         private Payment payment;
+
+        public Builder(RequestInfo requestInfo) {
+            this.pg = requestInfo.pg;
+            this.ip = requestInfo.ip;
+            this.token = requestInfo.token;
+            this.isMobile = requestInfo.isMobile;
+            this.isApp = requestInfo.isApp;
+            this.returnToUrl = requestInfo.returnToUrl;
+            this.locale = requestInfo.locale;
+            this.userId = requestInfo.userId;
+            this.executorType = requestInfo.executorType;
+            this.payment = requestInfo.payment;
+        }
 
         public Builder(HttpServletRequest request, String pg) {
             Optional.ofNullable(request).orElseThrow(() ->
@@ -140,19 +161,30 @@ public class RequestInfo {
                 throw new ParameterException("Unknown PG = " + pg);
             }
 
+            withUserId(request.getParameter("_lz_userId"));
+
             // payment // FIXME Where to check param?
+            Payment payment = new Payment();
+            payment.setPgCompany(pg);
+            payment.setPaymentType(executorType.getPaymentType(Boolean.parseBoolean(isMobile)));
+            payment.setLocale(Util.of(locale));
             if (executorType == Executor.Type.HAPPYPOINT) {
-                Payment payment = new Payment();
                 payment.setUserId(Long.valueOf((Optional.ofNullable(request.getParameter("_lz_userId"))).orElseThrow(
                         () -> new ParameterException("_lz_userId can not be null")
                 )));
 
                 payment.setExternalStoreProductId(request.getParameter("_lz_externalStoreProductId"));
+                payment.setStore(LezhinStore.valueOf(Optional.ofNullable(request.getParameter("_lz_store"))
+                        .orElse("base")));
+                payment.setStoreVersion(request.getParameter("_lz_storeVersion"));
                 HappyPointPayment pgPayment = new HappyPointPayment();
                 pgPayment.setMbrNo(request.getParameter("meta_mbrNo"));
                 pgPayment.setMbrNm(request.getParameter("meta_mbrNm"));
                 pgPayment.setUseReqPt(request.getParameter("meta_useReqPt"));
                 payment.setPgPayment(pgPayment);
+                Meta meta = new Meta();
+                meta.setDynamicAmount(pgPayment.getUseReqPt());
+                payment.setMeta(meta);
                 withPayment(payment);
             }
 
@@ -200,6 +232,11 @@ public class RequestInfo {
 
         public Builder withPayment(Payment payment) {
             this.payment = payment;
+            return this;
+        }
+
+        public Builder withUserId(String userId) {
+            this.userId = userId;
             return this;
         }
 

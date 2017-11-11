@@ -7,9 +7,10 @@ import com.lezhin.constant.PaymentState;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.model.CohortData;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.VisibleForTesting;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +24,9 @@ import java.util.Map;
  * @since 2017.10.24
  */
 @Component // TODO entity
-@JsonSerialize
-public class Payment<T extends PGPayment> implements Serializable{
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Payment<T extends PGPayment> implements Serializable {
 
     // from server. InternalPaymentView.
 
@@ -44,6 +46,7 @@ public class Payment<T extends PGPayment> implements Serializable{
     protected Integer pointAmount; // TODO 사용 안함. 삭제 예정.
     protected LezhinCurrency currency; // TODO 사용 안함. 삭제 예정.
 
+    @JsonIgnore
     protected String pgId;
     protected String pgCompany;
     protected PaymentType paymentType;
@@ -75,7 +78,8 @@ public class Payment<T extends PGPayment> implements Serializable{
      * playReceiptData : play 결제 정보
      * webReceiptData : web 결제 정보 (결제 수단별로 파싱해서 사용)
      */
-    protected Map<String, Object> meta;
+    //protected Map<String, Object> meta;
+    protected Meta meta;
 
     /**
      * 추가 정보
@@ -86,10 +90,15 @@ public class Payment<T extends PGPayment> implements Serializable{
 
     // ---------- from pg ---------------------
 
+    @JsonIgnore
     protected String environment;
+    @JsonIgnore
     protected String lezhinPgUrl;
+    @JsonIgnore
     protected Boolean isMobile;
+    @JsonIgnore
     protected Boolean isApp;
+    @JsonIgnore
     protected String returnToUrl;
 
     // panther
@@ -306,14 +315,6 @@ public class Payment<T extends PGPayment> implements Serializable{
         this.timestamps = timestamps;
     }
 
-    public Map<String, Object> getMeta() {
-        return meta;
-    }
-
-    public void setMeta(Map<String, Object> meta) {
-        this.meta = meta;
-    }
-
     public Map<String, Object> getExtra() {
         return extra;
     }
@@ -378,7 +379,15 @@ public class Payment<T extends PGPayment> implements Serializable{
         this.externalStoreProductId = externalStoreProductId;
     }
 
-    @JsonProperty("meta")
+    public Meta getMeta() {
+        return meta;
+    }
+
+    public void setMeta(Meta meta) {
+        this.meta = meta;
+    }
+
+    @JsonIgnore()
     public T getPgPayment() {
         return pgPayment;
     }

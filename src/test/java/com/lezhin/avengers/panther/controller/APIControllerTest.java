@@ -26,6 +26,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -64,11 +65,12 @@ public class APIControllerTest {
         request1.setParameter("_lz_userId", "10101");
         Payment<PGPayment> mockPayment = new Payment<>();
 
-        this.mockMvc.perform(get
+        // FIXME 최상위 root controller 사용
+        this.mockMvc.perform(post
                 ("/v1/api/happypoint/preparation").accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
                 .param("_lz_userId", "121212"))
                 .andDo(print())
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json;charset=UTF-8"));
     }
 
@@ -110,7 +112,7 @@ public class APIControllerTest {
     public void testParameterException() throws Exception {
 
         this.mockMvc
-                .perform(get("/v1/api/hello/reservation"))
+                .perform(post("/v1/api/hello/reservation"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("code").value(ErrorCode.LEZHIN_PARAM.getCode()));

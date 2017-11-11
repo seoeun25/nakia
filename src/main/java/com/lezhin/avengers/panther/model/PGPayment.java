@@ -1,13 +1,16 @@
 package com.lezhin.avengers.panther.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author seoeun
  * @since 2017.11.05
  */
-@JsonSerialize
 public class PGPayment implements Serializable {
+
+    public Map<String, String> createReceipt() {
+        return new HashMap<>();
+    }
 }
