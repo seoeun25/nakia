@@ -48,7 +48,7 @@ public class InternalPaymentService {
         String url = lezhinProperties.getApiUrl() + "/reserve";
         logger.info("RESERVE. call to {}", url);
 
-        context.getRequestInfo().getToken();
+        logger.info("token = {}", context.getRequestInfo().getToken());
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("Authorization", "Bearer " + context.getRequestInfo().getToken());
@@ -85,6 +85,7 @@ public class InternalPaymentService {
         }
         logger.info("AUTHENTICATE. call to {}", url);
 
+        logger.info("token = {}", context.getRequestInfo().getToken());
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("Authorization", "Bearer " + context.getRequestInfo().getToken());

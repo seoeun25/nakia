@@ -61,16 +61,15 @@ public class APIControllerTest {
     @Test
     public void testHealthCheck() throws Exception {
 
-        MockHttpServletRequest request1 = new MockHttpServletRequest("GET", "/v1/api/happypoint/preparation");
+        MockHttpServletRequest request1 = new MockHttpServletRequest("GET", "/panther");
         request1.setParameter("_lz_userId", "10101");
         Payment<PGPayment> mockPayment = new Payment<>();
 
-        // FIXME 최상위 root controller 사용
-        this.mockMvc.perform(post
-                ("/v1/api/happypoint/preparation").accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        this.mockMvc.perform(get
+                ("/panther").accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
                 .param("_lz_userId", "121212"))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"));
     }
 
@@ -87,6 +86,15 @@ public class APIControllerTest {
                 .perform(options("/v1/api/happypoint/reservation")
                         .header("Access-Control-Request-Method", "GET")
                         .header("Origin", "http://www.lezhin.com")
+                        .param("_lz_userId", "1212121"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Methods", "GET,HEAD,POST"));
+
+        this.mockMvc
+                .perform(options("/v1/api/happypoint/reservation")
+                        .header("Access-Control-Request-Method", "GET")
+                        .header("Origin", "http://beta-www.lezhin.com")
                         .param("_lz_userId", "1212121"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -112,7 +120,7 @@ public class APIControllerTest {
     public void testParameterException() throws Exception {
 
         this.mockMvc
-                .perform(post("/v1/api/hello/reservation"))
+                .perform(post("/v1/api/hello/reservation").content("{\"_lz_userId\":\"10101\"}"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("code").value(ErrorCode.LEZHIN_PARAM.getCode()));

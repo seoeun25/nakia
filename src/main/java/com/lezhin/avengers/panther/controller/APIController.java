@@ -38,11 +38,11 @@ public class APIController {
 
     @RequestMapping(value = "/{pg}/preparation", method = RequestMethod.POST)
     @ResponseBody
-    public Payment prepare(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
-
+    public Payment prepare(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg
+    ) {
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 
-        logger.info("---- pg = {}, requestInfo = {}", pg, requestInfo);
+        logger.info("HTTP prepare. requestInfo = {}", pg, requestInfo);
 
         Payment payment = commandService.doCommand(Command.Type.PREPARE, requestInfo);
         //return "reserve";
@@ -55,7 +55,7 @@ public class APIController {
 
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 
-        logger.info("---- pg = {}, requestInfo = {}", pg, requestInfo);
+        logger.info("HTTP reservation. requestInfo = {}", requestInfo);
 
         Payment payment = commandService.doCommand(Command.Type.RESERVE, requestInfo);
         //return "reserve";

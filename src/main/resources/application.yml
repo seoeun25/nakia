@@ -13,7 +13,8 @@ spring:
         dialect: org.hibernate.dialect.MySQL5Dialect
   redis:
     host: ${lezhin.panther.redis.host}
-    port: ${lezhin.panther.redis.host}
+    port: ${lezhin.panther.redis.port}
+    database: ${lezhin.panther.redis.database}
 lezhin:
   webUrl: https://beta-www.lezhin.com
   apiUrl: https://beta-www.lezhin.com/api/v2/internal/payments
@@ -79,8 +80,8 @@ spring:
     hibernate.ddl-auto: validate
     show-sql: true
 lezhin:
-  webUrl: https://alpha-www.lezhin.com
-  apiUrl: https://alpha-www.lezhin.com/api/v2/internal/payments
+  webUrl: https://a-www.lezhin.com
+  apiUrl: https://lezhincomix-alpha.appspot.com/api/v2/internal/payments
   pantherUrl: https://alpha-panther.lezhin.com
 ---
 spring:
@@ -96,9 +97,10 @@ spring:
   redis:
     host: localhost
     port: 6379
+    database: 0
 lezhin:
-  webUrl: https://beta-www.lezhin.com
-  apiUrl: https://lezhincomix-beta.appspot.com/api/v2/internal/payments
+  webUrl: https://mirror-www.lezhin.com
+  apiUrl: https://lezhincomix-novel.appspot.com/api/v2/internal/payments
   pantherUrl: https://localhost
   actuator:
     security:
@@ -121,6 +123,7 @@ spring:
   redis:
       host: localhost
       port: 6379
+      database: 0
 lezhin:
   webUrl: https://t-www.lezhin.com
   apiUrl: https://t-www.lezhin.com/api/v2/internal/payments

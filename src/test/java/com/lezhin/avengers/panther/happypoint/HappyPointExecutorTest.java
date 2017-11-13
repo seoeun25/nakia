@@ -56,7 +56,7 @@ public class HappyPointExecutorTest {
     public void testUserIdPaymentIdFromContext() {
 
         MockHttpServletRequest request1 = new MockHttpServletRequest();
-        request1.setParameter("_lz_userId", "10101");
+        request1.setContent("{\"_lz_userId\": \"10101\"}".getBytes());
         RequestInfo requestInfo = new RequestInfo.Builder(request1, "happypoint").build();
 
         Context context = new Context.Builder(requestInfo, requestInfo.getPayment()).build();

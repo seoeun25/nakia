@@ -81,7 +81,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(lezhinProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("response from happypoint {}, {}, \n{}: ", response.getRpsCd(), response.getRpsDtlMsg(),
+        logger.info("CHECK POINT response from happypoint: {} = {}, \n{}", response.getRpsCd(),
+                response.getRpsMsgCtt(),
                 JsonUtil.toJson(response));
 
         payment.setPgPayment(response);
@@ -114,11 +115,12 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         Certification certification = cacheService.getCertification(Long.valueOf(context.getRequestInfo().getUserId()));
         if (certification == null) {
-            throw new PantherException("No ConnectionInfo. Certification failed");
+            throw new PantherException("No ConnectionInfo. Certification CI failed. userId = " +
+                    context.getRequestInfo().getUserId());
         }
         String name = certification.getName();
         String ci = certification.getCI();
-        logger.info("name = {}, ci = {}", name, ci);
+        logger.info("userId = {}, name = {}, ci = {}", context.getRequestInfo().getUserId(), name, ci);
 
         requestPayment.setMbrNm(name);
         requestPayment.setMbrIdfNo(ci);
@@ -132,7 +134,9 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(lezhinProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("response from happypoint: {}", JsonUtil.toJson(response));
+        logger.info("PREPARE.(auth) response from happypoint: {} = {}, \n{}", response.getRpsCd(),
+                response.getRpsMsgCtt(),
+                JsonUtil.toJson(response));
 
         payment.setPgPayment(response);
 
@@ -203,7 +207,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(lezhinProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("PAY. response from happypoint: {} = {}, {}", response.getRpsCd(), response.getRpsMsgCtt(),
+        logger.info("PAY. response from happypoint: {} = {}, \n{}", response.getRpsCd(), response.getRpsMsgCtt(),
                 JsonUtil.toJson(response));
 
         payment.setPgPayment(response);
