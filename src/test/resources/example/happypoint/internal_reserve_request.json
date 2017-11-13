@@ -1,0 +1,14 @@
+// internalPayment.reserve에 request 보내는 예.
+{
+  "userId": 5331586170224640,
+  "pgCompany": "happypoint",
+  "paymentType": "mhappypoint",
+  "store": "plus",
+  "storeVersion": "1.0",
+  "locale": "ko-KR",
+  "meta": {
+    "dynamicAmount": "2000"
+  },
+  "externalStoreProductId": "lz_dynamic_happypoint_mhappypoint_2000",
+  "manual": false
+}

@@ -1,0 +1,21 @@
+// internalPayment.paymentVerify request 보내는 예.
+// 성공했을 때  https://lezhincomix-beta.appspot.com/api/v2/internal/payments/1510505449530760/complete
+{
+  "ip": "183.99.13.144",
+  "country": "KR",
+  "manual": "0",
+  "approvalId": "",
+  "meta": "{\"mbrNo\":\"1003023370\",\"aprvNo\":\"\",\"rpsMsgCtt\":\"제휴계약 정보가 없습니다.\",\"aprvDt\":\"\",\"tracNo\":\"ORJN20171107161021\",\"useReqPt\":\"00000002000\",\"rpsCd\":\"17\",\"usePt\":\"00000000000\",\"trxAmt\":\"0000000002000\"}",
+  "dynamicAmount": "0"
+}
+
+// 실패했을 때  https://lezhincomix-beta.appspot.com/api/v2/internal/payments/1510505449530760/fail
+{
+  "ip": "183.99.13.144",
+  "country": "KR",
+  "manual": "0",
+  "meta": "{\"mbrNo\":\"1003023370\",\"aprvNo\":\"\",\"rpsMsgCtt\":\"제휴계약 정보가 없습니다.\",\"aprvDt\":\"\",\"tracNo\":\"ORJN20171107161021\",\"useReqPt\":\"00000002000\",\"rpsCd\":\"17\",\"usePt\":\"00000000000\",\"trxAmt\":\"0000000002000\"}",
+  "dynamicAmount": "0"
+}
+
+

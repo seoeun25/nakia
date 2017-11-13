@@ -1,0 +1,32 @@
+{
+  "paymentId": 1510422368335431,
+  "userId": 5331586170224640,
+  "userEmail": "azrael@lezhin.com",
+  "coinProductId": 6463264970244096,
+  "coinProductName": "happypoint - 10",
+  "coin": 10,
+  "amount": 2000.0,
+  "currency": "KRW",
+  "pgCompany": "happypoint",
+  "paymentType": "mhappypoint",
+  "store": "plus",
+  "storeVersion": "1.0",
+  "locale": "ko-KR",
+  "state": "PC",
+  "createdAt": 1510422368335,
+  "timestamps": {
+    "paymentCompleteAt": 1510422373202
+  },
+  "meta": {
+    "manual": 0,
+    "ip": "183.99.13.144",
+    "country": "KR"
+  },
+  "cohortData": {
+    "joinYear": "2016",
+    "joinMonth": "11",
+    "joinWeek": 1,
+    "joinDate": "Y:2016;Q:4;M:11;WY:2016;WM:10;WD:30;D:02;H:17"
+  },
+  "manual": false
+}
