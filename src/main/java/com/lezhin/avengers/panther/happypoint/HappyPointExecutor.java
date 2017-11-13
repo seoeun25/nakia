@@ -1,13 +1,16 @@
 package com.lezhin.avengers.panther.happypoint;
 
-import com.lezhin.avengers.panther.CacheService;
+import com.lezhin.avengers.panther.CertificationService;
 import com.lezhin.avengers.panther.Context;
 import com.lezhin.avengers.panther.ErrorCode;
 import com.lezhin.avengers.panther.command.Command;
 import com.lezhin.avengers.panther.exception.HappyPointParamException;
 import com.lezhin.avengers.panther.exception.HappyPointSystemException;
+import com.lezhin.avengers.panther.exception.PantherException;
+import com.lezhin.avengers.panther.exception.ParameterException;
 import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.executor.Executor;
+import com.lezhin.avengers.panther.model.Certification;
 import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.ResponseInfo;
 import com.lezhin.avengers.panther.util.JsonUtil;
@@ -21,7 +24,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,7 +46,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
             Command.Type.AUTHENTICATE, Command.Type.PAY);
 
     @Autowired
-    private CacheService cacheService;
+    private CertificationService cacheService;
     @Autowired
     private ClientHttpRequestFactory clientHttpRequestFactory;
 
@@ -110,9 +112,12 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         payment.setPgPayment(requestPayment);
         requestPayment.setTracNo(createTraceNo(payment));
 
-        String[] memberInfo = cacheService.getMemberInfo(Long.valueOf(context.getRequestInfo().getUserId()));
-        String name = memberInfo[0];
-        String ci = memberInfo[1];
+        Certification certification = cacheService.getCertification(Long.valueOf(context.getRequestInfo().getUserId()));
+        if (certification == null) {
+            throw new PantherException("No ConnectionInfo. Certification failed");
+        }
+        String name = certification.getName();
+        String ci = certification.getCI();
         logger.info("name = {}, ci = {}", name, ci);
 
         requestPayment.setMbrNm(name);

@@ -1,5 +1,7 @@
 package com.lezhin.avengers.panther.model;
 
+import com.google.common.base.MoreObjects;
+
 import java.io.Serializable;
 
 /**
@@ -14,6 +16,10 @@ public class Certification implements Serializable{
     private String gender;
     private String CI;
     private String DI;
+
+    public Certification() {
+
+    }
 
     public Long getUserId() {
         return userId;
@@ -62,4 +68,17 @@ public class Certification implements Serializable{
     public void setDI(String DI) {
         this.DI = DI;
     }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("userId", userId)
+                .add("name", name)
+                .add("birthday", birthday)
+                .add("gender", gender)
+                .add("CI", CI)
+                .add("DI", DI)
+                .toString();
+    }
+
 }
