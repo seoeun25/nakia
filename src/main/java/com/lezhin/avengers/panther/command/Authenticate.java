@@ -57,23 +57,27 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
     public Payment execute() {
         initExecutor();
 
-        logger.info("start authenticate. {}", context.printPretty());
+        logger.info("{} start. {}", commandType.name(), context.printPretty());
 
         payment = executor.authenticate();
-        logger.info("authenticate. executed = {}", JsonUtil.toJson(payment));
         context = context.withPayment(payment);
         context = context.withResponse(executor.getContext().getResponseInfo());
+        logger.info("{} executor[{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
+                context.getResponseInfo().toString());
+        logger.debug("payment = {}", JsonUtil.toJson(payment));
+        executor.handleResponseCode(context.getResponseInfo().getCode());
 
         try {
             payment = internalPaymentService.authenticate(context);
             context = context.withPayment(payment);
-            logger.info("internalPayment. authenticated. {}", JsonUtil.toJson(payment));
         } catch (Throwable e) {
             context = context.withResponse(
                     new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
-            logger.warn("Failed to InternalPayment.reserve");
+            logger.warn("Failed to InternalPayment.authenticate");
             throw new InternalPaymentException(e);
         }
+
+        logger.info("{} execute {} ", commandType.name(), context.getResponseInfo().toString());
 
         return processNextStep();
     }

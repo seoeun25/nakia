@@ -54,13 +54,15 @@ junitPlatform {
 }
 
 dependencies {
-	compile('com.lezhin.server:lz-model:0.0.10-SNAPSHOT')
+	compile('com.lezhin.server:lz-model:0.0.13-SNAPSHOT')
 	compile('com.lezhin.server:lz-spring-boot-actuator-security-autoconfigure:0.0.1-SNAPSHOT')
 	compile('com.google.guava:guava:22.0')
 	compile('org.springframework.boot:spring-boot-starter-actuator')
 	compile('org.springframework.boot:spring-boot-starter-aop')
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-configuration-processor')
+	compile('org.apache.httpcomponents:httpclient:4.5.3')
 
 	compile("org.mariadb.jdbc:mariadb-java-client:2.1.0")
 	compile("mysql:mysql-connector-java:5.1.43")

@@ -1,27 +1,34 @@
 package com.lezhin.avengers.panther.happypoint;
 
 
+import com.lezhin.avengers.panther.config.LezhinProperties;
 import com.lezhin.avengers.panther.model.PGPayment;
 import com.lezhin.avengers.panther.util.DateUtil;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author seoeun
  * @since 2017.10.25
  */
-@JsonSerialize
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class HappyPointPayment extends PGPayment {
 
-    /**
-     * 제휴사 식별키
-     */
-    private String rcgnKey = "dd50084c773c417f0b75bf1be857e5ddf9582f7ab8480b38e282938a757bbfe7";
+    public static final String RCGN_KEY = "dd50084c773c417f0b75bf1be857e5ddf9582f7ab8480b38e282938a757bbfe7";
+    public static final String INST_CD = "ORJN";
+    public static final String trxTypCd_USE = "10"; // 포인트 사용
+    public static final String trxTypCd_CANCEL = "20"; // 사용 취소
+
 
     // 공통
-    private String instCd = "ORJN"; // 기관코드
+    private String rcgnKey = RCGN_KEY; //제휴사 식별키
+    private String instCd = INST_CD; // 기관코드 "ORJN"
     private String tlgmNo; // 전문번호 "2000" 회원인증, "5120" 포인트사용(취소)
     private String tlgmChnlCd = "X0"; //전문채널코드
     private String trsDt; // 전송일자 YYYYMMDD 송신 측 전송일자
@@ -50,7 +57,7 @@ public class HappyPointPayment extends PGPayment {
     // 포인트 조회
     private String mbrIdfWayCd = "20"; // 회원식별방식코드 10:카드번호, 20:회원번호
     //private String mbrNo; // 회원번호
-    private String mchtNo = "100015851"; // 가맹점번호 개발환경 : "100015851"
+    private String mchtNo; // 가맹점번호 개발환경 : "100015851"
     private String ptResvPossYn; // 포인트사용가능여부
     private String ptUsePossYn; // 포인트사용가능여부
     private String ptUsePwdAplyYn; // 포인트사용비밀번호적용
@@ -63,7 +70,7 @@ public class HappyPointPayment extends PGPayment {
     //private String mchtNo ="100015851"; // 가맹점번호
     private String trxDt; // 거래일자
     private String trxTm; // 거래시각
-    private String trxClCd; // 거래구분코드 20:포인트사용
+    private String trxClCd = "20"; // 거래구분코드 20:포인트사용
     private String trxTypCd; // 거래유형코드 10:사용, 20:사용취소
     private String trxRsnCd = "2001"; // 거래사유코드 2001:대금결제
     private String trxAmt; // 거래금액
@@ -72,6 +79,7 @@ public class HappyPointPayment extends PGPayment {
     private String aprvDt; // 승인일자
     private String aprvNo; // 승인번호
     private String usePt; // 사용포인트
+
     public HappyPointPayment() {
 
     }
@@ -397,6 +405,10 @@ public class HappyPointPayment extends PGPayment {
         this.usePt = usePt;
     }
 
+    public String getApprovalId() {
+        return this.aprvNo;
+    }
+
     public String printCommonRequest() {
         return MoreObjects.toStringHelper(this)
                 .add("rcgnKey", rcgnKey)
@@ -413,22 +425,37 @@ public class HappyPointPayment extends PGPayment {
                 .toString();
     }
 
-    public String printA() {
-        return MoreObjects.toStringHelper(this)
-                .omitNullValues().toString();
-
+    public Map<String, String> createReceipt() {
+        Map<String , String> receipt = new HashMap<>();
+        receipt.put("tracNo", tracNo);
+        receipt.put("mbrNo", mbrNo); // 회원번호
+        receipt.put("rpsCd", rpsCd);  // 응답코드
+        receipt.put("rpsMsgCtt", rpsMsgCtt); // 응답 메시지
+        receipt.put("trxAmt", trxAmt); // 거래금액
+        receipt.put("useReqPt", useReqPt); // 사용 요청 포인트
+        receipt.put("aprvDt", aprvDt); // 승인일자
+        receipt.put("aprvNo", aprvNo); // 승인번호
+        receipt.put("usePt", usePt); // 사용포인트
+        return receipt;
     }
 
     public enum API {
-        // FIXME 포인트 조회에 대한 전문 번호 없음.
-        // FIXME 요청구분코드 가 모든 api 에 동일. (전문번호가 틀려서 요청구분코드가 같아도 상관없음)
+
         authentication("2000", "10"), // 회원인증
         pointcheck("5000", "10"), // 포인트조회
         pointuse("5120", "10"), // 포인트사용
         pointrefund("5120", "10"); // 포인트취소
+
+        @Autowired
+        private LezhinProperties lezhinProperties;
         private String tlgmNo;
         private String reqClCd;
 
+        /**
+         *
+         * @param tlgmNo 전문번호
+         * @param reqClCd 요청구분 코드
+         */
         API(String tlgmNo, String reqClCd) {
             this.tlgmNo = tlgmNo;
             this.reqClCd = reqClCd;
@@ -442,6 +469,12 @@ public class HappyPointPayment extends PGPayment {
             return reqClCd;
         }
 
+        /**
+         * Create HappypointPayment with common request properties except {@code tracNo}.
+         * Should set {@code tracNo}
+         *
+         * @return
+         */
         public HappyPointPayment createRequest() {
             HappyPointPayment happyPointPayment = new HappyPointPayment();
             happyPointPayment.setTlgmNo(tlgmNo);

@@ -44,10 +44,10 @@ public class Prepare<T extends PGPayment> extends Command<T> {
     @Override
     public Payment<T> execute() throws PreconditionException, ExecutorException {
         initExecutor();
-        logger.info("start prepare. {}", context.printPretty());
+        logger.info("{} start. {}", commandType.name(),  context.printPretty());
         Payment<T> payment = executor.prepare();
         context = context.withResponse(executor.getContext().getResponseInfo());
-        logger.info("prepare executed = {}", JsonUtil.toJson(payment));
+        logger.info("{} executed. = {}", commandType.name(), JsonUtil.toJson(payment));
 
         return payment;
     }

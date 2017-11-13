@@ -178,9 +178,9 @@ public class RequestInfo {
                         .orElse("base")));
                 payment.setStoreVersion(request.getParameter("_lz_storeVersion"));
                 HappyPointPayment pgPayment = new HappyPointPayment();
-                pgPayment.setMbrNo(request.getParameter("meta_mbrNo"));
-                pgPayment.setMbrNm(request.getParameter("meta_mbrNm"));
-                pgPayment.setUseReqPt(request.getParameter("meta_useReqPt"));
+                pgPayment.setMbrNo(request.getParameter("pgPayment_mbrNo"));
+                pgPayment.setMbrNm(request.getParameter("pgPayment_mbrNm"));
+                pgPayment.setUseReqPt(request.getParameter("pgPayment_useReqPt"));
                 payment.setPgPayment(pgPayment);
                 Meta meta = new Meta();
                 meta.setDynamicAmount(pgPayment.getUseReqPt());

@@ -35,8 +35,11 @@ public class Meta implements Serializable {
     private String fail;
     private String unverified;
     private String rollback;
-    private Map<String, String> receipt;
-    private Map<String, String> meta;
+    private String approvalId;
+    private String receipt;
+    private Map<String, String> receiptMap;
+    private String meta;
+    private Map<String, String> metaMap;
 
     private String dynamicAmount = "0";
 
@@ -96,6 +99,14 @@ public class Meta implements Serializable {
         this.rollback = rollback;
     }
 
+    public String getApprovalId() {
+        return approvalId;
+    }
+
+    public void setApprovalId(String approvalId) {
+        this.approvalId = approvalId;
+    }
+
     public String getDynamicAmount() {
         return dynamicAmount;
     }
@@ -104,19 +115,35 @@ public class Meta implements Serializable {
         this.dynamicAmount = dynamicAmount;
     }
 
-    public Map<String, String> getReceipt() {
+    public Map<String, String> getReceiptMap() {
+        return receiptMap;
+    }
+
+    public void setReceiptMap(Map<String, String> receiptMap) {
+        this.receiptMap = receiptMap;
+    }
+
+    public Map<String, String> getMetaMap() {
+        return metaMap;
+    }
+
+    public void setMetaMap(Map<String,String> metaMap) {
+        this.metaMap = metaMap;
+    }
+
+    public String getReceipt() {
         return receipt;
     }
 
-    public void setReceipt(Map<String, String> receipt) {
+    public void setReceipt(String receipt) {
         this.receipt = receipt;
     }
 
-    public Map<String, String> getMeta() {
+    public String getMeta() {
         return meta;
     }
 
-    public void setMeta(Map<String,String> meta) {
+    public void setMeta(String meta) {
         this.meta = meta;
     }
 }

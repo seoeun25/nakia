@@ -1,0 +1,26 @@
+// happypoint 에 포인트 조회 request json
+{
+  "rcgnKey": "dd50084c773c417f0b75bf1be857e5ddf9582f7ab8480b38e282938a757bbfe7",
+  "instCd": "ORJN",
+  "tlgmNo": "5000",
+  "tlgmChnlCd": "X0",
+  "trsDt": "20171113",
+  "trsTm": "121021",
+  "tracNo": "ORJN20171113121021",
+  "tlgmClCd": "ON",
+  "reqClCd": "10",
+  "reqBrndCd": "C083",
+  "reqChnlCd": "20",
+  "mbrAuthMthdCd": "20",
+  "mbrNm": "박서은",
+  "mbrIdfNo": "5dvh/DpKqqMa6euklUGE7zcTcIzpnDKNsbW0H146FbV1dLpTdrbw9Ek16d2iGXDGBYyCAov/ImWyLNenClP9Hw==",
+  "mbrNo": "1005831805",
+  "cardStCd": "01",
+  "mbrGrCd": "",
+  "mbrGrCdNm": "",
+  "remPt": "00000009733",
+  "mbrIdfWayCd": "20",
+  "mchtNo": "100015851",
+  "trxClCd": "20",
+  "trxRsnCd": "2001"
+}

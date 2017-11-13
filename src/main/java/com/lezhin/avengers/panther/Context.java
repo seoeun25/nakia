@@ -46,16 +46,6 @@ public class Context<T extends PGPayment> {
         return Optional.ofNullable(payment.getUserId()).orElse(-1L).toString();
     }
 
-    // FIXME
-    public boolean isPantherFail() {
-        return responseInfo.getCode().length() == 4 && !responseInfo.getCode().equals(ErrorCode.LEZHIN_OK);
-    }
-
-    // FIXME
-    public boolean isHappyPointFail() {
-        return responseInfo.getCode().length() == 2 && !responseInfo.getCode().equals(ErrorCode.SPC_OK);
-    }
-
     public boolean executionSucceed() {
         boolean executionSucceed = true;
         if (getRequestInfo().getExecutorType() == Executor.Type.HAPPYPOINT) {
@@ -65,7 +55,7 @@ public class Context<T extends PGPayment> {
     }
 
     public Context<T> withPayment(Payment<T> payment) {
-        return new Context.Builder(requestInfo, payment).build();
+        return new Context.Builder(requestInfo, payment, responseInfo).build();
     }
 
     public Context<T> withResponse(ResponseInfo response) {

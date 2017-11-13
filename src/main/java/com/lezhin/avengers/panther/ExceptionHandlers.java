@@ -1,10 +1,11 @@
 package com.lezhin.avengers.panther;
 
 import com.lezhin.avengers.panther.exception.ExecutorException;
+import com.lezhin.avengers.panther.exception.HappyPointParamException;
+import com.lezhin.avengers.panther.exception.HappyPointSystemException;
 import com.lezhin.avengers.panther.exception.PantherException;
 import com.lezhin.avengers.panther.exception.ParameterException;
 import com.lezhin.avengers.panther.exception.PreconditionException;
-import com.lezhin.avengers.panther.exception.SPCException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +27,23 @@ public class ExceptionHandlers {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public ErrorInfo handleParameterException(final ParameterException e) {
-        logger.error("Parameter error", e);
+        logger.error("ParameterException", e);
         return new ErrorInfo(ErrorCode.LEZHIN_PARAM.getCode(), e.getMessage());
     }
 
-    @ExceptionHandler(SPCException.class)
-    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler(HappyPointParamException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public ErrorInfo handleSPCException(final SPCException e) {
-        logger.error("SPC error", e);
+    public ErrorInfo handleHappypointParamException(final HappyPointParamException e) {
+        logger.error("HappyPointParamException", e);
+        return new ErrorInfo(e.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler(HappyPointSystemException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public ErrorInfo handleHappypointSystemException(final HappyPointSystemException e) {
+        logger.error("HappyPointSystemException", e);
         return new ErrorInfo(e.getCode(), e.getMessage());
     }
 
@@ -42,7 +51,7 @@ public class ExceptionHandlers {
     @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
     @ResponseBody
     public ErrorInfo handlePreconditionException(final PreconditionException e) {
-        logger.error("Precondition error", e);
+        logger.error("PreconditionException", e);
         return new ErrorInfo(ErrorCode.LEZHIN_PRECONDITION.getCode(), e.getMessage());
     }
 
@@ -50,7 +59,7 @@ public class ExceptionHandlers {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ErrorInfo handleExecutorException(final ExecutorException e) {
-        logger.error("Execution error", e);
+        logger.error("ExecutorException", e);
         return new ErrorInfo(ErrorCode.LEZHIN_EXECUTION.getCode(), e.getMessage());
     }
 
@@ -58,7 +67,7 @@ public class ExceptionHandlers {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ErrorInfo handlePantherException(final PantherException e) {
-        logger.error("Execution error", e);
+        logger.error("PantherException", e);
         return new ErrorInfo(ErrorCode.LEZHIN_PANTHER.getCode(), e.getMessage());
     }
 

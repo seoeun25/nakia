@@ -1,0 +1,32 @@
+// happypoint 에 회원 인증 하고 받는 response
+{
+  "rcgnKey": "dd50084c773c417f0b75bf1be857e5ddf9582f7ab8480b38e282938a757bbfe7",
+  "instCd": "ORJN",
+  "tlgmNo": "2001",
+  "tlgmChnlCd": "X0",
+  "trsDt": "20171113",
+  "trsTm": "121021",
+  "tracNo": "ORJN20171113121021",
+  "tlgmClCd": "ON",
+  "rpsCd": "00",
+  "rpsMsgCtt": "정상승인",
+  "reqClCd": "10",
+  "reqBrndCd": "C083",
+  "reqChnlCd": "20",
+  "rpsDtlCd": "0000",
+  "rpsDtlMsg": "정상 처리되었습니다.",
+  "mbrAuthMthdCd": "20",
+  "mbrNm": "박서은",
+  "mbrIdfNo": "5dvh/DpKqqMa6euklUGE7zcTcIzpnDKNsbW0H146FbV1dLpTdrbw9Ek16d2iGXDGBYyCAov/ImWyLNenClP9Hw==",
+  "mbrNo": "1005831805",
+  "cardStCd": "01",
+  "mbrGrCd": "",
+  "mbrGrCdNm": "",
+  "remPt": "00000009733",
+  "mbrIdfWayCd": "20",
+  "trxClCd": "20",
+  "trxRsnCd": "2001"
+}
+
+
+

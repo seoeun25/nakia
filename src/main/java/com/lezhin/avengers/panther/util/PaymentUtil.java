@@ -35,7 +35,8 @@ public class PaymentUtil extends Payment{
     }
 
     public Map<String, Object> getMetaData() {
-        return array_merge(Optional.ofNullable(meta).orElse(new HashMap<>()), buildMetaData());
+        return new HashMap<>();
+        //return array_merge(Optional.ofNullable(meta).orElse(new HashMap<>()), buildMetaData());
     }
 
     public Map<String, Object> getReceiptData() {

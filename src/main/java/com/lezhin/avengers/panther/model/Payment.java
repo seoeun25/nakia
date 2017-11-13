@@ -86,7 +86,7 @@ public class Payment<T extends PGPayment> implements Serializable {
      */
     protected Map<String, Object> extra;
 
-    protected CohortData cohortData; //TODO 통계용. not used.
+    protected CohortData cohortData; //TODO 통계용. not used. InternalPaymentService에서 셋팅.
 
     // ---------- from pg ---------------------
 
@@ -387,7 +387,6 @@ public class Payment<T extends PGPayment> implements Serializable {
         this.meta = meta;
     }
 
-    @JsonIgnore()
     public T getPgPayment() {
         return pgPayment;
     }

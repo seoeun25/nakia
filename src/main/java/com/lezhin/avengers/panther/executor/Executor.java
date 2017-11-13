@@ -1,12 +1,19 @@
 package com.lezhin.avengers.panther.executor;
 
 import com.lezhin.avengers.panther.Context;
+import com.lezhin.avengers.panther.command.Command;
+import com.lezhin.avengers.panther.config.LezhinProperties;
 import com.lezhin.avengers.panther.dummy.DummyExecutor;
 import com.lezhin.avengers.panther.dummy.DummyPayment;
+import com.lezhin.avengers.panther.exception.HappyPointParamException;
+import com.lezhin.avengers.panther.exception.HappyPointSystemException;
 import com.lezhin.avengers.panther.happypoint.HappyPointExecutor;
 import com.lezhin.avengers.panther.happypoint.HappyPointPayment;
 import com.lezhin.avengers.panther.model.PGPayment;
 import com.lezhin.avengers.panther.model.Payment;
+import com.lezhin.constant.PaymentType;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author seoeun
@@ -17,49 +24,65 @@ public abstract class Executor<T extends PGPayment> {
     public enum Type {
         DUMMY("dummy") {
             @Override
-            public Executor createExecutor(Context context) {
-                return new DummyExecutor.DummyExecutorBuilder(context).build();
+            public Payment createPayment(Context context) {
+                return new Payment<DummyPayment>(System.currentTimeMillis());
             }
 
             @Override
-            public Payment createPayment(Context context) {
-                return new Payment<DummyPayment>(System.currentTimeMillis());
+            public PaymentType getPaymentType(boolean isMobile) {
+                return PaymentType.unknown;
+            }
+
+            @Override
+            public Class getExecutorClass() {
+                return DummyExecutor.class;
             }
         },
         HAPPYPOINT("happypoint") {
             @Override
-            public Executor createExecutor(Context context) {
-                return new HappyPointExecutor.HappyPointExecutorBuilder(context).build();
+            public Payment createPayment(Context context) {
+                return new Payment<HappyPointPayment>(System.currentTimeMillis());
             }
 
             @Override
-            public Payment createPayment(Context context) {
-                return new Payment<HappyPointPayment>(System.currentTimeMillis());
+            public PaymentType getPaymentType(boolean isMobile) {
+                return isMobile ? PaymentType.mhappypoint : PaymentType.happypoint;
+            }
+
+            @Override
+            public Class getExecutorClass() {
+                return HappyPointExecutor.class;
             }
         };
 
         private String name;
+
         Type(String name) {
             this.name = name;
         }
+
         String getName() {
             return name;
         }
 
-        public abstract Executor createExecutor(Context context);
         public abstract Payment createPayment(Context context);
+
+        public abstract <E> Class<E> getExecutorClass();
+
+        public abstract PaymentType getPaymentType(boolean isMobile);
     }
 
     protected Type type;
     protected Context<T> context;
+    @Autowired
+    protected LezhinProperties lezhinProperties;
 
     public Executor() {
 
     }
 
-    public Executor(Builder builder) {
-        this.type = builder.type;
-        this.context = builder.context;
+    public Executor(Context<T> context) {
+        this.context = context;
     }
 
     public Payment<T> prepare() {
@@ -83,15 +106,21 @@ public abstract class Executor<T extends PGPayment> {
 
     }
 
-    public static abstract class Builder<T extends PGPayment> {
-        protected Type type;
-        protected Context<T> context;
+    public Command.Type nextTransition(Command.Type currentStep) {
 
-        public Builder(Context context) {
-            this.context = context;
-        }
+        return Command.Type.DONE;
+    }
 
-        public abstract Executor<T> build();
+    public Context<T> getContext() {
+        return context;
+    }
+
+    /**
+     * Throws Exception if the responseCode is not OK state.
+     * @param responseCode
+     * @throws RuntimeException
+     */
+    public void handleResponseCode(String responseCode) {
 
     }
 

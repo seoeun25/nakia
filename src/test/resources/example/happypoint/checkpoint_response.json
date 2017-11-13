@@ -1,0 +1,31 @@
+// happypoint 에 포인트 조회 response json
+{
+  "rcgnKey": "dd50084c773c417f0b75bf1be857e5ddf9582f7ab8480b38e282938a757bbfe7",
+  "instCd": "ORJN",
+  "tlgmNo": "5001",
+  "tlgmChnlCd": "X0",
+  "trsDt": "20171113",
+  "trsTm": "121021",
+  "tracNo": "ORJN20171113121021",
+  "tlgmClCd": "ON",
+  "rpsCd": "00",
+  "rpsMsgCtt": "정상",
+  "reqClCd": "10",
+  "reqBrndCd": "C083",
+  "reqChnlCd": "20",
+  "rpsDtlCd": "5000",
+  "rpsDtlMsg": "포인트조회 정상처리되었습니다.",
+  "mbrAuthMthdCd": "20",
+  "mbrNo": "1005831805",
+  "remPt": "00000009733",
+  "mbrIdfWayCd": "20",
+  "mchtNo": "100015851",
+  "ptResvPossYn": "Y",
+  "ptUsePossYn": "Y",
+  "ptUsePwdAplyYn": "Y",
+  "ptConvPossYn": "Y",
+  "usblPt": "00000009730",
+  "trxClCd": "20",
+  "trxRsnCd": "2001"
+}
+

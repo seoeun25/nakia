@@ -144,12 +144,12 @@ public abstract class Command<T extends PGPayment> {
      */
     public Payment<T> processNextStep() {
         Command.Type next = executor.nextTransition(commandType);
-        logger.info("nextStep = {}", next);
         if (Type.DONE == next) {
+            logger.info("DONE {}", getClass().getSimpleName());
             return payment;
         } else {
             Context<T> nextStepContext = context.withPayment(context.getPayment());
-            logger.info("nextStepContext = {} ", nextStepContext.printPretty());
+            logger.info("nextStep = {}, context = {} ", next, nextStepContext.printPretty());
             Command nextCommand = beanFactory.getBean(next.getCommandClass(), nextStepContext);
             Payment<T> nextResult = nextCommand.execute();
             return nextResult;

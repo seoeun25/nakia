@@ -4,7 +4,7 @@ package com.lezhin.avengers.panther.exception;
  * @author seoeun
  * @since 2017.10.24
  */
-public class ExecutorException extends PantherException{
+public class ExecutorException extends PantherException {
 
     public ExecutorException(String message) {
         super(message);

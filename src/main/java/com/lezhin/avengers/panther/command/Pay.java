@@ -57,7 +57,8 @@ public class Pay<T extends PGPayment> extends Command<T> {
     public Payment execute() {
         initExecutor();
 
-        logger.info("start pay. {}", context.printPretty());
+        logger.info("{} start {}", commandType.name(), context.printPretty());
+
         try {
             executor.pay();
         } catch (PantherException e) {
@@ -65,36 +66,40 @@ public class Pay<T extends PGPayment> extends Command<T> {
         } finally {
             payment = executor.getContext().getPayment();
         }
-        logger.info("pay. executed = {}", JsonUtil.toJson(payment));
         context = context.withPayment(payment);
         context = context.withResponse(executor.getContext().getResponseInfo());
-        logger.info("pay. executed = {}", context.getResponseInfo().toString());
+        logger.info("{} executor[{}] done. {}, {}", commandType.name(), executor.getClass().getSimpleName(),
+                context.getResponseInfo().toString());
+        logger.debug("payment = {}", JsonUtil.toJson(payment));
 
         try {
             // execution이 성공이든 실패이든 internalPayment call.
             payment = internalPaymentService.pay(context);
             context = context.withPayment(payment);
-            logger.info("internalPayment. pay. {}", JsonUtil.toJson(payment));
         } catch (Throwable e) {
             if (context.executionSucceed()) {
                 // execution이 성공하고 internalPayment.paymentVerified 가 실패했다면,
                 // purchase가 만들어 지지 않음. pg 취소
-                logger.error("pg.pay succeed, but internalPayment.payVerfied failed. cancel pg pay");
+                logger.error("{} pg.pay succeed, but internalPayment.paymentVerified failed.\n" +
+                        " === This payment going to CANCEL to {}. paymentId = {}", commandType.name(),
+                        executor.getClass().getSimpleName(), payment.getPaymentId());
 
                 // FIXME 환불
 
-                // response는 panther.
+                // response는 panther. // FIXME special ERROR CODE?
                 context = context.withResponse(
                         new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
 
             } else {
                 // execution이 fail되었다면 internalPayment의 update가 fail 되어도 그냥 둔다.
                 // response는 pg.errorCode
-                logger.error("pg.pay failed and internalPayment.paymentUnverified failed");
+                logger.error("{} pg.pay failed and internalPayment.paymentUnverified failed", commandType.name());
             }
-            logger.warn("responseCode = {}", JsonUtil.toJson(context.getResponseInfo()));
-            executor.handleResponseCode(context.getResponseInfo().getCode());
+            logger.info("{} internal.error {} ", commandType.name(), context.getResponseInfo().toString());
         }
+
+        logger.info("{} execute {} ", commandType.name(), context.getResponseInfo().toString());
+        executor.handleResponseCode(context.getResponseInfo().getCode());
 
         return processNextStep();
     }
