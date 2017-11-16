@@ -2,15 +2,22 @@ package com.lezhin.avengers.panther.util;
 
 import com.lezhin.beans.entity.common.LezhinLocale;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Map;
 
 /**
  * @author seoeun
@@ -75,5 +82,19 @@ public class Util {
             throw new RuntimeException("Unknown locale = " + locale);
         }
 
+    }
+
+    public static String loadVersion() {
+        Resource resource = new ClassPathResource("/version.txt");
+
+        try {
+            String result = CharStreams.toString(new InputStreamReader(resource.getInputStream(), Charsets.UTF_8));
+            logger.info("result = {}", result);
+
+            return result;
+        } catch (IOException e) {
+            logger.warn("Failed to read version.txt", e);
+        }
+        return null;
     }
 }
