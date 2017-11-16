@@ -5,6 +5,8 @@ import com.lezhin.avengers.panther.command.Command;
 import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.RequestInfo;
 import com.lezhin.avengers.panther.model.ResponseInfo;
+import com.lezhin.avengers.panther.util.DateUtil;
+import com.lezhin.avengers.panther.util.Util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,22 @@ public class PantherController {
 
 
         ResponseInfo responseInfo = new ResponseInfo("hello", "panther");
+        return responseInfo;
+
+    }
+
+    @RequestMapping(value = "/version", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseInfo date(HttpServletRequest request, HttpServletResponse response) {
+
+        logger.info("version");
+
+        DateUtil.printDate();
+
+        // TODO version 정보를 version.txt 에서 읽지 말고, artifact의 verion 정보를 읽도록.
+        String version = Optional.ofNullable(Util.loadVersion()).orElse("NULL");
+
+        ResponseInfo responseInfo = new ResponseInfo("version", version);
         return responseInfo;
 
     }

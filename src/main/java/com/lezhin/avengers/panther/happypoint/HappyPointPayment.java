@@ -10,6 +10,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -478,9 +479,9 @@ public class HappyPointPayment extends PGPayment {
         public HappyPointPayment createRequest() {
             HappyPointPayment happyPointPayment = new HappyPointPayment();
             happyPointPayment.setTlgmNo(tlgmNo);
-            long current = System.currentTimeMillis();
-            happyPointPayment.setTrsDt(DateUtil.getDateString(current));
-            happyPointPayment.setTrsTm(DateUtil.getTimeString(current));
+            Instant now = Instant.now();
+            happyPointPayment.setTrsDt(DateUtil.getDateString(now.toEpochMilli()));
+            happyPointPayment.setTrsTm(DateUtil.getTimeString(now.toEpochMilli()));
             happyPointPayment.setReqClCd(reqClCd);
             return happyPointPayment;
         }
