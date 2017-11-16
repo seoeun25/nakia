@@ -68,7 +68,7 @@ public class Pay<T extends PGPayment> extends Command<T> {
         }
         context = context.withPayment(payment);
         context = context.withResponse(executor.getContext().getResponseInfo());
-        logger.info("{} executor[{}] done. {}, {}", commandType.name(), executor.getClass().getSimpleName(),
+        logger.info("{} executor[{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
                 context.getResponseInfo().toString());
         logger.debug("payment = {}", JsonUtil.toJson(payment));
 
@@ -77,6 +77,8 @@ public class Pay<T extends PGPayment> extends Command<T> {
             payment = internalPaymentService.pay(context);
             context = context.withPayment(payment);
         } catch (Throwable e) {
+            logger.info("status = {}", context.getResponseInfo());
+            logger.warn("Failed to internal.pay", e);
             if (context.executionSucceed()) {
                 // execution이 성공하고 internalPayment.paymentVerified 가 실패했다면,
                 // purchase가 만들어 지지 않음. pg 취소

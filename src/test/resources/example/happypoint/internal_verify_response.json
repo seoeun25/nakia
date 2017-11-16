@@ -1,0 +1,37 @@
+{
+  "paymentId": 1510821170096415,
+  "userId": 6066665726148608,
+  "userEmail": "azrael@lezhin.com",
+  "coinProductId": 5619328507707392,
+  "coinProductName": "happypoint - 5",
+  "coin": 5,
+  "amount": 1000.0,
+  "currency": "KRW",
+  "pgCompany": "happypoint",
+  "paymentType": "mhappypoint",
+  "store": "plus",
+  "storeVersion": "1.1",
+  "locale": "ko-KR",
+  "state": "C",
+  "approvalId": "110002274112",
+  "createdAt": 1510821170097,
+  "confirmedAt": 1510821172563,
+  "timestamps": {
+    "paymentCompleteAt": 1510821170938,
+    "verifiedAt": 1510821172538,
+    "confirmedAt": 1510821172563
+  },
+  "meta": {
+    "manual": 0,
+    "webReceiptData": "{\"mbrNo\":\"1005831805\",\"aprvNo\":\"110002274112\",\"rpsMsgCtt\":\"정상\",\"aprvDt\":\"20171116\",\"tracNo\":\"ORJN20171116173251\",\"useReqPt\":\"00000001000\",\"rpsCd\":\"00\",\"usePt\":\"00000001000\",\"trxAmt\":\"0000000001000\"}",
+    "ip": "211.192.194.243",
+    "country": "KR"
+  },
+  "cohortData": {
+    "joinYear": "2017",
+    "joinMonth": "11",
+    "joinWeek": 3,
+    "joinDate": "Y:2017;Q:4;M:11;WY:2017;WM:11;WD:12;D:15;H:14"
+  },
+  "manual": false
+}

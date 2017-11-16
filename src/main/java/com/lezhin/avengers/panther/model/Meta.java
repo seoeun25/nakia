@@ -36,7 +36,9 @@ public class Meta implements Serializable {
     private String unverified;
     private String rollback;
     private String approvalId;
+    /** internalPayment에서 receipt 을 받아다가 webReceiptData 으로 datastore에 저장(naver, kakao등은 또 다른 이름으로 */
     private String receipt;
+    private String webReceiptData;
     private Map<String, String> receiptMap;
     private String meta;
     private Map<String, String> metaMap;
@@ -137,6 +139,14 @@ public class Meta implements Serializable {
 
     public void setReceipt(String receipt) {
         this.receipt = receipt;
+    }
+
+    public String getWebReceiptData() {
+        return webReceiptData;
+    }
+
+    public void setWebReceiptData(String webReceiptData) {
+        this.webReceiptData = webReceiptData;
     }
 
     public String getMeta() {

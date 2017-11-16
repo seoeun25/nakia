@@ -147,7 +147,7 @@ public class RequestInfo {
                 requestMap.entrySet().stream().forEach(e ->
                         System.out.println("requestBody : " + e.getKey() + " = " + e.getValue()));
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new ParameterException("Failed to read requestBody");
             }
 
             Optional.ofNullable(request).orElseThrow(() ->

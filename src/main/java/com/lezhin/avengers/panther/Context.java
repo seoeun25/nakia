@@ -49,7 +49,7 @@ public class Context<T extends PGPayment> {
     public boolean executionSucceed() {
         boolean executionSucceed = true;
         if (getRequestInfo().getExecutorType() == Executor.Type.HAPPYPOINT) {
-            executionSucceed = getResponseInfo().getCode().equals(ErrorCode.SPC_OK);
+            executionSucceed = getResponseInfo().getCode().equals(ErrorCode.SPC_OK.getCode());
         }
         return executionSucceed;
     }

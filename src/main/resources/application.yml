@@ -99,8 +99,8 @@ spring:
     port: 6379
     database: 0
 lezhin:
-  webUrl: https://mirror-www.lezhin.com
-  apiUrl: https://lezhincomix-novel.appspot.com/api/v2/internal/payments
+  webUrl: https://a-www.lezhin.com
+  apiUrl: https://lezhincomix-alpha.appspot.com/api/v2/internal/payments
   pantherUrl: https://localhost
   actuator:
     security:

@@ -8,6 +8,8 @@ import com.lezhin.avengers.panther.util.JsonUtil;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
@@ -33,6 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ActiveProfiles(profiles = "test")
 public class HappyPointExecutorTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(HappyPointExecutorTest.class);
 
     @Autowired
     private HappyPointExecutor executor;
@@ -90,14 +94,14 @@ public class HappyPointExecutorTest {
         assertNotNull(resource.getInputStream());
 
         System.out.println("length = " + resource.getURI());
-        // TODO
-        //Payment<HappyPointPayment> payment = JsonUtil.fromJsonToPayment(resource.getInputStream(), HappyPointPayment
-        //        .class);
-        //assertNotNull(payment);
-        //System.out.println(JsonUtil.toJson(payment));
+        Payment<HappyPointPayment> payment = JsonUtil.fromJsonToPayment(resource.getInputStream(), HappyPointPayment
+                .class);
+        assertNotNull(payment);
+        System.out.println(JsonUtil.toJson(payment));
 
-        //Map<String,String> receipt = payment.getPgPayment().createReceipt();
-        //receipt.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + " = " + entry.getValue()));
+        Map<String,String> receipt = payment.getPgPayment().createReceipt();
+        receipt.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + " = " + entry.getValue()));
+
     }
 
     @Test
@@ -112,4 +116,26 @@ public class HappyPointExecutorTest {
         System.out.println(JsonUtil.toJson(payment));
 
     }
+
+    /**
+     * InternalPayment 에서 verified 되고 complete 되어서 purchase 가 만들어 졌을 때 받는 json 테스트
+     * @throws Exception
+     */
+    @Test
+    public void testInteranlPaymentVerified() throws Exception {
+        Resource resource = new ClassPathResource("/example/happypoint/internal_verify_response.json");
+        assertNotNull(resource.getInputStream());
+
+        System.out.println("length = " + resource.getURI());
+        Payment<HappyPointPayment> payment = JsonUtil.fromJsonToPayment(resource.getInputStream(), HappyPointPayment
+                .class);
+        assertNotNull(payment);
+        System.out.println(JsonUtil.toJson(payment));
+
+        // receipt으로 internal로 갔지만 가서 webReceiptData 로 저장. 리턴 json 도 webReceiptData.
+        String webReceiptData = payment.getMeta().getWebReceiptData();
+        logger.info("webReceiptData = {}", webReceiptData);
+
+    }
+
 }

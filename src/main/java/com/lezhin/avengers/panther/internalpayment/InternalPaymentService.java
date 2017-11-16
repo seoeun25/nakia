@@ -97,7 +97,9 @@ public class InternalPaymentService {
         // receipt 은 map을 json으로
         String receipt = JsonUtil.toJson(receiptMap);
         // Internal Datastore meta. String properties must be 1500 bytes or less.
-        logger.info("receipt length = {}", receipt.length());
+        if (receipt.length() > 1400) {
+            logger.info("receipt length = {}", receipt.length());
+        }
         if (executionSucceed) {
             // do nothing
         } else {
@@ -156,7 +158,9 @@ public class InternalPaymentService {
         // receipt 은 map을 json으로
         String receipt = JsonUtil.toJson(receiptMap);
         // Internal Datastore meta. String properties must be 1500 bytes or less.
-        logger.info("receipt length = {}", receipt.length());
+        if (receipt.length() > 1400) {
+            logger.info("receipt length = {}", receipt.length());
+        }
         if (executionSucceed) {
             meta.setReceipt(receipt);
         } else {
