@@ -23,7 +23,7 @@ public class PGPayment implements Serializable {
         this.approvalId = approvalId;
     }
 
-    public Map<String, String> createReceipt() {
+    public Map<String, Object> createReceipt() {
         return new HashMap<>();
     }
 }

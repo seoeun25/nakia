@@ -7,7 +7,6 @@ import com.lezhin.avengers.panther.command.Command;
 import com.lezhin.avengers.panther.exception.HappyPointParamException;
 import com.lezhin.avengers.panther.exception.HappyPointSystemException;
 import com.lezhin.avengers.panther.exception.PantherException;
-import com.lezhin.avengers.panther.exception.ParameterException;
 import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.executor.Executor;
 import com.lezhin.avengers.panther.model.Certification;
@@ -65,15 +64,15 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         Payment<HappyPointPayment> payment = context.getPayment();
         HappyPointPayment requestPayment = Util.merge(payment.getPgPayment(),
                 HappyPointPayment.API.pointcheck.createRequest(), HappyPointPayment.class);
-        logger.info("requestPayment. merged = {}", JsonUtil.toJson(requestPayment));
-        if (requestPayment.getTracNo() ==  null) {
+        logger.info("requestPayment. merged = \n{}", JsonUtil.toJson(requestPayment));
+        if (requestPayment.getTracNo() == null) {
             requestPayment.setTracNo(createTraceNo(payment));
         }
         requestPayment.setMchtNo(lezhinProperties.getHappypoint().getMchtNo());
         requestPayment = clearResponseField(requestPayment);
         payment.setPgPayment(requestPayment);
 
-        logger.info("send for checkPoint. {}", JsonUtil.toJson(requestPayment));
+        logger.info("send for checkPoint. \n{}", JsonUtil.toJson(requestPayment));
 
         // 포인트 조회
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
@@ -81,8 +80,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(lezhinProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("CHECK POINT response from happypoint: {} = {}, \n{}", response.getRpsCd(),
-                response.getRpsMsgCtt(),
+        logger.info("CHECK POINT response from happypoint: {} = {} \n{}", response.getRpsCd(),
+                response.getRpsDtlMsg(),
                 JsonUtil.toJson(response));
 
         payment.setPgPayment(response);
@@ -99,6 +98,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
     /**
      * Happypoint의 prepare 단계는 point 조회.(회원 인증 후)
+     *
      * @return
      * @throws HappyPointParamException
      * @throws HappyPointSystemException
@@ -126,7 +126,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         requestPayment.setMbrIdfNo(ci);
         payment.setPgPayment(requestPayment);
 
-        logger.info("send for auth. {}", JsonUtil.toJson(requestPayment));
+        logger.info("send for auth. \n{}", JsonUtil.toJson(requestPayment));
 
         // 회원인증
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
@@ -134,8 +134,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(lezhinProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("PREPARE.(auth) response from happypoint: {} = {}, \n{}", response.getRpsCd(),
-                response.getRpsMsgCtt(),
+        logger.info("PREPARE.(auth) response from happypoint: {} = {} \n{}", response.getRpsCd(),
+                response.getRpsDtlMsg(),
                 JsonUtil.toJson(response));
 
         payment.setPgPayment(response);
@@ -155,14 +155,12 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     }
 
     public Payment<HappyPointPayment> reserve() {
-        if (context.getPayment().getPgPayment().getMbrNo() == null) {
-            throw new PreconditionException("mbrNo can not be bull");
-        }
-        if (context.getPayment().getPgPayment().getMbrNm() == null) {
-            throw new PreconditionException("mbrNm can not be bull");
+        if (context.getPayment().getPgPayment().getMbrNo() == null ||
+                context.getPayment().getPgPayment().getMbrNo().equals("")) {
+            throw new PreconditionException("mbrNo can not be null nor empty");
         }
         if (context.getPayment().getPgPayment().getUseReqPt() == null) {
-            throw new PreconditionException("useReqPt can not be bull");
+            throw new PreconditionException("useReqPt can not be null");
         }
 
         // do nothing
@@ -173,7 +171,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
     public Payment<HappyPointPayment> authenticate() {
         if (context.getPayment().getPgPayment().getUseReqPt() == null) {
-            throw new PreconditionException("useReqPt can not be bull");
+            throw new PreconditionException("useReqPt can not be null");
         }
 
         // do nothing. response ok
@@ -185,21 +183,21 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     public Payment<HappyPointPayment> pay() {
 
         Payment<HappyPointPayment> payment = context.getPayment();
-        logger.debug("base payment = {}", JsonUtil.toJson(payment.getPgPayment()));
+        logger.debug("base payment = \n{}", JsonUtil.toJson(payment.getPgPayment()));
         HappyPointPayment requestPayment = Util.merge(payment.getPgPayment(),
                 HappyPointPayment.API.pointuse.createRequest(), HappyPointPayment.class);
         payment.setPgPayment(requestPayment);
-        logger.debug("merged payment = {}", JsonUtil.toJson(requestPayment));
+        logger.debug("merged payment = \n{}", JsonUtil.toJson(requestPayment));
         requestPayment.setTracNo(createTraceNo(payment));
         requestPayment.setTrxTypCd(HappyPointPayment.trxTypCd_USE);
         requestPayment.setMchtNo(lezhinProperties.getHappypoint().getMchtNo());
         requestPayment.setTrxDt(requestPayment.getTrsDt()); // 전송일자를 거래일자로 셋팅
         requestPayment.setTrxTm(requestPayment.getTrsTm()); // 전송시간을 거래시간으로 셋팅
-        requestPayment.setTrxAmt(payment.getAmount().toString()); // FIXME int 로 변환??
+        requestPayment.setTrxAmt(Long.valueOf(String.valueOf(payment.getAmount().intValue()))); // FIXME int 로 변환??
         requestPayment = clearResponseField(requestPayment);
         payment.setPgPayment(requestPayment);
 
-        logger.info("PAY. send = {}", JsonUtil.toJson(requestPayment));
+        logger.info("PAY. send. = \n{}", JsonUtil.toJson(requestPayment));
 
         // 포인트 사용
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
@@ -207,7 +205,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(lezhinProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("PAY. response from happypoint: {} = {}, \n{}", response.getRpsCd(), response.getRpsMsgCtt(),
+        logger.info("PAY. response from happypoint: {} = {}, \n{}", response.getRpsCd(), response.getRpsDtlMsg(),
                 JsonUtil.toJson(response));
 
         payment.setPgPayment(response);
@@ -257,11 +255,12 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
     /**
      * Throws Exception if happypoint execution failed.
+     *
      * @param responseCode
      * @throws HappyPointParamException
      * @throws HappyPointSystemException
      */
-    public void handleResponseCode(String responseCode) throws HappyPointParamException, HappyPointSystemException{
+    public void handleResponseCode(String responseCode) throws HappyPointParamException, HappyPointSystemException {
         if (ErrorCode.SPC_DENY_44.getCode().equals(responseCode)
                 || ErrorCode.SPC_DENY_77.getCode().equals(responseCode)
                 || ErrorCode.SPC_DENY_88.getCode().equals(responseCode)) {

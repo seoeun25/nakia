@@ -2,8 +2,6 @@ package com.lezhin.avengers.panther.command;
 
 import com.lezhin.avengers.panther.Context;
 import com.lezhin.avengers.panther.ErrorCode;
-import com.lezhin.avengers.panther.exception.ExecutorException;
-import com.lezhin.avengers.panther.exception.HappyPointSystemException;
 import com.lezhin.avengers.panther.exception.InternalPaymentException;
 import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.model.PGPayment;
@@ -17,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 /**
  * @author seoeun
@@ -62,7 +58,7 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
         payment = executor.authenticate();
         context = context.withPayment(payment);
         context = context.withResponse(executor.getContext().getResponseInfo());
-        logger.info("{} executor[{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
+        logger.info("{} [{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
                 context.getResponseInfo().toString());
         logger.debug("payment = {}", JsonUtil.toJson(payment));
         executor.handleResponseCode(context.getResponseInfo().getCode());
@@ -77,7 +73,7 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
             throw new InternalPaymentException(e);
         }
 
-        logger.info("{} execute {} ", commandType.name(), context.getResponseInfo().toString());
+        logger.info("{} complete. {} ", commandType.name(), context.getResponseInfo().toString());
 
         return processNextStep();
     }

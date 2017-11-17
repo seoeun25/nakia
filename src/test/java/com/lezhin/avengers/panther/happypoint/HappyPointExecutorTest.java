@@ -18,9 +18,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.FileInputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,19 +57,20 @@ public class HappyPointExecutorTest {
     public void testUserIdPaymentIdFromContext() {
 
         MockHttpServletRequest request1 = new MockHttpServletRequest();
-        request1.setContent("{\"_lz_userId\": \"10101\"}".getBytes());
+        request1.setContent("{\"_lz_userId\": 10101}".getBytes());
+        request1.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
         RequestInfo requestInfo = new RequestInfo.Builder(request1, "happypoint").build();
 
         Context context = new Context.Builder(requestInfo, requestInfo.getPayment()).build();
 
-        String paymentId = context.getPaymentId();
-        String userId = context.getUserId();
+        Long paymentId = context.getPaymentId();
+        Long userId = context.getUserId();
 
         System.out.println(paymentId);
         System.out.println(userId);
 
-        assertEquals("-1", paymentId);
-        assertEquals("10101", userId);
+        assertEquals(-1L, paymentId.longValue());
+        assertEquals(10101L, userId.longValue());
 
     }
 
@@ -99,7 +97,7 @@ public class HappyPointExecutorTest {
         assertNotNull(payment);
         System.out.println(JsonUtil.toJson(payment));
 
-        Map<String,String> receipt = payment.getPgPayment().createReceipt();
+        Map<String, Object> receipt = payment.getPgPayment().createReceipt();
         receipt.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + " = " + entry.getValue()));
 
     }
@@ -119,6 +117,7 @@ public class HappyPointExecutorTest {
 
     /**
      * InternalPayment 에서 verified 되고 complete 되어서 purchase 가 만들어 졌을 때 받는 json 테스트
+     *
      * @throws Exception
      */
     @Test

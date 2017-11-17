@@ -38,12 +38,12 @@ public class Context<T extends PGPayment> {
         return responseInfo;
     }
 
-    public String getPaymentId() {
-        return Optional.ofNullable(payment.getPaymentId()).orElse(-1L).toString();
+    public Long getPaymentId() {
+        return Optional.ofNullable(payment.getPaymentId()).orElse(-1L);
     }
 
-    public String getUserId() {
-        return Optional.ofNullable(payment.getUserId()).orElse(-1L).toString();
+    public Long getUserId() {
+        return Optional.ofNullable(payment.getUserId()).orElse(-1L);
     }
 
     public boolean executionSucceed() {
@@ -60,6 +60,15 @@ public class Context<T extends PGPayment> {
 
     public Context<T> withResponse(ResponseInfo response) {
         return new Context.Builder(requestInfo, payment, response).build();
+    }
+
+    public String printPretty() {
+        return MoreObjects.toStringHelper(this)
+                .add("type", requestInfo.getExecutorType())
+                .add("request.user", requestInfo.getUserId())
+                .add("payment.user", getUserId())
+                .add("paymert.id", getPaymentId())
+                .toString();
     }
 
     public static class Builder<T extends PGPayment> {
@@ -83,14 +92,5 @@ public class Context<T extends PGPayment> {
             Context context = new Context(this);
             return context;
         }
-    }
-
-    public String printPretty() {
-        return MoreObjects.toStringHelper(this)
-                .add("type", requestInfo.getExecutorType())
-                .add("request.user", requestInfo.getUserId())
-                .add("payment.user", getUserId())
-                .add("paymert.id", getPaymentId())
-                .toString();
     }
 }

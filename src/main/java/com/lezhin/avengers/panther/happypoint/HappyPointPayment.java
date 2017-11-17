@@ -7,7 +7,6 @@ import com.lezhin.avengers.panther.util.DateUtil;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
@@ -54,7 +53,7 @@ public class HappyPointPayment extends PGPayment {
     private String cardStCd; //카드상태코드
     private String mbrGrCd; // 회원등급코드
     private String mbrGrCdNm; // 회원등급코드명
-    private String remPt; // 잔여포인트
+    private Integer remPt; // 잔여포인트
     // 포인트 조회
     private String mbrIdfWayCd = "20"; // 회원식별방식코드 10:카드번호, 20:회원번호
     //private String mbrNo; // 회원번호
@@ -64,7 +63,7 @@ public class HappyPointPayment extends PGPayment {
     private String ptUsePwdAplyYn; // 포인트사용비밀번호적용
     private String ptConvPossYn; // 포인트전환가능여부
     //private String remPt; // 잔여포인트
-    private String usblPt; // 가용포인트
+    private Integer usblPt; // 가용포인트
     // 포인트 사용/취소
     //private String mbrIdfWayCd = "20"; // 회원식별방식코드
     //private String mbrNo; // 회원번호
@@ -74,12 +73,12 @@ public class HappyPointPayment extends PGPayment {
     private String trxClCd = "20"; // 거래구분코드 20:포인트사용
     private String trxTypCd; // 거래유형코드 10:사용, 20:사용취소
     private String trxRsnCd = "2001"; // 거래사유코드 2001:대금결제
-    private String trxAmt; // 거래금액
+    private Long trxAmt; // 거래금액
     //-------
-    private String useReqPt; // 사용요청포인트
+    private Integer useReqPt; // 사용요청포인트
     private String aprvDt; // 승인일자
     private String aprvNo; // 승인번호
-    private String usePt; // 사용포인트
+    private Integer usePt; // 사용포인트
 
     public HappyPointPayment() {
 
@@ -262,11 +261,11 @@ public class HappyPointPayment extends PGPayment {
         this.mbrGrCdNm = mbrGrCdNm;
     }
 
-    public String getRemPt() {
+    public Integer getRemPt() {
         return remPt;
     }
 
-    public void setRemPt(String remPt) {
+    public void setRemPt(Integer remPt) {
         this.remPt = remPt;
     }
 
@@ -318,11 +317,11 @@ public class HappyPointPayment extends PGPayment {
         this.ptConvPossYn = ptConvPossYn;
     }
 
-    public String getUsblPt() {
+    public Integer getUsblPt() {
         return usblPt;
     }
 
-    public void setUsblPt(String usblPt) {
+    public void setUsblPt(Integer usblPt) {
         this.usblPt = usblPt;
     }
 
@@ -366,19 +365,19 @@ public class HappyPointPayment extends PGPayment {
         this.trxRsnCd = trxRsnCd;
     }
 
-    public String getTrxAmt() {
+    public Long getTrxAmt() {
         return trxAmt;
     }
 
-    public void setTrxAmt(String trxAmt) {
+    public void setTrxAmt(Long trxAmt) {
         this.trxAmt = trxAmt;
     }
 
-    public String getUseReqPt() {
+    public Integer getUseReqPt() {
         return useReqPt;
     }
 
-    public void setUseReqPt(String useReqPt) {
+    public void setUseReqPt(Integer useReqPt) {
         this.useReqPt = useReqPt;
     }
 
@@ -398,11 +397,11 @@ public class HappyPointPayment extends PGPayment {
         this.aprvNo = aprvNo;
     }
 
-    public String getUsePt() {
+    public Integer getUsePt() {
         return usePt;
     }
 
-    public void setUsePt(String usePt) {
+    public void setUsePt(Integer usePt) {
         this.usePt = usePt;
     }
 
@@ -426,8 +425,8 @@ public class HappyPointPayment extends PGPayment {
                 .toString();
     }
 
-    public Map<String, String> createReceipt() {
-        Map<String , String> receipt = new HashMap<>();
+    public Map<String, Object> createReceipt() {
+        Map<String, Object> receipt = new HashMap<>();
         receipt.put("tracNo", tracNo);
         receipt.put("mbrNo", mbrNo); // 회원번호
         receipt.put("rpsCd", rpsCd);  // 응답코드
@@ -453,8 +452,7 @@ public class HappyPointPayment extends PGPayment {
         private String reqClCd;
 
         /**
-         *
-         * @param tlgmNo 전문번호
+         * @param tlgmNo  전문번호
          * @param reqClCd 요청구분 코드
          */
         API(String tlgmNo, String reqClCd) {

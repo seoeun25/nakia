@@ -48,7 +48,6 @@ public class InternalPaymentService {
         String url = lezhinProperties.getApiUrl() + "/reserve";
         logger.info("RESERVE. call to {}", url);
 
-        logger.info("token = {}", context.getRequestInfo().getToken());
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("Authorization", "Bearer " + context.getRequestInfo().getToken());
@@ -58,7 +57,7 @@ public class InternalPaymentService {
         payment.setPgPayment(null); // internal에 없는 모델 제외. TODO annotation
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpEntity<Payment> request = new HttpEntity<>(payment, headers);
-        logger.info("RESERVE. send : {}", JsonUtil.toJson(payment));
+        logger.info("RESERVE. send : \n{}", JsonUtil.toJson(payment));
         Result<Payment<T>> response = restTemplate.postForObject(url, request, Result.class);
 
         logger.info("RESERVE internal.reserve response code = {}, {} ", response.getCode(), response.getDescription());
@@ -85,7 +84,6 @@ public class InternalPaymentService {
         }
         logger.info("AUTHENTICATE. call to {}", url);
 
-        logger.info("token = {}", context.getRequestInfo().getToken());
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("Authorization", "Bearer " + context.getRequestInfo().getToken());
@@ -93,7 +91,7 @@ public class InternalPaymentService {
         Payment payment = context.getPayment();
         T pgPayment = (T) payment.getPgPayment();
         Meta meta = payment.getMeta();
-        Map<String, String> receiptMap = context.getPayment().getPgPayment().createReceipt();
+        Map<String, Object> receiptMap = context.getPayment().getPgPayment().createReceipt();
         // receipt 은 map을 json으로
         String receipt = JsonUtil.toJson(receiptMap);
         // Internal Datastore meta. String properties must be 1500 bytes or less.
@@ -103,13 +101,12 @@ public class InternalPaymentService {
         if (executionSucceed) {
             // do nothing
         } else {
-            // FIXME fail 일 때 어떤 타입을 줘야 하나.
             meta.setMeta(receipt);
         }
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpEntity<Meta> request = new HttpEntity<>(meta, headers);
-        logger.info("AUTHENTICATE send : {}", JsonUtil.toJson(meta));
+        logger.info("AUTHENTICATE send : \n{}", JsonUtil.toJson(meta));
 
         HttpEntity<Result> response = restTemplate.exchange(url, HttpMethod.PUT, request, Result.class);
 
@@ -118,7 +115,7 @@ public class InternalPaymentService {
 
         Result data = response.getBody();
         String jsonData = JsonUtil.toJson(data.getData());
-        logger.info("jsonData = {}", jsonData);
+        logger.info("jsonData :: \n{}", jsonData);
         //response.getBody();
         if (data.getData() != null) {
             Payment<T> responsePayment = convert(jsonData, (Class<T>) context.getPayment().getPgPayment().getClass(),
@@ -154,7 +151,7 @@ public class InternalPaymentService {
         T pgPayment = payment.getPgPayment();
         Meta meta = payment.getMeta();
         meta.setApprovalId(pgPayment.getApprovalId());
-        Map<String, String> receiptMap = context.getPayment().getPgPayment().createReceipt();
+        Map<String, Object> receiptMap = context.getPayment().getPgPayment().createReceipt();
         // receipt 은 map을 json으로
         String receipt = JsonUtil.toJson(receiptMap);
         // Internal Datastore meta. String properties must be 1500 bytes or less.
@@ -170,7 +167,7 @@ public class InternalPaymentService {
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpEntity<Meta> request = new HttpEntity<>(meta, headers);
-        logger.info("PAY. send : {}", JsonUtil.toJson(meta));
+        logger.info("PAY. send : \n{}", JsonUtil.toJson(meta));
 
         HttpEntity<Result> response = restTemplate.exchange(url, HttpMethod.PUT, request, Result.class);
         logger.info("PAY. internal.pay response code = {}, {} ", response.getBody().getCode(),
@@ -178,14 +175,11 @@ public class InternalPaymentService {
 
         Result data = response.getBody();
         String jsonData = JsonUtil.toJson(response.getBody().getData());
-        logger.info("jsonData = {}", jsonData);
+        logger.info("jsonData :: \n{}", jsonData);
         //response.getBody();
         if (data.getData() != null) {
-            Payment<T> responsePayment = JsonUtil.fromJsonToPayment(jsonData,
-                    (Class<T>) context.getPayment().getPgPayment().getClass());
-            logger.info("responsePayment = {}", JsonUtil.toJson(responsePayment));
-            responsePayment.setPgPayment(pgPayment);
-            responsePayment.setExternalStoreProductId(payment.getExternalStoreProductId());
+            Payment<T> responsePayment = convert(jsonData, (Class<T>) context.getPayment().getPgPayment().getClass(),
+                    pgPayment, payment.getExternalStoreProductId());
             return responsePayment;
         }
 
@@ -196,7 +190,8 @@ public class InternalPaymentService {
     public <T extends PGPayment> Payment<T> convert(String jsonData, Class<T> pgPaymentClass, T pgPayment, String
             externalStoreProductId) {
         Payment<T> responsePayment = JsonUtil.fromJsonToPayment(jsonData, pgPaymentClass);
-        logger.info("responsePayment = {}", JsonUtil.toJson(responsePayment));
+        logger.info("responsePayment = {} \n{}", responsePayment.getPaymentId(),
+                JsonUtil.toJson(responsePayment));
         responsePayment.setPgPayment(pgPayment);
         responsePayment.setExternalStoreProductId(externalStoreProductId);
         return responsePayment;

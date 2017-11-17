@@ -36,14 +36,16 @@ public class Meta implements Serializable {
     private String unverified;
     private String rollback;
     private String approvalId;
-    /** internalPayment에서 receipt 을 받아다가 webReceiptData 으로 datastore에 저장(naver, kakao등은 또 다른 이름으로 */
+    /**
+     * internalPayment에서 receipt 을 받아다가 webReceiptData 으로 datastore에 저장(naver, kakao등은 또 다른 이름으로
+     */
     private String receipt;
     private String webReceiptData;
     private Map<String, String> receiptMap;
     private String meta;
     private Map<String, String> metaMap;
 
-    private String dynamicAmount = "0";
+    private Integer dynamicAmount = 0;
 
     public String getIp() {
         return ip;
@@ -109,11 +111,11 @@ public class Meta implements Serializable {
         this.approvalId = approvalId;
     }
 
-    public String getDynamicAmount() {
+    public Integer getDynamicAmount() {
         return dynamicAmount;
     }
 
-    public void setDynamicAmount(String dynamicAmount) {
+    public void setDynamicAmount(Integer dynamicAmount) {
         this.dynamicAmount = dynamicAmount;
     }
 
@@ -129,7 +131,7 @@ public class Meta implements Serializable {
         return metaMap;
     }
 
-    public void setMetaMap(Map<String,String> metaMap) {
+    public void setMetaMap(Map<String, String> metaMap) {
         this.metaMap = metaMap;
     }
 

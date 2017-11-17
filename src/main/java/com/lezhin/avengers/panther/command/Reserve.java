@@ -47,17 +47,17 @@ public class Reserve<T extends PGPayment> extends Command<T> {
     public void verifyPrecondition() throws PreconditionException {
         // InternalPaymentService reserve 에 필요한 property set. check.
         payment.setLocale(Util.of(requestInfo.getLocale()));
-        if (payment.getStore() == null) {
-            throw new PreconditionException("store can not be bull");
+        if (payment.getStore() == null || payment.getStore().equals("")) {
+            throw new PreconditionException("store can not be null nor empty");
         }
-        if (payment.getStoreVersion() == null) {
-            throw new PreconditionException("storeVersion can not be bull");
+        if (payment.getStoreVersion() == null || payment.getStoreVersion().equals("")) {
+            throw new PreconditionException("storeVersion can not be null nor empty");
         }
-        if (payment.getPgCompany() == null) {
-            throw new PreconditionException("pgCompany can not be bull");
+        if (payment.getPgCompany() == null || payment.getPgCompany().equals("")) {
+            throw new PreconditionException("pgCompany can not be null nor empty");
         }
         if (payment.getPaymentType() == null) {
-            throw new PreconditionException("paymentType can not be bull");
+            throw new PreconditionException("paymentType can not be null");
         }
     }
 
@@ -70,7 +70,7 @@ public class Reserve<T extends PGPayment> extends Command<T> {
         payment = executor.reserve();
         context = context.withPayment(payment);
         context = context.withResponse(executor.getContext().getResponseInfo());
-        logger.info("{} executor[{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
+        logger.info("{} [{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
                 context.getResponseInfo().toString());
         logger.debug("payment = {}", JsonUtil.toJson(payment));
         executor.handleResponseCode(context.getResponseInfo().getCode());
@@ -85,12 +85,11 @@ public class Reserve<T extends PGPayment> extends Command<T> {
             throw new InternalPaymentException(e);
         }
 
-        logger.info("{} execute {} ", commandType.name(), context.getResponseInfo().toString());
+        logger.info("{} complete. {} ", commandType.name(), context.getResponseInfo().toString());
 
         return processNextStep();
 
     }
-
 
 
 }

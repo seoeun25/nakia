@@ -2,8 +2,6 @@ package com.lezhin.avengers.panther.command;
 
 import com.lezhin.avengers.panther.Context;
 import com.lezhin.avengers.panther.ErrorCode;
-import com.lezhin.avengers.panther.exception.ExecutorException;
-import com.lezhin.avengers.panther.exception.InternalPaymentException;
 import com.lezhin.avengers.panther.exception.PantherException;
 import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.model.PGPayment;
@@ -17,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 /**
  * @author seoeun
@@ -68,9 +64,9 @@ public class Pay<T extends PGPayment> extends Command<T> {
         }
         context = context.withPayment(payment);
         context = context.withResponse(executor.getContext().getResponseInfo());
-        logger.info("{} executor[{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
+        logger.info("{} [{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
                 context.getResponseInfo().toString());
-        logger.debug("payment = {}", JsonUtil.toJson(payment));
+        logger.debug("payment = {}, \n{}", payment.getPaymentId(), JsonUtil.toJson(payment));
 
         try {
             // execution이 성공이든 실패이든 internalPayment call.
@@ -82,8 +78,8 @@ public class Pay<T extends PGPayment> extends Command<T> {
             if (context.executionSucceed()) {
                 // execution이 성공하고 internalPayment.paymentVerified 가 실패했다면,
                 // purchase가 만들어 지지 않음. pg 취소
-                logger.error("{} pg.pay succeed, but internalPayment.paymentVerified failed.\n" +
-                        " === This payment going to CANCEL to {}. paymentId = {}", commandType.name(),
+                logger.error("{} !!! pg.pay succeed, but internalPayment.paymentVerified failed.\n" +
+                                " === This payment going to CANCEL to {}. paymentId = {}", commandType.name(),
                         executor.getClass().getSimpleName(), payment.getPaymentId());
 
                 // FIXME 환불
@@ -95,12 +91,12 @@ public class Pay<T extends PGPayment> extends Command<T> {
             } else {
                 // execution이 fail되었다면 internalPayment의 update가 fail 되어도 그냥 둔다.
                 // response는 pg.errorCode
-                logger.error("{} pg.pay failed and internalPayment.paymentUnverified failed", commandType.name());
+                logger.error("{} !!! pg.pay failed and internalPayment.paymentUnverified failed", commandType.name());
             }
             logger.info("{} internal.error {} ", commandType.name(), context.getResponseInfo().toString());
         }
 
-        logger.info("{} execute {} ", commandType.name(), context.getResponseInfo().toString());
+        logger.info("{} complete. {} ", commandType.name(), context.getResponseInfo().toString());
         executor.handleResponseCode(context.getResponseInfo().getCode());
 
         return processNextStep();

@@ -35,11 +35,11 @@ public class UtilTest {
         HappyPointPayment basePayment = new HappyPointPayment();
         basePayment.setMbrNo("meta_mbrNo_XXX");
         basePayment.setMbrNm("meta_mbrNm_YYY");
-        basePayment.setUseReqPt("meta_useReqPt_ZZZ");
+        basePayment.setUseReqPt(1000);
         logger.info("request vo = {}", JsonUtil.toJson(basePayment));
         assertEquals("meta_mbrNo_XXX", basePayment.getMbrNo());
         assertEquals("meta_mbrNm_YYY", basePayment.getMbrNm());
-        assertEquals("meta_useReqPt_ZZZ", basePayment.getUseReqPt());
+        assertEquals(1000, basePayment.getUseReqPt().intValue());
 
         assertNull(basePayment.getMbrIdfNo());
 
@@ -57,7 +57,7 @@ public class UtilTest {
 
         HappyPointPayment merge = Util.merge(basePayment, updatePayment, HappyPointPayment.class);
         assertEquals("meta_mbrNo_XXX", merge.getMbrNo()); // from basePayment
-        assertEquals("meta_useReqPt_ZZZ", merge.getUseReqPt()); // from basePayment
+        assertEquals(1000, merge.getUseReqPt().intValue()); // from basePayment
         assertEquals("REDIS_X_NAME", merge.getMbrNm()); // overwritten from authentication
         assertEquals("REDIS_X_CI", merge.getMbrIdfNo()); // from authentication
 
@@ -65,34 +65,14 @@ public class UtilTest {
 
     @Test
     public void testJson() {
-        List<Map<String,String>> a = new ArrayList();
+        List<Map<String, String>> a = new ArrayList();
 
-        Map<String, String> product1= new HashMap<>();
-        product1.put("coin","5");
+        Map<String, String> product1 = new HashMap<>();
+        product1.put("coin", "5");
         product1.put("price", "1000");
         a.add(product1);
 
         System.out.println(JsonUtil.toJson(a));
     }
 
-    public static class TestObj {
-        private String price;
-        private String coin;
-
-        public String getPrice() {
-            return price;
-        }
-
-        public void setPrice(String price) {
-            this.price = price;
-        }
-
-        public String getCoin() {
-            return coin;
-        }
-
-        public void setCoin(String coin) {
-            this.coin = coin;
-        }
-    }
 }

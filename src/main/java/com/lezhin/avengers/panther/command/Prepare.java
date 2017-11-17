@@ -5,7 +5,6 @@ import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.model.PGPayment;
 import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.RequestInfo;
-import com.lezhin.avengers.panther.util.JsonUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +43,10 @@ public class Prepare<T extends PGPayment> extends Command<T> {
     @Override
     public Payment<T> execute() throws PreconditionException, ExecutorException {
         initExecutor();
-        logger.info("{} start. {}", commandType.name(),  context.printPretty());
+        logger.info("{} start. {}", commandType.name(), context.printPretty());
         Payment<T> payment = executor.prepare();
         context = context.withResponse(executor.getContext().getResponseInfo());
-        logger.info("{} executed. = {}", commandType.name(), JsonUtil.toJson(payment));
+        logger.info("{} complete. {}", commandType.name(), context.getResponseInfo().toString());
 
         return payment;
     }
