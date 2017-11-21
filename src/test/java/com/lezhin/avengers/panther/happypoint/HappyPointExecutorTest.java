@@ -75,18 +75,6 @@ public class HappyPointExecutorTest {
     }
 
     @Test
-    public void test() {
-        Certification certification = new Certification();
-        certification.setBirthday("19980101");
-        certification.setName("홍길동");
-        certification.setCI("CI_ZZZZZ_XXXX");
-        certification.setDI("DI_XXXXXXXXXXX");
-        certification.setGender("M");
-
-        System.out.println(JsonUtil.toJson(certification));
-    }
-
-    @Test
     public void testCreateReceipt() throws Exception {
         Resource resource = new ClassPathResource("/example/happypoint/internal_payment_fail_request.json");
         assertNotNull(resource.getInputStream());

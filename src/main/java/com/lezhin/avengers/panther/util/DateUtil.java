@@ -3,10 +3,13 @@ package com.lezhin.avengers.panther.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.text.DateFormatter;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -66,16 +69,20 @@ public class DateUtil {
     /**
      * Return the Instant corresponding {@code dateString} and {@code zoneId}
      *
-     * @param dateString "2017-11-16 23:10:11"
+     * @param dateTimeStr "2017-11-16 23:10:11"
      * @param pattern    "yyyy-MM-dd HH:mm:ss"
      * @param zoneId     ASIA_SEOUL_ZONE = ZoneId.of("Asia/Seoul")
      * @return
      */
-    public static Instant toInstant(String dateString, String pattern, ZoneId zoneId) {
+    public static Instant toInstant(String dateTimeStr, String pattern, ZoneId zoneId) {
 
-        LocalDateTime localDateTime = LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern(pattern));
+        LocalDateTime localDateTime = LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern(pattern));
         ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
         return zonedDateTime.toInstant();
+    }
+
+    public static Instant toInstantFromDate(String dateStr, String pattern, ZoneId zoneId) {
+        return toInstant(dateStr + " 00:00:00", pattern + " HH:mm:ss", zoneId);
     }
 
     public static void printDate() {
@@ -100,6 +107,9 @@ public class DateUtil {
                 "yyyyMMdd HH:mm:ss"));
         logger.info("utc   time = {}", DateUtil.format(now.toEpochMilli(), DateUtil.UTC_ZONE,
                 "yyyyMMdd HH:mm:ss"));
+
+        logger.info("UTC zonedDateTime = {}", ZonedDateTime.now(ZoneOffset.UTC).toInstant().toEpochMilli());
+        logger.info("SEOUL zonedDateTime = {}", ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toInstant().toEpochMilli());
 
     }
 

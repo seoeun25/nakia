@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ## build. create docker image and push to docker repo(docker.lezhin.com)
-help="./build_locasl.sh <version>"
+help="./build_local.sh <version>"
 
 VERSION=$1
 if [ "$VERSION" == "--help" ]

@@ -50,9 +50,6 @@ public class Reserve<T extends PGPayment> extends Command<T> {
         if (payment.getStore() == null || payment.getStore().equals("")) {
             throw new PreconditionException("store can not be null nor empty");
         }
-        if (payment.getStoreVersion() == null || payment.getStoreVersion().equals("")) {
-            throw new PreconditionException("storeVersion can not be null nor empty");
-        }
         if (payment.getPgCompany() == null || payment.getPgCompany().equals("")) {
             throw new PreconditionException("pgCompany can not be null nor empty");
         }

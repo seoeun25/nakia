@@ -15,7 +15,7 @@ import java.io.Serializable;
 public class ResponseInfo implements Serializable {
 
     private String code;
-    private String message;
+    private String description;
 
     public ResponseInfo() {
 
@@ -23,26 +23,26 @@ public class ResponseInfo implements Serializable {
 
     public ResponseInfo(ErrorCode errorCode) {
         this.code = errorCode.getCode();
-        this.message = errorCode.getMessage();
+        this.description = errorCode.getMessage();
     }
 
-    public ResponseInfo(String code, String message) {
+    public ResponseInfo(String code, String description) {
         this.code = code;
-        this.message = message;
+        this.description = description;
     }
 
     public String getCode() {
         return code;
     }
 
-    public String getMessage() {
-        return message;
+    public String getDescription() {
+        return description;
     }
 
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("code", code)
-                .add("message", message)
+                .add("description", description)
                 .toString();
     }
 }

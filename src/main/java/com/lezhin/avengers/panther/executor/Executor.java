@@ -102,8 +102,8 @@ public abstract class Executor<T extends PGPayment> {
         return context.getPayment();
     }
 
-    public void complete() {
-
+    public Payment<T> complete() {
+        return  context.getPayment();
     }
 
     public Command.Type nextTransition(Command.Type currentStep) {

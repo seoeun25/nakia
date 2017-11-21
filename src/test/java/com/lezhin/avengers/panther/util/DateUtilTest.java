@@ -1,5 +1,7 @@
 package com.lezhin.avengers.panther.util;
 
+import com.lezhin.avengers.panther.happypoint.HappyPointPayment;
+
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,14 @@ public class DateUtilTest {
         // utc timezone
         assertEquals(dateStr + " " + utcTimeStr,
                 DateUtil.format(instance.toEpochMilli(), DateUtil.UTC_ZONE, "yyyyMMdd HHmmss"));
+    }
+
+    @Test
+    public void testToInstant() {
+        String trxDt = "20171114";
+        Instant trxInstant = DateUtil.toInstantFromDate(trxDt, "yyyyMMdd", DateUtil.ASIA_SEOUL_ZONE);
+        String ym = DateUtil.format(trxInstant.toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM");
+        assertEquals("201711", ym);
     }
 
     @Test

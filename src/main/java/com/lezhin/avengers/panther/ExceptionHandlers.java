@@ -1,5 +1,6 @@
 package com.lezhin.avengers.panther;
 
+import com.lezhin.avengers.panther.exception.ExceedException;
 import com.lezhin.avengers.panther.exception.ExecutorException;
 import com.lezhin.avengers.panther.exception.HappyPointParamException;
 import com.lezhin.avengers.panther.exception.HappyPointSystemException;
@@ -55,6 +56,14 @@ public class ExceptionHandlers {
         return new ErrorInfo(ErrorCode.LEZHIN_PRECONDITION.getCode(), e.getMessage());
     }
 
+    @ExceptionHandler(ExceedException.class)
+    @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
+    @ResponseBody
+    public ErrorInfo handleExceedException(final ExceedException e) {
+        logger.error("ExceedException", e);
+        return new ErrorInfo(ErrorCode.LEZHIN_EXCEED.getCode(), e.getMessage());
+    }
+
     @ExceptionHandler(ExecutorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
@@ -81,11 +90,11 @@ public class ExceptionHandlers {
 
     public static class ErrorInfo {
         private String code;
-        private String message;
+        private String description; // FRONT에서 description 사용. 고치면 안됨.
 
-        public ErrorInfo(String code, String message) {
+        public ErrorInfo(String code, String description) {
             this.code = code;
-            this.message = message;
+            this.description = description;
         }
 
         public String getCode() {
@@ -96,12 +105,12 @@ public class ExceptionHandlers {
             this.code = code;
         }
 
-        public String getMessage() {
-            return message;
+        public String getDescription() {
+            return description;
         }
 
-        public void setMessage(String message) {
-            this.message = message;
+        public void setDescription(String description) {
+            this.description = description;
         }
     }
 }

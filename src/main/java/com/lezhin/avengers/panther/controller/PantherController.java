@@ -1,5 +1,8 @@
 package com.lezhin.avengers.panther.controller;
 
+import com.lezhin.avengers.panther.CertificationService;
+import com.lezhin.avengers.panther.ErrorCode;
+import com.lezhin.avengers.panther.model.Certification;
 import com.lezhin.avengers.panther.model.ResponseInfo;
 import com.lezhin.avengers.panther.util.DateUtil;
 import com.lezhin.avengers.panther.util.Util;
@@ -7,12 +10,14 @@ import com.lezhin.avengers.panther.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -27,8 +32,10 @@ public class PantherController {
 
     private static final Logger logger = LoggerFactory.getLogger(PantherController.class);
 
-    public PantherController() {
+    private final CertificationService certificationService;
 
+    public PantherController(CertificationService certificationService) {
+        this.certificationService = certificationService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -57,6 +64,35 @@ public class PantherController {
         ResponseInfo responseInfo = new ResponseInfo("version", version);
         return responseInfo;
 
+    }
+
+    /**
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "/cache", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseInfo check(HttpServletRequest request, HttpServletResponse response,
+                              @RequestBody Map<String, Object> map) {
+
+        Object key = map.get("key");
+        Boolean delete = Boolean.valueOf(Optional.ofNullable(map.get("delete")).orElse("false").toString());
+        if (key != null) {
+            try {
+                Object value = certificationService.get(key.toString());
+                logger.info("key = {}, value = {}", key, value);
+
+                if (delete) {
+                    logger.info("deleted = {}", certificationService.delete(key.toString()));
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to get cache value", e);
+            }
+        }
+
+        return new ResponseInfo(ErrorCode.LEZHIN_OK.getCode(), ErrorCode.LEZHIN_OK.getMessage());
     }
 
 }

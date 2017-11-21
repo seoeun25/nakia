@@ -21,7 +21,8 @@ public enum ErrorCode {
     LEZHIN_EXECUTION("1003", "Execution Error"),
     LEZHIN_PANTHER("1004", "Panther Error"),
     LEZHIN_INTERNAL_PAYMNENT("1005", "InternalPayment Error"),
-    LEZHIN_THROWABLE("1006", "Unexpected Error"),;
+    LEZHIN_EXCEED("1007", "Exceed throttle"),
+    LEZHIN_THROWABLE("9001", "Unexpected Error");
 
     private String code;
     private String message;

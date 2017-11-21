@@ -52,11 +52,11 @@ public class CertifcationController {
         // FIXME only for debugging. Need to Remove
         try{
             Thread.sleep(100);
+            Certification result = certificationService.getCertification(certification.getUserId());
+            logger.info("saved = {}", result.toString());
         } catch (Exception e) {
 
         }
-        Certification result = certificationService.getCertification(certification.getUserId());
-        logger.info("saved = {}", result);
 
         return new ResponseInfo(ErrorCode.LEZHIN_OK.getCode(), ErrorCode.LEZHIN_OK.getMessage());
 

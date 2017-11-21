@@ -53,8 +53,8 @@ public class DummyExecutor extends Executor<DummyPayment> {
         return  context.getPayment();
     }
 
-    public void complete() {
-
+    public Payment complete() {
+        return  context.getPayment();
     }
 
 }

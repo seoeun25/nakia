@@ -163,6 +163,9 @@ public class RequestInfo {
                     .orElse(Optional.ofNullable(request.getAttribute("Authorization")).map(Object::toString)
                             .orElse(Optional.ofNullable(WebUtils.getCookie(request, "_lz")).map(Cookie::getValue)
                                     .orElse(null)));
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(token.indexOf("Bearer ") + 7);
+            }
             if (token == null) {
                 token = request.getParameter("_lz");
             }

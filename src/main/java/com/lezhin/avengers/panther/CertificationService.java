@@ -1,35 +1,38 @@
 package com.lezhin.avengers.panther;
 
 import com.lezhin.avengers.panther.model.Certification;
+import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.avengers.panther.redis.RedisService;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author seoeun
  * @since 2017.11.10
  */
 @Service
-@Slf4j
 public class CertificationService {
 
-    @Autowired
-    private RedisService redisService;
+    private static final Logger logger = LoggerFactory.getLogger(CertificationService.class);
 
-    public CertificationService() {
+    private final RedisService redisService;
 
+    public CertificationService(RedisService redisService) {
+        this.redisService = redisService;
     }
 
     public void saveCertification(Certification certification) {
         String key = String.format("user:%s", certification.getUserId());
-        //String value = String.format("%s_%s", certification.getName(), certification.getCI());
-        redisService.setValue(key, certification);
+        redisService.setValue(key, certification, 10, TimeUnit.MINUTES);
     }
 
     /**
-     * return String[name, CI]
+     * return {@code Certification}
+     *
      * @param userId
      * @return
      */
@@ -37,6 +40,32 @@ public class CertificationService {
         String key = String.format("user:%s", userId);
         Certification value = (Certification) redisService.getValue(key);
         return value;
+    }
+
+    public void addPaymentResult(final HappypointAggregator info) {
+        String key = String.format("happypoint:%s:mbrNo:%s", info.getYm(), info.getMbrNo());
+
+        HappypointAggregator value = getPaymentResult(info.getMbrNo(), info.getYm());
+        if (value != null) {
+            info.setPointSum(value.getPointSum() + info.getPointSum());
+        }
+        logger.info("addHappypointAggregator = {}", info.toString());
+        redisService.setValue(key, info, 31, TimeUnit.DAYS);
+    }
+
+    public HappypointAggregator getPaymentResult(final String mbrNo, String ym) {
+        String key = String.format("happypoint:%s:mbrNo:%s", ym, mbrNo);
+
+        HappypointAggregator value = (HappypointAggregator) redisService.getValue(key);
+        return value;
+    }
+
+    public Object get(final String key) {
+        return redisService.getValue(key);
+    }
+
+    public Boolean delete(final String key) {
+        return redisService.deleteValue(key);
     }
 
 }

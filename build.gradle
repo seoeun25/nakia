@@ -73,6 +73,7 @@ dependencies {
 	compileOnly('org.projectlombok:lombok')
 	runtime('org.springframework.boot:spring-boot-devtools')
 	testCompile('com.h2database:h2')
+	testCompile('it.ozimov:embedded-redis:0.7.1')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 
 	// JUnit Jupiter API and TestEngine implementation

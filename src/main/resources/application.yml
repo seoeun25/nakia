@@ -17,7 +17,7 @@ spring:
     database: ${lezhin.panther.redis.database}
 lezhin:
   webUrl: https://beta-www.lezhin.com
-  apiUrl: https://beta-www.lezhin.com/api/v2/internal/payments
+  apiUrl: https://beta-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://beta-panther.lezhin.com
   happypoint:
     hpcUrl: http://dev-proxy.lezhin.net/spc/processHpc
@@ -34,7 +34,7 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://www.lezhin.com
-  apiUrl: https://www.lezhin.com/api/v2/internal/payments
+  apiUrl: https://mirror-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://panther.lezhin.com
   happypoint:
     hpcUrl: xxx
@@ -59,7 +59,7 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://q-www.lezhin.com
-  apiUrl: https://q-www.lezhin.com/api/v2/internal/payments
+  apiUrl: https://q-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://qa-panther.lezhin.com
 ---
 spring:
@@ -70,7 +70,7 @@ spring:
     show-sql: true
 lezhin:
   webUrl: https://beta-www.lezhin.com
-  apiUrl: https://beta-www.lezhin.com/api/v2/internal/payments
+  apiUrl: https://beta-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://beta-panther.lezhin.com
 ---
 spring:
@@ -126,6 +126,6 @@ spring:
       database: 0
 lezhin:
   webUrl: https://t-www.lezhin.com
-  apiUrl: https://t-www.lezhin.com/api/v2/internal/payments
+  apiUrl: https://t-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://localhost
 

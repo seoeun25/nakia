@@ -4,14 +4,17 @@ import com.lezhin.avengers.panther.CertificationService;
 import com.lezhin.avengers.panther.Context;
 import com.lezhin.avengers.panther.ErrorCode;
 import com.lezhin.avengers.panther.command.Command;
+import com.lezhin.avengers.panther.exception.ExceedException;
 import com.lezhin.avengers.panther.exception.HappyPointParamException;
 import com.lezhin.avengers.panther.exception.HappyPointSystemException;
 import com.lezhin.avengers.panther.exception.PantherException;
 import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.executor.Executor;
 import com.lezhin.avengers.panther.model.Certification;
+import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.ResponseInfo;
+import com.lezhin.avengers.panther.util.DateUtil;
 import com.lezhin.avengers.panther.util.JsonUtil;
 import com.lezhin.avengers.panther.util.Util;
 
@@ -26,6 +29,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,9 +44,15 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
     private static final Logger logger = LoggerFactory.getLogger(HappyPointExecutor.class);
 
+    /**
+     * 3000point/mbrNo/month
+     */
+    public static final Integer POINT_LIMITATION = new Integer(3000);
+
     private Map<Command.Type, Command.Type> transitionMap = ImmutableMap.of(
             Command.Type.RESERVE, Command.Type.AUTHENTICATE,
-            Command.Type.AUTHENTICATE, Command.Type.PAY);
+            Command.Type.AUTHENTICATE, Command.Type.PAY,
+            Command.Type.PAY, Command.Type.COMPLETE);
 
     @Autowired
     private CertificationService cacheService;
@@ -162,6 +172,14 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         if (context.getPayment().getPgPayment().getUseReqPt() == null) {
             throw new PreconditionException("useReqPt can not be null");
         }
+        // 3000point/mbrNo/month
+        HappypointAggregator aggregator = cacheService.getPaymentResult(context.getPayment().getPgPayment().getMbrNo(),
+                DateUtil.format(Instant.now().toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM"));
+        if (aggregator !=null &&
+                aggregator.getPointSum().intValue() + context.getPayment().getPgPayment().getUseReqPt().intValue() >
+                POINT_LIMITATION.intValue()) {
+            throw new ExceedException("Exceed 3000 point/ month");
+        }
 
         // do nothing
         Payment<HappyPointPayment> payment = context.getPayment();
@@ -219,8 +237,20 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         return payment;
     }
 
-    public void complete() {
+    public Payment<HappyPointPayment> complete() {
+        if (context.getResponseInfo().getCode().equals(ErrorCode.SPC_OK.getCode())) {
+            // on Success
+            HappyPointPayment happyPointPayment = context.getPayment().getPgPayment();
+            String trxDt = happyPointPayment.getTrxDt();
+            String mbrNo = happyPointPayment.getMbrNo();
+            Instant trxInstant = DateUtil.toInstantFromDate(trxDt, "yyyyMMdd", DateUtil.ASIA_SEOUL_ZONE);
+            String ym = DateUtil.format(trxInstant.toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM");
 
+            HappypointAggregator aggregator = new HappypointAggregator(mbrNo, ym,
+                    happyPointPayment.getUsePt());
+            cacheService.addPaymentResult(aggregator);
+        }
+        return context.getPayment();
     }
 
     public String createTraceNo(Payment<HappyPointPayment> payment) {
@@ -265,19 +295,19 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
                 || ErrorCode.SPC_DENY_77.getCode().equals(responseCode)
                 || ErrorCode.SPC_DENY_88.getCode().equals(responseCode)) {
             throw new HappyPointParamException(context.getResponseInfo().getCode(),
-                    context.getResponseInfo().getMessage());
+                    context.getResponseInfo().getDescription());
         }
         if (ErrorCode.SPC_ERROR_22.getCode().equals(responseCode)
                 || ErrorCode.SPC_ERROR_80.getCode().equals(responseCode)
                 || ErrorCode.SPC_ERROR_92.getCode().equals(responseCode)
                 || ErrorCode.SPC_ERROR_99.getCode().equals(responseCode)) {
             throw new HappyPointSystemException(context.getResponseInfo().getCode(),
-                    context.getResponseInfo().getMessage());
+                    context.getResponseInfo().getDescription());
         }
         // FXIME response code 에 17 있음. 문서에 정의 되지 않은 errorCode 임.
         if (!responseCode.equals(ErrorCode.SPC_OK.getCode())) {
             throw new HappyPointSystemException(context.getResponseInfo().getCode(),
-                    context.getResponseInfo().getMessage());
+                    context.getResponseInfo().getDescription());
         }
     }
 

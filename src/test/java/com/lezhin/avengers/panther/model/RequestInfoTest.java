@@ -150,6 +150,14 @@ public class RequestInfoTest {
         request1.setAttribute("Authorization", "2ea0f867-ad9c-4ad7-b024-0b8c258f853b");
         assertEquals("1ea0f867-ad9c-4ad7-b024-0b8c258f853a", new RequestInfo.Builder(request1, "happypoint").build().getToken());
 
+        request1 = createHttpServletRequest();
+        request1.setContent("{\"_lz_userId\": 10101}".getBytes());
+        request1.addHeader("Authorization", "Bearer 3ea0f867-ad9c-4ad7-b024-0b8c258f853a");
+        request1.setAttribute("Authorization", "2ea0f867-ad9c-4ad7-b024-0b8c258f853b");
+        assertEquals("3ea0f867-ad9c-4ad7-b024-0b8c258f853a", new RequestInfo.Builder(request1, "happypoint").build()
+                .getToken());
+
+
         // token from attribute
         request1 = createHttpServletRequest();
         request1.setContent("{\"_lz_userId\": 10101}".getBytes());
