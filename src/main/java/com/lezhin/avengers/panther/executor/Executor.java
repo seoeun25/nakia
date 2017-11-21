@@ -106,6 +106,10 @@ public abstract class Executor<T extends PGPayment> {
         return  context.getPayment();
     }
 
+    public Payment refund() {
+        return  context.getPayment();
+    }
+
     public Command.Type nextTransition(Command.Type currentStep) {
 
         return Command.Type.DONE;

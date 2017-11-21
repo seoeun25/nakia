@@ -79,6 +79,8 @@ public class HappyPointPayment extends PGPayment {
     private String aprvDt; // 승인일자
     private String aprvNo; // 승인번호
     private Integer usePt; // 사용포인트
+    private String orglTrxAprvDt; // 원거래승인일자
+    private String orglTrxAprvNo; // 원거래승인번호
 
     public HappyPointPayment() {
 
@@ -407,6 +409,22 @@ public class HappyPointPayment extends PGPayment {
 
     public String getApprovalId() {
         return this.aprvNo;
+    }
+
+    public String getOrglTrxAprvDt() {
+        return orglTrxAprvDt;
+    }
+
+    public void setOrglTrxAprvDt(String orglTrxAprvDt) {
+        this.orglTrxAprvDt = orglTrxAprvDt;
+    }
+
+    public String getOrglTrxAprvNo() {
+        return orglTrxAprvNo;
+    }
+
+    public void setOrglTrxAprvNo(String orglTrxAprvNo) {
+        this.orglTrxAprvNo = orglTrxAprvNo;
     }
 
     public String printCommonRequest() {

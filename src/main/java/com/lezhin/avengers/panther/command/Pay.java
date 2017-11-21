@@ -79,12 +79,13 @@ public class Pay<T extends PGPayment> extends Command<T> {
                 // execution이 성공하고 internalPayment.paymentVerified 가 실패했다면,
                 // purchase가 만들어 지지 않음. pg 취소
                 logger.error("{} !!! pg.pay succeed, but internalPayment.paymentVerified failed.\n" +
-                                " === This payment going to CANCEL to {}. paymentId = {}", commandType.name(),
+                                " === This payment is going to REFUND to {}. paymentId = {}", commandType.name(),
                         executor.getClass().getSimpleName(), payment.getPaymentId());
 
-                // FIXME 환불
+                // 환불
+                executor.refund();
 
-                // response는 panther. // FIXME special ERROR CODE?
+                // response는 panther.
                 context = context.withResponse(
                         new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
 

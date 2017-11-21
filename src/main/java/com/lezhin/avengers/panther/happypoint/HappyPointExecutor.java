@@ -211,7 +211,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         requestPayment.setMchtNo(lezhinProperties.getHappypoint().getMchtNo());
         requestPayment.setTrxDt(requestPayment.getTrsDt()); // 전송일자를 거래일자로 셋팅
         requestPayment.setTrxTm(requestPayment.getTrsTm()); // 전송시간을 거래시간으로 셋팅
-        requestPayment.setTrxAmt(Long.valueOf(String.valueOf(payment.getAmount().intValue()))); // FIXME int 로 변환??
+        requestPayment.setTrxAmt(Long.valueOf(String.valueOf(payment.getAmount().intValue())));
         requestPayment = clearResponseField(requestPayment);
         payment.setPgPayment(requestPayment);
 
@@ -253,6 +253,48 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         return context.getPayment();
     }
 
+    public Payment refund() {
+
+        Payment<HappyPointPayment> payment = context.getPayment();
+        String orglTrxAprvDt = payment.getPgPayment().getTrxDt();
+        String orglTrxAprvNo = payment.getPgPayment().getAprvNo();
+        logger.info("REFUND. orglTrxAprvNo = {}, orglTrxAprvDt = {}", orglTrxAprvNo, orglTrxAprvDt);
+        HappyPointPayment requestPayment = Util.merge(payment.getPgPayment(),
+                HappyPointPayment.API.pointuse.createRequest(), HappyPointPayment.class);
+        payment.setPgPayment(requestPayment);
+        requestPayment.setTracNo(createTraceNo(payment));
+        requestPayment.setTrxTypCd(HappyPointPayment.trxTypCd_CANCEL);
+        requestPayment.setMchtNo(lezhinProperties.getHappypoint().getMchtNo());
+        requestPayment.setTrxDt(requestPayment.getTrsDt()); // 전송일자를 거래일자로 셋팅
+        requestPayment.setTrxTm(requestPayment.getTrsTm()); // 전송시간을 거래시간으로 셋팅
+        requestPayment.setTrxAmt(Long.valueOf(String.valueOf(payment.getAmount().intValue())));
+        requestPayment.setOrglTrxAprvDt(orglTrxAprvDt);
+        requestPayment.setOrglTrxAprvNo(orglTrxAprvNo);
+        requestPayment = clearResponseField(requestPayment);
+        payment.setPgPayment(requestPayment);
+
+        logger.info("REFUND. send. = \n{}", JsonUtil.toJson(requestPayment));
+
+        // 포인트 취소
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+
+        HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
+        HappyPointPayment response = restTemplate.postForObject(lezhinProperties.getHappypoint().getHpcUrl(),
+                request, HappyPointPayment.class);
+        logger.info("REFUND. response from happypoint: {} = {}, \n{}", response.getRpsCd(), response.getRpsDtlMsg(),
+                JsonUtil.toJson(response));
+
+        payment.setPgPayment(response);
+
+        context = context.withPayment(payment);
+        context = context.withResponse(new ResponseInfo(payment.getPgPayment().getRpsCd(),
+                payment.getPgPayment().getRpsDtlMsg()));
+
+        handleResponseCode(context.getResponseInfo().getCode());
+
+        return payment;
+    }
+
     public String createTraceNo(Payment<HappyPointPayment> payment) {
         return createTraceNo(payment.getPgPayment().getInstCd(), payment.getPgPayment().getTrsDt(),
                 payment.getPgPayment().getTrsTm(), payment.getUserId(), payment.getPaymentId());
@@ -266,7 +308,6 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
      */
     public String createTraceNo(String instCd, String date, String time, Long userId, Long paymentId) {
         String traceNo = String.format("%s%s%s", instCd, date, time);
-        logger.info("createTraceNo. u={}, p={}, traceNo={}", userId, paymentId, traceNo);
         return traceNo;
     }
 
@@ -304,7 +345,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
             throw new HappyPointSystemException(context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
-        // FXIME response code 에 17 있음. 문서에 정의 되지 않은 errorCode 임.
+        // 문서에 정의 되지 않은 response code가 올 수도 있음.
         if (!responseCode.equals(ErrorCode.SPC_OK.getCode())) {
             throw new HappyPointSystemException(context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
