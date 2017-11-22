@@ -37,8 +37,8 @@ lezhin:
   apiUrl: https://mirror-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://panther.lezhin.com
   happypoint:
-    hpcUrl: xxx
-    mchtNo: xxx
+        hpcUrl: http://outbound-proxy.lezhin.net/spc/processHpc
+        mchtNo: 100031405
 ---
 spring:
   profiles: staging
@@ -50,6 +50,9 @@ lezhin:
   webUrl: https://mirror-www.lezhin.com
   apiUrl: https://mirror-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://staging-panther.lezhin.com
+  happypoint:
+        hpcUrl: http://outbound-proxy.lezhin.net/spc/processHpc
+        mchtNo: 100031405
 ---
 spring:
   profiles: qa
