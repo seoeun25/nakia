@@ -48,13 +48,13 @@ public class Reserve<T extends PGPayment> extends Command<T> {
         // InternalPaymentService reserve 에 필요한 property set. check.
         payment.setLocale(Util.of(requestInfo.getLocale()));
         if (payment.getStore() == null || payment.getStore().equals("")) {
-            throw new PreconditionException("store can not be null nor empty");
+            throw new PreconditionException(requestInfo.getExecutorType(), "store can not be null nor empty");
         }
         if (payment.getPgCompany() == null || payment.getPgCompany().equals("")) {
-            throw new PreconditionException("pgCompany can not be null nor empty");
+            throw new PreconditionException(requestInfo.getExecutorType(), "pgCompany can not be null nor empty");
         }
         if (payment.getPaymentType() == null) {
-            throw new PreconditionException("paymentType can not be null");
+            throw new PreconditionException(requestInfo.getExecutorType(), "paymentType can not be null");
         }
     }
 
@@ -79,7 +79,7 @@ public class Reserve<T extends PGPayment> extends Command<T> {
             context = context.withResponse(
                     new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
             logger.warn("Failed to InternalPayment.reserve");
-            throw new InternalPaymentException(e);
+            throw new InternalPaymentException(requestInfo.getExecutorType(), e);
         }
 
         logger.info("{} complete. {} ", commandType.name(), context.getResponseInfo().toString());

@@ -132,6 +132,16 @@ public class RequestInfo {
 
         public Builder(HttpServletRequest request, String pg) {
 
+            withPg(pg);
+            // TODO executor setting을 뭐 좀 다른 방법으로.
+            if ("happypoint".equals(pg)) {
+                withExecutor(Executor.Type.HAPPYPOINT);
+            } else if ("dummy".equals(pg)) {
+                withExecutor(Executor.Type.DUMMY);
+            } else {
+                throw new ParameterException(Executor.Type.DUMMY, "Unknown PG = " + pg);
+            }
+
             Map<String, Object> requestMap = new HashMap<>();
 
             try {
@@ -139,11 +149,11 @@ public class RequestInfo {
                 logger.info("requestBody = {}", result);
                 requestMap = JsonUtil.fromJson(result, Map.class);
             } catch (IOException e) {
-                throw new ParameterException("Failed to read requestBody");
+                throw new ParameterException(executorType, "Failed to read requestBody");
             }
 
             Optional.ofNullable(request).orElseThrow(() ->
-                    new ParameterException("HttpServletRequest can not be null"));
+                    new ParameterException(executorType, "HttpServletRequest can not be null"));
 
             // Header 에서 다음 순서로 extract.
             String ip = Optional.ofNullable(request.getHeader("Forwarded")).map(Object::toString)
@@ -169,24 +179,14 @@ public class RequestInfo {
             if (token == null) {
                 token = request.getParameter("_lz");
             }
-            Optional.ofNullable(token).orElseThrow(() -> new ParameterException("token can not be null"));
+            Optional.ofNullable(token).orElseThrow(() -> new ParameterException(executorType, "token can not be null"));
             withToken(token);
-
-            withPg(pg);
-            // TODO executor setting을 뭐 좀 다른 방법으로.
-            if ("happypoint".equals(pg)) {
-                withExecutor(Executor.Type.HAPPYPOINT);
-            } else if ("dummy".equals(pg)) {
-                withExecutor(Executor.Type.DUMMY);
-            } else {
-                throw new ParameterException("Unknown PG = " + pg);
-            }
 
             withLocale(Optional.ofNullable(requestMap.get("locale")).orElse("ko-KR").toString());
             withIsMobile(((Boolean) Optional.ofNullable(requestMap.get("isMobile")).orElse(Boolean.FALSE)));
             withIsApp(((Boolean) Optional.ofNullable(requestMap.get("isApp")).orElse(Boolean.FALSE)));
             withUserId(Long.valueOf((Optional.ofNullable(requestMap.get("_lz_userId")).orElseThrow(
-                    () -> new ParameterException("_lz_userId can not be null")
+                    () -> new ParameterException(executorType, "_lz_userId can not be null")
             )).toString()));
             withReturnToUrl(Optional.ofNullable(requestMap.get("returnToUrl")).orElse("").toString());
 

@@ -124,7 +124,8 @@ public class InternalPaymentService {
         }
 
         // fail
-        throw new InternalPaymentException(String.valueOf(response.getBody().getCode()));
+        throw new InternalPaymentException(context.getRequestInfo().getExecutorType(),
+                String.valueOf(response.getBody().getCode()));
     }
 
     public <T extends PGPayment> Payment<T> pay(Context<T> context) {
@@ -184,7 +185,8 @@ public class InternalPaymentService {
         }
 
         // fail
-        throw new InternalPaymentException(String.valueOf(response.getBody().getCode()));
+        throw new InternalPaymentException(context.getRequestInfo().getExecutorType(),
+                String.valueOf(response.getBody().getCode()));
     }
 
     public <T extends PGPayment> Payment<T> convert(String jsonData, Class<T> pgPaymentClass, T pgPayment, String

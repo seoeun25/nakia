@@ -1,5 +1,7 @@
 package com.lezhin.avengers.panther.exception;
 
+import com.lezhin.avengers.panther.executor.Executor;
+
 /**
  * 특정 throttle 을 넘겼을 때
  *
@@ -8,11 +10,11 @@ package com.lezhin.avengers.panther.exception;
  */
 public class ExceedException extends PantherException{
 
-    public ExceedException(String message) {
-        super(message);
+    public ExceedException(Executor.Type type, String message) {
+        super(type, message);
     }
 
-    public ExceedException(Throwable e) {
-        super(e);
+    public ExceedException(Executor.Type type, Throwable e) {
+        super(type, e);
     }
 }

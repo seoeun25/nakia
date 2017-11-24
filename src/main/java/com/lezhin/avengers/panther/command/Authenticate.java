@@ -43,8 +43,8 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
 
     public void verifyPrecondition() throws PreconditionException {
         if (payment.getState() != PaymentState.R) {
-            throw new PreconditionException(String.format("Payment state should be %s but %s", PaymentState.R,
-                    payment.getState()));
+            throw new PreconditionException(requestInfo.getExecutorType(),
+                    String.format("Payment state should be %s but %s", PaymentState.R, payment.getState()));
         }
         logger.info("verifyPrecondition done");
     }
@@ -70,7 +70,7 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
             context = context.withResponse(
                     new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
             logger.warn("Failed to InternalPayment.authenticate");
-            throw new InternalPaymentException(e);
+            throw new InternalPaymentException(requestInfo.getExecutorType(), e);
         }
 
         logger.info("{} complete. {} ", commandType.name(), context.getResponseInfo().toString());

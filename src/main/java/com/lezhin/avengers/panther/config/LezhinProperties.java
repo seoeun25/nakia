@@ -14,6 +14,8 @@ public class LezhinProperties {
     private String webUrl;
     private String apiUrl;
     private String pantherUrl;
+    private String slackChannel;
+    private String cloudWatch;
     private Happypoint happypoint;
 
     public String getWebUrl() {
@@ -40,12 +42,28 @@ public class LezhinProperties {
         this.pantherUrl = pantherUrl;
     }
 
+    public String getSlackChannel() {
+        return slackChannel;
+    }
+
+    public void setSlackChannel(String slackChannel) {
+        this.slackChannel = slackChannel;
+    }
+
     public Happypoint getHappypoint() {
         return happypoint;
     }
 
     public void setHappypoint(Happypoint happypoint) {
         this.happypoint = happypoint;
+    }
+
+    public String getCloudWatch() {
+        return cloudWatch;
+    }
+
+    public void setCloudWatch(String cloudWatch) {
+        this.cloudWatch = cloudWatch;
     }
 
     public static class Happypoint {

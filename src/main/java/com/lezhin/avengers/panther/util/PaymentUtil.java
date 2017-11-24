@@ -1,6 +1,7 @@
 package com.lezhin.avengers.panther.util;
 
 import com.lezhin.avengers.panther.exception.ParameterException;
+import com.lezhin.avengers.panther.executor.Executor;
 import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.beans.entity.common.LezhinLocale;
 import com.lezhin.constant.LezhinCurrency;
@@ -19,11 +20,12 @@ import java.util.Optional;
 
 /**
  * PG 에서 사용하던 util 성 method들. 임시로 여기. FIXME
+ *
  * @author seoeun
  * @since 2017.11.06
  */
 @Deprecated
-public class PaymentUtil extends Payment{
+public class PaymentUtil extends Payment {
 
     //-------------
     public String jsonSerialize(String encoding) {
@@ -126,7 +128,7 @@ public class PaymentUtil extends Payment{
             this.pointAmount = Integer.valueOf(request.getParameter("_lz_point_amount"));
             onParse(request);
         } catch (Exception e) {
-            throw new ParameterException(e);
+            throw new ParameterException(Executor.Type.DUMMY, e);
         }
 
         onParse(request);
@@ -251,7 +253,7 @@ public class PaymentUtil extends Payment{
         try {
             return URLDecoder.decode(url, StandardCharsets.UTF_8.toString());
         } catch (Exception e) {
-            throw new ParameterException(String.format("Failed to urlDecode [%s]", url));
+            throw new ParameterException(Executor.Type.DUMMY, String.format("Failed to urlDecode [%s]", url));
         }
     }
 

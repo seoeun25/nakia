@@ -1,5 +1,7 @@
 package com.lezhin.avengers.panther.exception;
 
+import com.lezhin.avengers.panther.executor.Executor;
+
 /**
  * Panther의 최상위 Exception.
  * @author seoeun
@@ -7,15 +9,23 @@ package com.lezhin.avengers.panther.exception;
  */
 public class PantherException extends RuntimeException{
 
-    public PantherException(String message) {
+    protected Executor.Type type;
+    public PantherException(Executor.Type type, String message) {
         super(message);
+        this.type = type;
     }
 
-    public PantherException(Throwable e) {
+    public PantherException(Executor.Type type, Throwable e) {
         super(e);
+        this.type = type;
     }
 
-    public PantherException(String message, Throwable e) {
+    public PantherException(Executor.Type type, String message, Throwable e) {
         super(message, e);
+        this.type = type;
+    }
+
+    public Executor.Type getType() {
+        return type;
     }
 }

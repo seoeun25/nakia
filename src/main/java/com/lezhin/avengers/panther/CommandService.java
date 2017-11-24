@@ -86,7 +86,7 @@ public class CommandService {
             throw e;
         } catch (Throwable e) {
             logger.warn("Unexpected error. failed !!!");
-            throw new PantherException(e);
+            throw new PantherException(requestInfo.getExecutorType(), e);
         }
 
         return resultPayment;

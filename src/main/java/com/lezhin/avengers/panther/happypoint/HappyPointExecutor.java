@@ -125,8 +125,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         Certification certification = cacheService.getCertification(Long.valueOf(context.getRequestInfo().getUserId()));
         if (certification == null) {
-            throw new PantherException("No ConnectionInfo. Certification CI failed. userId = " +
-                    context.getRequestInfo().getUserId());
+            throw new PantherException(type,
+                    "No ConnectionInfo. Certification CI failed. userId = " + context.getRequestInfo().getUserId());
         }
         String name = certification.getName();
         String ci = certification.getCI();
@@ -167,18 +167,18 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     public Payment<HappyPointPayment> reserve() {
         if (context.getPayment().getPgPayment().getMbrNo() == null ||
                 context.getPayment().getPgPayment().getMbrNo().equals("")) {
-            throw new PreconditionException("mbrNo can not be null nor empty");
+            throw new PreconditionException(type, "mbrNo can not be null nor empty");
         }
         if (context.getPayment().getPgPayment().getUseReqPt() == null) {
-            throw new PreconditionException("useReqPt can not be null");
+            throw new PreconditionException(type, "useReqPt can not be null");
         }
         // 3000point/mbrNo/month
         HappypointAggregator aggregator = cacheService.getPaymentResult(context.getPayment().getPgPayment().getMbrNo(),
                 DateUtil.format(Instant.now().toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM"));
-        if (aggregator !=null &&
+        if (aggregator != null &&
                 aggregator.getPointSum().intValue() + context.getPayment().getPgPayment().getUseReqPt().intValue() >
-                POINT_LIMITATION.intValue()) {
-            throw new ExceedException("Exceed 3000 point/ month");
+                        POINT_LIMITATION.intValue()) {
+            throw new ExceedException(type, "Exceed 3000 point/ month");
         }
 
         // do nothing
@@ -189,7 +189,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
     public Payment<HappyPointPayment> authenticate() {
         if (context.getPayment().getPgPayment().getUseReqPt() == null) {
-            throw new PreconditionException("useReqPt can not be null");
+            throw new PreconditionException(type, "useReqPt can not be null");
         }
 
         // do nothing. response ok
@@ -335,19 +335,19 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         if (ErrorCode.SPC_DENY_44.getCode().equals(responseCode)
                 || ErrorCode.SPC_DENY_77.getCode().equals(responseCode)
                 || ErrorCode.SPC_DENY_88.getCode().equals(responseCode)) {
-            throw new HappyPointParamException(context.getResponseInfo().getCode(),
+            throw new HappyPointParamException(type, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
         if (ErrorCode.SPC_ERROR_22.getCode().equals(responseCode)
                 || ErrorCode.SPC_ERROR_80.getCode().equals(responseCode)
                 || ErrorCode.SPC_ERROR_92.getCode().equals(responseCode)
                 || ErrorCode.SPC_ERROR_99.getCode().equals(responseCode)) {
-            throw new HappyPointSystemException(context.getResponseInfo().getCode(),
+            throw new HappyPointSystemException(type, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
         // 문서에 정의 되지 않은 response code가 올 수도 있음.
         if (!responseCode.equals(ErrorCode.SPC_OK.getCode())) {
-            throw new HappyPointSystemException(context.getResponseInfo().getCode(),
+            throw new HappyPointSystemException(type, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
     }

@@ -55,7 +55,7 @@ public class CertifcationController {
             Certification result = certificationService.getCertification(certification.getUserId());
             logger.info("saved = {}", result.toString());
         } catch (Exception e) {
-
+            logger.warn("Failed to retrieve ", e);
         }
 
         return new ResponseInfo(ErrorCode.LEZHIN_OK.getCode(), ErrorCode.LEZHIN_OK.getMessage());

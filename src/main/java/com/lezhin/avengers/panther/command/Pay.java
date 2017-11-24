@@ -43,8 +43,8 @@ public class Pay<T extends PGPayment> extends Command<T> {
 
     public void verifyPrecondition() throws PreconditionException {
         if (payment.getState() != PaymentState.PC) {
-            throw new PreconditionException(String.format("Payment state should be %s but %s", PaymentState.PC,
-                    payment.getState()));
+            throw new PreconditionException(requestInfo.getExecutorType(),
+                    String.format("Payment state should be %s but %s", PaymentState.PC, payment.getState()));
         }
         logger.info("verifyPrecondition done");
     }
