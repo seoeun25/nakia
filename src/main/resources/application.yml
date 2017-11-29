@@ -22,7 +22,7 @@ lezhin:
   slackChannel: panther_beta
   cloudWatch: https://ap-northeast-2.console.aws.amazon.com/cloudwatch
   happypoint:
-    hpcUrl: http://dev-proxy.lezhin.net/spc/processHpc
+    hpcUrl: http://dev-outbound-proxy.lezhin.net/spc/processHpc
     mchtNo: 100015851
   actuator:
     security:
