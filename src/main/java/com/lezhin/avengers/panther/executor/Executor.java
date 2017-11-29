@@ -29,7 +29,7 @@ public abstract class Executor<T extends PGPayment> {
             }
 
             @Override
-            public PaymentType getPaymentType(boolean isMobile) {
+            public PaymentType getPaymentType(String externalStoreProductId) {
                 return PaymentType.unknown;
             }
 
@@ -45,8 +45,12 @@ public abstract class Executor<T extends PGPayment> {
             }
 
             @Override
-            public PaymentType getPaymentType(boolean isMobile) {
-                return isMobile ? PaymentType.mhappypoint : PaymentType.happypoint;
+            public PaymentType getPaymentType(String externalStoreProductId) {
+                if (externalStoreProductId == null) {
+                    return PaymentType.happypoint;
+                }
+                return externalStoreProductId.contains("mhappypoint") ? PaymentType.mhappypoint :
+                        PaymentType.happypoint;
             }
 
             @Override
@@ -69,7 +73,7 @@ public abstract class Executor<T extends PGPayment> {
 
         public abstract <E> Class<E> getExecutorClass();
 
-        public abstract PaymentType getPaymentType(boolean isMobile);
+        public abstract PaymentType getPaymentType(String externalStoreProductId);
     }
 
     protected Type type;

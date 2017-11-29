@@ -194,13 +194,14 @@ public class RequestInfo {
             // check the request param
             Payment payment = new Payment();
             payment.setPgCompany(pg);
-            payment.setPaymentType(executorType.getPaymentType(isMobile));
             payment.setLocale(Util.of(locale));
             if (executorType == Executor.Type.HAPPYPOINT) {
                 payment.setUserId(userId);
 
                 payment.setExternalStoreProductId(
                         Optional.ofNullable(requestMap.get("_lz_externalStoreProductId")).orElse("").toString());
+                // happypoint 일 경우.
+                payment.setPaymentType(executorType.getPaymentType(payment.getExternalStoreProductId()));
                 payment.setStore(LezhinStore.valueOf(Optional.ofNullable(requestMap.get("_lz_store"))
                         .orElse("base").toString()));
                 payment.setStoreVersion(Optional.ofNullable(requestMap.get("_lz_storeVersion")).orElse("").toString());
