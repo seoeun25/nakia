@@ -39,6 +39,7 @@ public class PantherConfiguration {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins("http://www.lezhin.com", "https://www.lezhin.com",
+                                "http://s.lezhin.com", "https://s.lezhin.com",
                                 "http://beta-www.lezhin.com", "https://beta-www.lezhin.com",
                                 "http://q-www.lezhin.com", "https://q-www.lezhin.com",
                                 "http://mirror-www.lezhin.com", "https://q-www.lezhin.com",
