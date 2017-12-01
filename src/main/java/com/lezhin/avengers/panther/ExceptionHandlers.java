@@ -118,7 +118,8 @@ public class ExceptionHandlers {
                 .message("")
                 .exception(e)
                 .build());
-        return new ErrorInfo(ErrorCode.LEZHIN_PANTHER.getCode(), e.getMessage());
+        // User에게 보여질 수 있는 메시지라 general 하게 변경
+        return new ErrorInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), "Internal Server Error");
     }
 
     @ExceptionHandler(PantherException.class)

@@ -51,8 +51,8 @@ public class SlackNotifier {
 
         Throwable cause = e.getCause();
         if (cause != null) {
-            builder.append(e.getMessage());
-            StackTraceElement[] stackTraceElements2 = e.getStackTrace();
+            builder.append(cause.getMessage());
+            StackTraceElement[] stackTraceElements2 = cause.getStackTrace();
             for (int i = 0; i < max; i++) {
                 builder.append("\tat " + stackTraceElements2[i] + "\n");
             }

@@ -1,7 +1,6 @@
 package com.lezhin.avengers.panther.happypoint;
 
 import com.lezhin.avengers.panther.Context;
-import com.lezhin.avengers.panther.model.Certification;
 import com.lezhin.avengers.panther.model.Payment;
 import com.lezhin.avengers.panther.model.RequestInfo;
 import com.lezhin.avengers.panther.util.JsonUtil;
@@ -20,6 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Map;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -74,9 +74,14 @@ public class HappyPointExecutorTest {
 
     }
 
+    /**
+     * happypoint 결제 실패시 InternalPaymentService에 보낼 meta(receipt) 테스트.
+     *
+     * @throws Exception
+     */
     @Test
     public void testCreateReceipt() throws Exception {
-        Resource resource = new ClassPathResource("/example/happypoint/internal_payment_fail_request.json");
+        Resource resource = new ClassPathResource("/example/happypoint/payment_pay_fail.json");
         assertNotNull(resource.getInputStream());
 
         System.out.println("length = " + resource.getURI());
@@ -87,7 +92,11 @@ public class HappyPointExecutorTest {
 
         Map<String, Object> receipt = payment.getPgPayment().createReceipt();
         receipt.entrySet().stream().forEach(entry -> System.out.println(entry.getKey() + " = " + entry.getValue()));
-
+        assertEquals("1003023370", receipt.get("mbrNo").toString());
+        assertEquals("ORJN20171107161021", receipt.get("tracNo").toString());
+        assertEquals("2000", receipt.get("trxAmt").toString());
+        assertTrue(receipt.containsKey("rpsMsgCtt"));
+        assertFalse(receipt.containsKey("rcgnKey"));
     }
 
     @Test

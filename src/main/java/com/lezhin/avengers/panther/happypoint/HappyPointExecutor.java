@@ -260,7 +260,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         String orglTrxAprvNo = payment.getPgPayment().getAprvNo();
         logger.info("REFUND. orglTrxAprvNo = {}, orglTrxAprvDt = {}", orglTrxAprvNo, orglTrxAprvDt);
         HappyPointPayment requestPayment = Util.merge(payment.getPgPayment(),
-                HappyPointPayment.API.pointuse.createRequest(), HappyPointPayment.class);
+                HappyPointPayment.API.pointrefund.createRequest(), HappyPointPayment.class);
         payment.setPgPayment(requestPayment);
         requestPayment.setTracNo(createTraceNo(payment));
         requestPayment.setTrxTypCd(HappyPointPayment.trxTypCd_CANCEL);

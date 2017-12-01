@@ -2,6 +2,7 @@ package com.lezhin.avengers.panther.command;
 
 import com.lezhin.avengers.panther.Context;
 import com.lezhin.avengers.panther.ErrorCode;
+import com.lezhin.avengers.panther.exception.InternalPaymentException;
 import com.lezhin.avengers.panther.exception.PantherException;
 import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.model.PGPayment;
@@ -88,7 +89,7 @@ public class Pay<T extends PGPayment> extends Command<T> {
                 // response는 panther.
                 context = context.withResponse(
                         new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
-
+                throw new InternalPaymentException(requestInfo.getExecutorType(), e);
             } else {
                 // execution이 fail되었다면 internalPayment의 update가 fail 되어도 그냥 둔다.
                 // response는 pg.errorCode
