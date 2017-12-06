@@ -65,13 +65,6 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handleHappypointSystemException(final HappyPointSystemException e) {
         logger.error("HappyPointSystemException", e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.DUMMY).name())
-                .level(SlackMessage.LEVEL.ERROR)
-                .title(e.getMessage())
-                .message("")
-                .exception(e)
-                .build());
         return new ErrorInfo(e.getCode(), e.getMessage());
     }
 
