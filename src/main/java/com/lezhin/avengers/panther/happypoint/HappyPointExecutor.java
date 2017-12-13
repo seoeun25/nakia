@@ -4,10 +4,10 @@ import com.lezhin.avengers.panther.CertificationService;
 import com.lezhin.avengers.panther.Context;
 import com.lezhin.avengers.panther.ErrorCode;
 import com.lezhin.avengers.panther.command.Command;
+import com.lezhin.avengers.panther.exception.CIException;
 import com.lezhin.avengers.panther.exception.ExceedException;
 import com.lezhin.avengers.panther.exception.HappyPointParamException;
 import com.lezhin.avengers.panther.exception.HappyPointSystemException;
-import com.lezhin.avengers.panther.exception.PantherException;
 import com.lezhin.avengers.panther.exception.PreconditionException;
 import com.lezhin.avengers.panther.executor.Executor;
 import com.lezhin.avengers.panther.model.Certification;
@@ -125,7 +125,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         Certification certification = cacheService.getCertification(Long.valueOf(context.getRequestInfo().getUserId()));
         if (certification == null) {
-            throw new PantherException(type,
+            throw new CIException(type,
                     "No ConnectionInfo. Certification CI failed. userId = " + context.getRequestInfo().getUserId());
         }
         String name = certification.getName();

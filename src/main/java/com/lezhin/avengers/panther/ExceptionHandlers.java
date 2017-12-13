@@ -1,5 +1,6 @@
 package com.lezhin.avengers.panther;
 
+import com.lezhin.avengers.panther.exception.CIException;
 import com.lezhin.avengers.panther.exception.ExceedException;
 import com.lezhin.avengers.panther.exception.ExecutorException;
 import com.lezhin.avengers.panther.exception.HappyPointParamException;
@@ -82,6 +83,21 @@ public class ExceptionHandlers {
     public ErrorInfo handleExceedException(final ExceedException e) {
         logger.error("ExceedException", e);
         return new ErrorInfo(ErrorCode.LEZHIN_EXCEED.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler(CIException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public ErrorInfo handleCIException(final CIException e) {
+        logger.error("CIException", e);
+        slackNotifier.notify(SlackEvent.builder()
+                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.DUMMY).name())
+                .level(SlackMessage.LEVEL.ERROR)
+                .title(e.getMessage())
+                .message("")
+                .exception(e)
+                .build());
+        return new ErrorInfo(ErrorCode.LEZHIN_CI.getCode(), e.getMessage());
     }
 
     @ExceptionHandler(ExecutorException.class)
