@@ -15,7 +15,7 @@ spring:
     host: ${lezhin.panther.redis.host}
     port: ${lezhin.panther.redis.port}
     database: ${lezhin.panther.redis.database}
-lezhin:
+panther:
   webUrl: https://beta-www.lezhin.com
   apiUrl: https://beta-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://beta-panther.lezhin.com
@@ -34,7 +34,7 @@ spring:
     generate-ddl: true
     hibernate.ddl-auto: validate
     show-sql: true
-lezhin:
+panther:
   webUrl: https://www.lezhin.com
   apiUrl: https://api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://panther.lezhin.com
@@ -50,7 +50,7 @@ spring:
     generate-ddl: true
     hibernate.ddl-auto: validate
     show-sql: true
-lezhin:
+panther:
   webUrl: https://mirror-www.lezhin.com
   apiUrl: https://mirror-www.lezhin.com/api/v2/internal/payments
   pantherUrl: https://staging-panther.lezhin.com
@@ -64,7 +64,7 @@ spring:
     generate-ddl: true
     hibernate.ddl-auto: validate
     show-sql: true
-lezhin:
+panther:
   webUrl: https://q-www.lezhin.com
   apiUrl: https://q-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://qa-panther.lezhin.com
@@ -75,7 +75,7 @@ spring:
     generate-ddl: true
     hibernate.ddl-auto: validate
     show-sql: true
-lezhin:
+panther:
   webUrl: https://beta-www.lezhin.com
   apiUrl: https://beta-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://beta-panther.lezhin.com
@@ -86,7 +86,7 @@ spring:
     generate-ddl: true
     hibernate.ddl-auto: validate
     show-sql: true
-lezhin:
+panther:
   webUrl: https://a-www.lezhin.com
   apiUrl: https://lezhincomix-alpha.appspot.com/api/v2/internal/payments
   pantherUrl: https://alpha-panther.lezhin.com
@@ -105,7 +105,7 @@ spring:
     host: localhost
     port: 6379
     database: 0
-lezhin:
+panther:
   webUrl: https://a-www.lezhin.com
   apiUrl: https://lezhincomix-alpha.appspot.com/api/v2/internal/payments
   pantherUrl: https://localhost
@@ -131,7 +131,7 @@ spring:
       host: localhost
       port: 6379
       database: 0
-lezhin:
+panther:
   webUrl: https://t-www.lezhin.com
   apiUrl: https://t-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://localhost
