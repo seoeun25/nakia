@@ -1,9 +1,9 @@
 package com.lezhin.panther.redis;
 
+import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.panther.CertificationService;
 import com.lezhin.panther.happypoint.HappyPointExecutor;
 import com.lezhin.panther.model.Certification;
-import com.lezhin.panther.model.HappypointAggregator;
 import com.lezhin.panther.util.DateUtil;
 
 import org.junit.AfterClass;

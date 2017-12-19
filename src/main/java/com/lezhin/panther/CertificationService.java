@@ -1,7 +1,7 @@
 package com.lezhin.panther;
 
+import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.panther.model.Certification;
-import com.lezhin.panther.model.HappypointAggregator;
 import com.lezhin.panther.redis.RedisService;
 
 import org.slf4j.Logger;

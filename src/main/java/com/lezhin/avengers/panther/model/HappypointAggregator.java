@@ -1,18 +1,17 @@
-package com.lezhin.panther.model;
+package com.lezhin.avengers.panther.model;
 
 import lombok.Data;
 
 import java.io.Serializable;
 
 /**
- * Happypoint에서 user 별로 3000point/month 제한을 요구.
- * FIXME Persistence layer 추가 해서, payment 결과를 저장하면 거기서 조회. 후에 삭제할 임시 클래스.
+ * TODO 임시 클래스. refactoring으로 deserialize 할 때 이전 버전 호환성을 맞춰주기 위함
  *
  * @author seoeun
- * @since 2017.11.19
+ * @since 2017.12.19
  */
 @Data
-public class HappypointAggregator implements Serializable{
+public class HappypointAggregator implements Serializable {
 
     private String mbrNo;
     /**

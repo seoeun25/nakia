@@ -1,5 +1,6 @@
 package com.lezhin.panther.happypoint;
 
+import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.panther.CertificationService;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.ErrorCode;
@@ -11,7 +12,6 @@ import com.lezhin.panther.exception.HappyPointSystemException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Certification;
-import com.lezhin.panther.model.HappypointAggregator;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.util.DateUtil;
