@@ -15,6 +15,10 @@ spring:
     host: ${lezhin.panther.redis.host}
     port: ${lezhin.panther.redis.port}
     database: ${lezhin.panther.redis.database}
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
 panther:
   webUrl: https://beta-www.lezhin.com
   apiUrl: https://beta-api.lezhin.com/api/v2/internal/payments
@@ -41,8 +45,8 @@ panther:
   slackChannel: panther
   cloudWatch: https://ap-northeast-2.console.aws.amazon.com/cloudwatch/home?region=ap-northeast-2#logStream:group=panther
   happypoint:
-        hpcUrl: http://outbound-proxy.lezhin.net/spc/processHpc
-        mchtNo: 100031405
+    hpcUrl: http://outbound-proxy.lezhin.net/spc/processHpc
+    mchtNo: 100031405
 ---
 spring:
   profiles: staging
@@ -105,10 +109,19 @@ spring:
     host: localhost
     port: 6379
     database: 0
+server:
+  port: 9443
+  ssl:
+    enabled: true
+    key-alias: panther
+    key-store: cert/security/lezhinwild/keystore.p12
+    key-store-password: panther
+    key-store-type: PKCS12
+    key-password: panther
 panther:
   webUrl: https://a-www.lezhin.com
   apiUrl: https://lezhincomix-alpha.appspot.com/api/v2/internal/payments
-  pantherUrl: https://localhost
+  pantherUrl: https://localhost:9443
   actuator:
     security:
       enabled: false
