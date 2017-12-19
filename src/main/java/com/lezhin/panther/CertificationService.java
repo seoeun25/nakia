@@ -56,7 +56,15 @@ public class CertificationService {
     public HappypointAggregator getPaymentResult(final String mbrNo, String ym) {
         String key = String.format("happypoint:%s:mbrNo:%s", ym, mbrNo);
 
-        HappypointAggregator value = (HappypointAggregator) redisService.getValue(key);
+        HappypointAggregator value;
+        try {
+            value = (HappypointAggregator) redisService.getValue(key);
+        } catch (Exception e) {
+            // TODO package refactoring의 side effect. 1월에 update.
+            logger.info("Failed to deserialize HappypointAggregator. set and return 2000 point. : " + e.getMessage());
+            value = new HappypointAggregator(mbrNo, ym, 2000);
+            redisService.setValue(key, value, 31, TimeUnit.DAYS);
+        }
         return value;
     }
 
