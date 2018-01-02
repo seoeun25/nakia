@@ -9,7 +9,7 @@ Lezhin Payment Gateway System
 $ git clone https://github.com/lezhin/panther.git
 $ gradle clean build
 $ java -Dspring.profiles.active=local -jar build/libs/panther-${version}.jar 
-$ curl http://localhost:8081/health
+$ curl https://localhost:9443/panther/version
 ```
 * health check : [actuator](http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready)
 

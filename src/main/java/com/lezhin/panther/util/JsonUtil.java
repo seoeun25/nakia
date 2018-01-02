@@ -4,11 +4,13 @@ import com.lezhin.panther.PantherConfiguration;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * @author seoeun
@@ -49,6 +51,17 @@ public class JsonUtil {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Map<String, Object> toMap(Object pojo) {
+        Map<String, Object> map = getObjectMapper().convertValue(pojo,
+                new TypeReference<Map<String,Object>>(){});
+        return map;
+    }
+
+    public static <T extends PGPayment> T fromMap(Map<String,Object> map, Class<T> tClass) {
+        T pgPayment = getObjectMapper().convertValue(map, tClass);
+        return pgPayment;
     }
 
 

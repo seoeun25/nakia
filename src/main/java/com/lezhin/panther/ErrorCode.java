@@ -14,6 +14,7 @@ public enum ErrorCode {
     SPC_ERROR_92("92", "SPC_ERROR_92"),
     SPC_ERROR_22("22", "SPC_ERROR_22"),
     SPC_ERROR_99("99", "SPC_ERROR_99"),
+    LGUPLUS2_OK("0000", "OK"),
     LEZHIN_OK("0000", "OK"),
     LEZHIN_UNKNOWN("1100", "UNKNOWN"),
     LEZHIN_PARAM("1001", "Param Error"),

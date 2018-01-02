@@ -1,6 +1,7 @@
 package com.lezhin.panther.util;
 
 import com.lezhin.beans.entity.common.LezhinLocale;
+import com.lezhin.constant.PaymentType;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
@@ -17,6 +18,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.Charset;
 
 /**
  * @author seoeun
@@ -80,7 +82,6 @@ public class Util {
         } else {
             throw new RuntimeException("Unknown locale = " + locale);
         }
-
     }
 
     public static String loadVersion() {
@@ -96,4 +97,20 @@ public class Util {
         }
         return null;
     }
+
+    public static String convertEncoding(String source, String sourceEncoding, String targetEncoding) {
+        if (source == null) {
+            return null;
+        }
+        byte[] euckrStringBuffer  = source.getBytes(Charset.forName(sourceEncoding));
+        String decodedHelloString = null;
+        try {
+            decodedHelloString = new String(euckrStringBuffer, targetEncoding);
+        } catch (Exception e) {
+            logger.warn("Failed to convertEncoding: " + e.getMessage());
+            return source;
+        }
+        return decodedHelloString;
+    }
+
 }

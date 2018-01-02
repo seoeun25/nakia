@@ -27,9 +27,9 @@ import org.springframework.stereotype.Service;
  * @since 2017.10.24
  */
 @Service
-public class CommandService {
+public class PayService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommandService.class);
+    private static final Logger logger = LoggerFactory.getLogger(PayService.class);
 
     @Autowired
     private BeanFactory beanFactory;
@@ -38,7 +38,7 @@ public class CommandService {
     private PantherProperties pantherProperties;
 
     @Autowired
-    public CommandService() {
+    public PayService() {
 
     }
 

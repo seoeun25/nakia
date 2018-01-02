@@ -1,5 +1,6 @@
 package com.lezhin.panther.model;
 
+import com.lezhin.constant.LezhinCurrency;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.executor.Executor;
 
@@ -22,6 +23,7 @@ import javax.servlet.http.Cookie;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -175,6 +177,62 @@ public class RequestInfoTest {
         request1.setContent("{\"_lz_userId\": 10101}".getBytes());
         request1.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
         assertEquals(Executor.Type.HAPPYPOINT, new RequestInfo.Builder(request1, "happypoint").build().getExecutorType());
+
+    }
+
+    @Test
+    public void testLguplus2Request() throws Exception {
+
+        MockHttpServletRequest request1 = createHttpServletRequest();
+        request1.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
+        request1.setParameter("_lz_userId", "123456789");
+        request1.setParameter("paymentType", "deposit");
+        try {
+            RequestInfo requestInfo = new RequestInfo.Builder(request1, "lguplus2").build();
+        } catch (ParameterException e) {
+            assertTrue(e.getMessage().contains("productId"));
+        }
+
+        MockHttpServletRequest request2 = createHttpServletRequest();
+        request2.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
+        request2.setParameter("_lz_userId", "123456789");
+        request2.setParameter("paymentType", "deposit");
+        request2.setParameter("productId", "9876543");
+        try {
+            RequestInfo requestInfo = new RequestInfo.Builder(request2, "lguplus2").build();
+        } catch (ParameterException e) {
+            logger.info(e.getMessage());
+            assertTrue(e.getMessage().contains("currency"));
+        }
+
+        MockHttpServletRequest request3 = createHttpServletRequest();
+        request3.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
+        request3.setParameter("_lz_userId", "123456789");
+        request3.setParameter("paymentType", "deposit");
+        request3.setParameter("productId", "9876543");
+        request3.setParameter("currency", "KRW");
+        try {
+            RequestInfo requestInfo = new RequestInfo.Builder(request3, "lguplus2").build();
+        } catch (ParameterException e) {
+            logger.info(e.getMessage());
+            assertTrue(e.getMessage().contains("amount"));
+        }
+
+        MockHttpServletRequest request4 = createHttpServletRequest();
+        request4.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
+        request4.setParameter("_lz_userId", "123456789");
+        request4.setParameter("paymentType", "deposit");
+        request4.setParameter("productId", "9876543");
+        request4.setParameter("currency", "KRW");
+        request4.setParameter("amount", "1230.5");
+        request4.setParameter("store", "web");
+        request4.setParameter("platform", "web");
+
+        RequestInfo requestInfo = new RequestInfo.Builder(request4, "lguplus2").build();
+        assertEquals(9876543L, requestInfo.getPayment().getCoinProductId().longValue());
+        assertEquals(LezhinCurrency.KRW, requestInfo.getPayment().getCurrency());
+        assertEquals(1230.5f, requestInfo.getPayment().getAmount().floatValue());
+        assertEquals(0, requestInfo.getPayment().getPointAmount().intValue());
 
     }
 

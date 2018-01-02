@@ -50,6 +50,9 @@ public class DateUtil {
         return format(timestamp, ASIA_SEOUL_ZONE, TIME_FORMATTER);
     }
 
+    public static String getDateTimeString(long timestamp) {
+        return format(timestamp, ASIA_SEOUL_ZONE, DATE_FORMATTER + TIME_FORMATTER);
+    }
     /**
      * Return the formatted String corresponding {@code timestamp}
      *

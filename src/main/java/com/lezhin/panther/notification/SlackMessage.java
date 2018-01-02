@@ -1,18 +1,21 @@
 package com.lezhin.panther.notification;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.Singular;
+import lombok.ToString;
 
 import java.util.List;
 
 /**
  * https://api.slack.com/docs/messages
+ *
  * @author seoeun
  * @since 2017.11.25
  */
-@Data
 @Builder
+@Getter
+@ToString
 public class SlackMessage {
 
     public static final String USERNAME = "panther-bot";
@@ -44,8 +47,9 @@ public class SlackMessage {
         }
     }
 
-    @Data
     @Builder
+    @Getter
+    @ToString
     public static class Attachment {
 
         private String fallback;
@@ -68,8 +72,9 @@ public class SlackMessage {
         private List<String> mrkdwn_in;
     }
 
-    @Data
     @Builder
+    @Getter
+    @ToString
     public static class Field {
         private String title;
         private String value;

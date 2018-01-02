@@ -23,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * @since 2017.11.07
  */
 @ExtendWith(SpringExtension.class)
-@SpringBootTest
-@ActiveProfiles(profiles = "test")
 public class UtilTest {
 
     private static final Logger logger = LoggerFactory.getLogger(UtilTest.class);

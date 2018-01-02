@@ -1,6 +1,6 @@
 package com.lezhin.panther.controller;
 
-import com.lezhin.panther.CommandService;
+import com.lezhin.panther.PayService;
 import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
@@ -48,7 +48,7 @@ public class APIControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private CommandService commandService;
+    private PayService payService;
 
     @BeforeEach
     public void setUp() {

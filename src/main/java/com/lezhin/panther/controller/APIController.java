@@ -1,6 +1,6 @@
 package com.lezhin.panther.controller;
 
-import com.lezhin.panther.CommandService;
+import com.lezhin.panther.PayService;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
@@ -31,11 +31,11 @@ public class APIController {
 
     private static final Logger logger = LoggerFactory.getLogger(APIController.class);
 
-    private CommandService commandService;
+    private PayService payService;
 
     @Autowired
-    public APIController(CommandService commandService) {
-        this.commandService = commandService;
+    public APIController(PayService commandService) {
+        this.payService = commandService;
     }
 
     @RequestMapping(value = "/{pg}/preparation", method = RequestMethod.POST)
@@ -45,7 +45,7 @@ public class APIController {
 
         logger.info("HTTP prepare. requestInfo = {}", pg, requestInfo);
 
-        Payment payment = commandService.doCommand(Command.Type.PREPARE, requestInfo);
+        Payment payment = payService.doCommand(Command.Type.PREPARE, requestInfo);
         return payment;
     }
 
@@ -57,7 +57,7 @@ public class APIController {
 
         logger.info("HTTP reservation. requestInfo = {}", requestInfo);
 
-        Payment payment = commandService.doCommand(Command.Type.RESERVE, requestInfo);
+        Payment payment = payService.doCommand(Command.Type.RESERVE, requestInfo);
         return payment;
     }
 
@@ -68,7 +68,7 @@ public class APIController {
 
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 
-        Payment payment = commandService.doCommand(Command.Type.AUTHENTICATE, requestInfo);
+        Payment payment = payService.doCommand(Command.Type.AUTHENTICATE, requestInfo);
         return payment;
     }
 
@@ -78,7 +78,7 @@ public class APIController {
 
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 
-        Payment payment = commandService.doCommand(Command.Type.PAY, requestInfo);
+        Payment payment = payService.doCommand(Command.Type.PAY, requestInfo);
         return payment;
     }
 
