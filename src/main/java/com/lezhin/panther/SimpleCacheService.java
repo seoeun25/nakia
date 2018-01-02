@@ -2,6 +2,7 @@ package com.lezhin.panther;
 
 import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.panther.model.Certification;
+import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.redis.RedisService;
 
 import org.slf4j.Logger;
@@ -15,18 +16,18 @@ import java.util.concurrent.TimeUnit;
  * @since 2017.11.10
  */
 @Service
-public class CertificationService {
+public class SimpleCacheService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CertificationService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SimpleCacheService.class);
 
     private final RedisService redisService;
 
-    public CertificationService(RedisService redisService) {
+    public SimpleCacheService(RedisService redisService) {
         this.redisService = redisService;
     }
 
     public void saveCertification(Certification certification) {
-        String key = String.format("user:%s", certification.getUserId());
+        String key = RedisService.generateKey("certification", "user", certification.getUserId().toString());
         redisService.setValue(key, certification, 10, TimeUnit.MINUTES);
     }
 
@@ -37,15 +38,15 @@ public class CertificationService {
      * @return
      */
     public Certification getCertification(Long userId) {
-        String key = String.format("user:%s", userId);
+        String key = RedisService.generateKey("certification", "user", userId.toString());
         Certification value = (Certification) redisService.getValue(key);
         return value;
     }
 
-    public void addPaymentResult(final HappypointAggregator info) {
+    public void saveHappypointAggregator(final HappypointAggregator info) {
         String key = String.format("happypoint:%s:mbrNo:%s", info.getYm(), info.getMbrNo());
 
-        HappypointAggregator value = getPaymentResult(info.getMbrNo(), info.getYm());
+        HappypointAggregator value = getHappypointAggregator(info.getMbrNo(), info.getYm());
         if (value != null) {
             info.setPointSum(value.getPointSum() + info.getPointSum());
         }
@@ -53,7 +54,7 @@ public class CertificationService {
         redisService.setValue(key, info, 31, TimeUnit.DAYS);
     }
 
-    public HappypointAggregator getPaymentResult(final String mbrNo, String ym) {
+    public HappypointAggregator getHappypointAggregator(final String mbrNo, String ym) {
         String key = String.format("happypoint:%s:mbrNo:%s", ym, mbrNo);
 
         HappypointAggregator value;
@@ -65,6 +66,18 @@ public class CertificationService {
             value = new HappypointAggregator(mbrNo, ym, 2000);
             redisService.setValue(key, value, 31, TimeUnit.DAYS);
         }
+        return value;
+    }
+
+    public void saveRequestInfo(RequestInfo requestInfo) {
+        String key = RedisService.generateKey("reservation", "requestinfo",
+                String.valueOf(requestInfo.getPayment().getPaymentId()));
+        redisService.setValue(key, requestInfo, 30, TimeUnit.MINUTES);
+    }
+
+    public RequestInfo getRequestInfo(Long paymentId) {
+        String key = RedisService.generateKey("reservation", "requestinfo", String.valueOf(paymentId));
+        RequestInfo value = (RequestInfo) redisService.getValue(key);
         return value;
     }
 

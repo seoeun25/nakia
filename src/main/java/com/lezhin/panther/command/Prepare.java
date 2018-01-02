@@ -45,7 +45,7 @@ public class Prepare<T extends PGPayment> extends Command<T> {
         initExecutor();
         logger.info("{} start. {}", commandType.name(), context.printPretty());
         Payment<T> payment = executor.prepare();
-        context = context.withResponse(executor.getContext().getResponseInfo());
+        context = context.response(executor.getContext().getResponseInfo());
         logger.info("{} complete. {}", commandType.name(), context.getResponseInfo().toString());
 
         return payment;

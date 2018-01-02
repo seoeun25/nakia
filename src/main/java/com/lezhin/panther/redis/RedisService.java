@@ -1,10 +1,13 @@
 package com.lezhin.panther.redis;
 
+import com.lezhin.panther.PantherApplication;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -43,5 +46,14 @@ public class RedisService {
     public Boolean deleteValue(final String key) {
         return template.delete(key);
     }
+
+    public static String generateKey(String module, String name, String value) {
+        if (StringUtils.isEmpty(module) || StringUtils.isEmpty(name) || StringUtils.isEmpty(value)) {
+            throw new IllegalArgumentException("Argument can not be empty");
+        }
+        String key = String.format("%s:%s:%s:%s", PantherApplication.APP_NAME, module, name, value);
+        return key;
+    }
+
 
 }

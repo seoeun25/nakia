@@ -1,6 +1,6 @@
 package com.lezhin.panther.util;
 
-import com.lezhin.panther.lguplus2.Lguplus2Payment;
+import com.lezhin.panther.lguplus.LguplusPayment;
 import com.lezhin.panther.model.PGPayment;
 
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ public class JsonUtilTest {
      */
     @Test
     public void testMapPgPaymentConvert() {
-        PGPayment pgPayment = Lguplus2Payment.builder().CST_MID("cst_mid")
+        PGPayment pgPayment = LguplusPayment.builder().CST_MID("cst_mid")
                 .LGD_AMOUNT("20.5").build();
         Map<String, Object> map = JsonUtil.toMap(pgPayment);
         logger.info("map = {}", map);
@@ -38,7 +38,7 @@ public class JsonUtilTest {
         assertNull(map.get("LGD_BUYERIP"));
 
 
-        Lguplus2Payment pgPayment1 = JsonUtil.fromMap(map, Lguplus2Payment.class);
+        com.lezhin.panther.lguplus.LguplusPayment pgPayment1 = JsonUtil.fromMap(map, com.lezhin.panther.lguplus.LguplusPayment.class);
         logger.info("pgPayment1 = {}", pgPayment1);
         assertEquals("cst_mid", pgPayment1.getCST_MID());
         assertEquals("20.5", pgPayment1.getLGD_AMOUNT());

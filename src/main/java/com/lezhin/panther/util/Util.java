@@ -19,6 +19,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author seoeun
@@ -82,6 +87,11 @@ public class Util {
         } else {
             throw new RuntimeException("Unknown locale = " + locale);
         }
+    }
+
+    public static String getLang(String locale) {
+        String lang = Optional.ofNullable(locale).filter(e -> e.length() > 2).map(e -> e.substring(0,2)).orElse("ko");
+        return lang;
     }
 
     public static String loadVersion() {

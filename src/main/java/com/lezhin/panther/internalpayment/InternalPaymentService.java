@@ -5,6 +5,7 @@ import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.executor.Executor;
+import com.lezhin.panther.happypoint.HappyPointPayment;
 import com.lezhin.panther.model.Meta;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
@@ -65,6 +66,8 @@ public class InternalPaymentService {
         Payment<T> responsePayment = JsonUtil.fromJsonToPayment(JsonUtil.toJson(response.getData()),
                 (Class<T>) pgPayment.getClass());
         responsePayment.setPgPayment(pgPayment);
+        logger.info("RESERVE internal.reserve responsePayment. paymentId = {}, userId = {}, coinProductId= {}",
+                responsePayment.getPaymentId(), responsePayment.getUserId(), responsePayment.getCoinProductId());
         return responsePayment;
 
     }
@@ -82,7 +85,7 @@ public class InternalPaymentService {
         } else {
             url += "/authentication/fail";
         }
-        logger.info("AUTHENTICATE. call to {}", url);
+        logger.info("AUTHENTICATE. call to {}, token = {}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -91,6 +94,9 @@ public class InternalPaymentService {
         Payment payment = context.getPayment();
         T pgPayment = (T) payment.getPgPayment();
         Meta meta = payment.getMeta();
+        if (meta == null) {
+            meta = new Meta();
+        }
         Map<String, Object> receiptMap = context.getPayment().getPgPayment().createReceipt();
         // receipt 은 map을 json으로
         String receipt = JsonUtil.toJson(receiptMap);
@@ -189,11 +195,46 @@ public class InternalPaymentService {
                 String.valueOf(response.getBody().getCode()));
     }
 
+    public <T extends PGPayment> Payment<T> get(Context<T> context) {
+
+        String url = pantherProperties.getApiUrl() + "/" + context.getPayment().getPaymentId();
+        logger.info("GET. call to {}", url);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+        headers.add("Authorization", "Bearer " + context.getRequestInfo().getToken());    // FIXME TOKEN
+
+        Payment<T> payment = context.getPayment();
+        T pgPayment = payment.getPgPayment();
+
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+        HttpEntity request = new HttpEntity<>(headers);
+
+        HttpEntity<Result> response = restTemplate.exchange(url, HttpMethod.GET, request, Result.class);
+        logger.info("GET. internal.get response code = {}, {} ", response.getBody().getCode(),
+                response.getBody().getDescription());
+
+        Result data = response.getBody();
+        String jsonData = JsonUtil.toJson(response.getBody().getData());
+        logger.debug("jsonData :: \n{}", jsonData);
+        if (data.getData() != null) {
+            Payment<T> responsePayment = convert(jsonData, (Class<T>) context.getPayment().getPgPayment().getClass(),
+                    pgPayment, payment.getExternalStoreProductId());
+            return responsePayment;
+        }
+
+        // fail
+        throw new InternalPaymentException(context.getRequestInfo().getExecutorType(),
+                String.valueOf(response.getBody().getCode()));
+    }
+
     public <T extends PGPayment> Payment<T> convert(String jsonData, Class<T> pgPaymentClass, T pgPayment, String
             externalStoreProductId) {
         Payment<T> responsePayment = JsonUtil.fromJsonToPayment(jsonData, pgPaymentClass);
-        logger.info("responsePayment = {} \n{}", responsePayment.getPaymentId(),
-                JsonUtil.toJson(responsePayment));
+        logger.info("responsePayment. paymentId={}, coinProductId={}, coinProductName={}, amount={}",
+                responsePayment.getPaymentId(), responsePayment.getCoinProductId(),
+                responsePayment.getCoinProductName(), responsePayment.getAmount());
+        logger.debug("responsedPayment = \n{}", JsonUtil.toJson(responsePayment));
         responsePayment.setPgPayment(pgPayment);
         responsePayment.setExternalStoreProductId(externalStoreProductId);
         return responsePayment;

@@ -11,6 +11,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 public class PantherApplication {
+
+    public static final String APP_NAME = "panther";
+
     public static void main(String[] args) {
         SpringApplication.run(PantherApplication.class, args);
     }

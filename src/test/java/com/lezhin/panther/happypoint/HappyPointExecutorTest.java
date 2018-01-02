@@ -1,8 +1,10 @@
 package com.lezhin.panther.happypoint;
 
 import com.lezhin.panther.Context;
+import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
+import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.util.JsonUtil;
 
 import org.junit.jupiter.api.Test;
@@ -61,7 +63,8 @@ public class HappyPointExecutorTest {
         request1.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
         RequestInfo requestInfo = new RequestInfo.Builder(request1, "happypoint").build();
 
-        Context context = new Context.Builder(requestInfo, requestInfo.getPayment()).build();
+        Context context = Context.builder().requestInfo(requestInfo).payment(requestInfo.getPayment())
+                .responseInfo(new ResponseInfo(ErrorCode.LEZHIN_UNKNOWN)).build();
 
         Long paymentId = context.getPaymentId();
         Long userId = context.getUserId();
@@ -71,6 +74,7 @@ public class HappyPointExecutorTest {
 
         assertEquals(-1L, paymentId.longValue());
         assertEquals(10101L, userId.longValue());
+        assertEquals(ErrorCode.LEZHIN_UNKNOWN.getCode(), context.getResponseInfo().getCode());
 
     }
 

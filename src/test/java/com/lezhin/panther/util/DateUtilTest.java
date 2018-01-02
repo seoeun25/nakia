@@ -73,5 +73,27 @@ public class DateUtilTest {
         assertEquals("2017-11-14", resultData);
     }
 
+    @Test
+    public void testDateTimeStrig() {
+        long timestamp = 1515467939617L;
+        String a = DateUtil.getDateTimeString(timestamp);
+        System.out.println(a);
+
+        timestamp = 1515467856683L;
+        String b = DateUtil.getDateTimeString(timestamp);
+        System.out.println(b);
+
+        long a1 = Instant.now().toEpochMilli();
+        long a2 = Instant.now().toEpochMilli() + (1000 * 60 * 60 * 24 * 3);
+
+        System.out.println(a1);
+        System.out.println(a2);
+        System.out.println(DateUtil.getDateTimeString(a1));
+        System.out.println(DateUtil.getDateTimeString(a2));
+
+
+
+    }
+
 
 }

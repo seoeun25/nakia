@@ -1,5 +1,6 @@
 package com.lezhin.panther.command;
 
+import com.lezhin.constant.PaymentState;
 import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.InternalPaymentException;
@@ -8,14 +9,12 @@ import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
-import com.lezhin.panther.util.JsonUtil;
-import com.lezhin.panther.util.Util;
-import com.lezhin.constant.PaymentState;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 /**
  * PG에 결제요청하기. 결제 요청을 한 후 {@linkplain PaymentState#R}로 셋팅.
@@ -46,11 +45,11 @@ public class Reserve<T extends PGPayment> extends Command<T> {
 
     public void verifyPrecondition() throws PreconditionException {
         // InternalPaymentService reserve 에 필요한 property set. check.
-        payment.setLocale(Util.of(requestInfo.getLocale()));
-        if (payment.getStore() == null || payment.getStore().equals("")) {
+        payment.setLocale(requestInfo.getLocale());
+        if (StringUtils.isEmpty(payment.getStore())) {
             throw new PreconditionException(requestInfo.getExecutorType(), "store can not be null nor empty");
         }
-        if (payment.getPgCompany() == null || payment.getPgCompany().equals("")) {
+        if (StringUtils.isEmpty(payment.getPgCompany())) {
             throw new PreconditionException(requestInfo.getExecutorType(), "pgCompany can not be null nor empty");
         }
         if (payment.getPaymentType() == null) {
@@ -62,27 +61,33 @@ public class Reserve<T extends PGPayment> extends Command<T> {
     public Payment<T> execute() throws PreconditionException, ExecutorException {
         initExecutor();
 
-        logger.info("start {} {}", commandType.name(), context.printPretty());
+        logger.info("{} start. {}", commandType.name(), context.printPretty());
 
-        payment = executor.reserve();
-        context = context.withPayment(payment);
-        context = context.withResponse(executor.getContext().getResponseInfo());
-        logger.info("{} [{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
-                context.getResponseInfo().toString());
-        logger.debug("payment = {}", JsonUtil.toJson(payment));
-        executor.handleResponseCode(context.getResponseInfo().getCode());
-
+        // Reserve 는 internalPayment call을 먼저 실행
+        executor.verifyPrecondition(Type.RESERVE);
         try {
             payment = internalPaymentService.reserve(context);
-            context = context.withPayment(payment);
+            context = context.payment(payment);
         } catch (Throwable e) {
-            context = context.withResponse(
+            context = context.response(
                     new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
             logger.warn("Failed to InternalPayment.reserve");
             throw new InternalPaymentException(requestInfo.getExecutorType(), e);
         }
 
-        logger.info("{} complete. {} ", commandType.name(), context.getResponseInfo().toString());
+        initExecutor(context);
+        payment = executor.reserve();
+        context = context.payment(payment).response(executor.getContext().getResponseInfo());
+        logger.info("{} [{}] done. {}", commandType.name(), executor.getType(),
+                context.getResponseInfo().toString());
+        executor.handleResponseCode(context.getResponseInfo().getCode());
+
+        logger.info("{} [{}] complete. {}. userId={}, paymentId={}, coinProductId={} ", commandType.name(),
+                executor.getType(), context.getResponseInfo().toString(), payment.getUserId(), payment.getPaymentId(),
+                payment.getCoinProductId());
+
+        requestInfo = new RequestInfo.Builder(requestInfo).withPayment(payment).build();
+        simpleCacheService.saveRequestInfo(requestInfo);
 
         return processNextStep();
 

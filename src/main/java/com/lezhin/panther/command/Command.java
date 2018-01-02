@@ -1,14 +1,19 @@
 package com.lezhin.panther.command;
 
+import com.lezhin.constant.LezhinError;
 import com.lezhin.panther.Context;
+import com.lezhin.panther.ErrorCode;
+import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.ExecutorException;
+import com.lezhin.panther.exception.FraudException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.internalpayment.InternalPaymentService;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
+import com.lezhin.panther.model.ResponseInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +38,11 @@ public abstract class Command<T extends PGPayment> {
             @Override
             public Class getCommandClass() {
                 return Reserve.class;
+            }
+        }, PREAUTHENTICATE {
+            @Override
+            public Class getCommandClass() {
+                return PreAuthenticate.class;
             }
         }, AUTHENTICATE {
             @Override
@@ -74,7 +84,8 @@ public abstract class Command<T extends PGPayment> {
     protected PantherProperties pantherProperties;
     @Autowired
     protected InternalPaymentService internalPaymentService;
-
+    @Autowired
+    protected SimpleCacheService simpleCacheService;
 
     public Command() {
 
@@ -82,6 +93,8 @@ public abstract class Command<T extends PGPayment> {
 
     public Command(final RequestInfo requestInfo) {
         this.requestInfo = requestInfo;
+        this.payment = requestInfo.getPayment();
+        initContext();
     }
 
     public Command(final Context<T> context) {
@@ -96,14 +109,51 @@ public abstract class Command<T extends PGPayment> {
      */
     public void loadState() throws PreconditionException {
 
-        // TODO set payment from InteranlPaymentService(GCS)
-        // payment = internalService.getPayment(); 임시로 executor 에서.
-        payment = requestInfo.getExecutorType().createPayment(context);
+        if (requestInfo.getExecutorType().isAsync()) {
+            // callback과 같이 async한 request로 pay step을  요청하는 경우, persisted data와 비교하여 fraud 방지.
+            // TODO set payment from InteranlPaymentService(GCS)
+            Payment persistedPayment = internalPaymentService.get(context);
+            Payment requestPayment = payment;
+            checkFraud(requestPayment, persistedPayment);
+            payment = persistedPayment;
+        } else {
+            payment = requestInfo.getExecutorType().createPayment(context);
+        }
         verifyPrecondition();
+    }
+
+    /**
+     * Request로 온 Payment와 DB에 저장된 Payment의 amount를 비교하여 fraud check.
+     * @param requestPayment
+     * @param persistedPayment
+     */
+    private void checkFraud(Payment requestPayment, Payment persistedPayment) {
+        if (requestPayment.getUserId().longValue() != persistedPayment.getUserId().longValue()) {
+            throw new FraudException(executor.getType(),
+                    String.format("request.user[%s] is diff with expected[%s]", requestPayment.getUserId(),
+                            persistedPayment.getUserId()));
+        }
+
+        if (requestPayment.getPaymentId().longValue() != persistedPayment.getPaymentId().longValue()) {
+            throw new FraudException(executor.getType(),
+                    String.format("request.payment[%s] is diff with expected[%s]", requestPayment.getPaymentId(),
+                            persistedPayment.getPaymentId()));
+        }
+
+        if (requestPayment.getAmount().floatValue() != persistedPayment.getAmount().floatValue()) {
+            throw new FraudException(executor.getType(),
+                    String.format("request.amount[%s] is diff with expected[%s]", requestPayment.getAmount(),
+                            persistedPayment.getAmount()));
+        }
     }
 
     public void verifyPrecondition() throws PreconditionException {
 
+    }
+
+    protected void initContext() {
+        context = Context.builder().requestInfo(requestInfo).payment(payment)
+                .responseInfo(new ResponseInfo(ErrorCode.LEZHIN_UNKNOWN)).build();
     }
 
     /**
@@ -111,8 +161,12 @@ public abstract class Command<T extends PGPayment> {
      */
     protected void initExecutor() {
         if (context == null) {
-            context = new Context.Builder<T>(requestInfo, payment).build();
+            initContext();
         }
+        executor = createExecutor(context);
+    }
+
+    protected void initExecutor(final Context context) {
         executor = createExecutor(context);
     }
 
@@ -145,10 +199,10 @@ public abstract class Command<T extends PGPayment> {
     public Payment<T> processNextStep() {
         Command.Type next = executor.nextTransition(commandType);
         if (Type.DONE == next) {
-            logger.info("DONE {}", getClass().getSimpleName());
             return payment;
         } else {
-            Context<T> nextStepContext = context.withPayment(context.getPayment());
+            // TODO toBudiler로 create
+            Context<T> nextStepContext = context.payment(context.getPayment());
             logger.info("nextStep = {}, context = {} ", next, nextStepContext.printPretty());
             Command nextCommand = beanFactory.getBean(next.getCommandClass(), nextStepContext);
             Payment<T> nextResult = nextCommand.execute();

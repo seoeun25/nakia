@@ -1,6 +1,6 @@
 package com.lezhin.panther.controller;
 
-import com.lezhin.panther.CertificationService;
+import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.util.DateUtil;
@@ -31,10 +31,10 @@ public class PantherController {
 
     private static final Logger logger = LoggerFactory.getLogger(PantherController.class);
 
-    private final CertificationService certificationService;
+    private final SimpleCacheService simpleCacheService;
 
-    public PantherController(CertificationService certificationService) {
-        this.certificationService = certificationService;
+    public PantherController(SimpleCacheService simpleCacheService) {
+        this.simpleCacheService = simpleCacheService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -79,11 +79,11 @@ public class PantherController {
         Boolean delete = Boolean.valueOf(Optional.ofNullable(map.get("delete")).orElse("false").toString());
         if (key != null) {
             try {
-                Object value = certificationService.get(key.toString());
+                Object value = simpleCacheService.get(key.toString());
                 logger.info("key = {}, value = {}", key, value);
 
                 if (delete) {
-                    logger.info("deleted = {}", certificationService.delete(key.toString()));
+                    logger.info("deleted = {}", simpleCacheService.delete(key.toString()));
                 }
             } catch (Exception e) {
                 logger.warn("Failed to get cache value", e);

@@ -62,12 +62,12 @@
     String pantherUrl = request.getAttribute("pantherUrl").toString();
     System.out.println("pantherUrl 222 = " + pantherUrl);
     // 가상계좌(무통장) 결제 연동을 하시는 경우 아래 LGD_CASNOTEURL 을 설정하여 주시기 바랍니다.
-    String LGD_CASNOTEURL		= pantherUrl + "/page/v1/lguplus2/payment/done";
+    String LGD_CASNOTEURL		= pantherUrl + "/api/v1/lguplus/deposit/payment/done";
     System.out.println("LGD_CASNOTEURL = " + LGD_CASNOTEURL);
 
     
     // LGD_RETURNURL 을 설정하여 주시기 바랍니다. 반드시 현재 페이지와 동일한 프로트콜 및  호스트이어야 합니다. 아래 부분을 반드시 수정하십시요.
-    String LGD_RETURNURL		= pantherUrl + "/page/v1/lguplus2/authentication/done";// FOR MANUAL
+    String LGD_RETURNURL		= pantherUrl + "/page/v1/lguplus/deposit/preauth/done";// FOR MANUAL
     System.out.println("LGD_RETURNURL = " + LGD_RETURNURL);
 
 	//&&&&PARAMETER EDIT END&&&&
@@ -210,7 +210,7 @@ function payment_return() {
 
 			document.getElementById("LGD_PAYKEY").value = fDoc.document.getElementById('LGD_PAYKEY').value;
 			document.getElementById("LGD_PAYINFO").target = "_self";
-			document.getElementById("LGD_PAYINFO").action = "/page/v1/lguplus2/payment";
+			document.getElementById("LGD_PAYINFO").action = "/page/v1/lguplus/authentication";
 			document.getElementById("LGD_PAYINFO").submit();
 	} else {
 		alert("LGD_RESPCODE (결과코드) : " + fDoc.document.getElementById('LGD_RESPCODE').value + "\n" + "LGD_RESPMSG (결과메시지): " + fDoc.document.getElementById('LGD_RESPMSG').value);
@@ -221,7 +221,7 @@ function payment_return() {
 </script>
 </head>
 <body>
-<form method="post" name="LGD_PAYINFO" id="LGD_PAYINFO" action="/page/v1/lguplus2/payment">
+<form method="post" name="LGD_PAYINFO" id="LGD_PAYINFO" action="/page/v1/lguplus/deposit/authentication">
 <table>
     <tr>
         <td>구매자 이름 </td>

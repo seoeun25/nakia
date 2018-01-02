@@ -32,6 +32,11 @@ public class Complete<T extends PGPayment> extends Command<T> {
         this.commandType = Type.COMPLETE;
     }
 
+    public void loadState() throws PreconditionException {
+        payment = requestInfo.getPayment();
+        verifyPrecondition();
+    }
+
     public void verifyPrecondition() throws PreconditionException {
 
     }

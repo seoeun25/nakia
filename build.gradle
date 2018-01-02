@@ -4,6 +4,7 @@ buildscript {
         junitPlatformVersion = '1.0.1'
         junitJupiterVersion = '5.0.1'
         mapstructVersion = '1.2.0.Final'
+        XPayClientVersion = "20171212"
     }
     repositories {
         mavenCentral()
@@ -38,6 +39,8 @@ repositories {
     maven { url "https://repo.spring.io/snapshot" }
     maven { url "https://repo.spring.io/milestone" }
     maven { url "http://nexus.lezhin.net/repository/maven-public/" }
+    maven { url "http://nexus.lezhin.net/repository/maven-3rdparty/" }
+
 }
 
 junitPlatform {
@@ -91,6 +94,12 @@ dependencies {
     testCompile('com.h2database:h2')
     testCompile('it.ozimov:embedded-redis:0.7.1')
     testCompile('org.springframework.boot:spring-boot-starter-test')
+
+    providedCompile("lgdacom.XPayClient:XPayClient:${XPayClientVersion}")
+    providedCompile("lgdacom.XPayClient:commons-codec:${XPayClientVersion}")
+    providedCompile("lgdacom.XPayClient:commons-httpclient:${XPayClientVersion}")
+    providedCompile("lgdacom.XPayClient:commons-logging:${XPayClientVersion}")
+    providedCompile("lgdacom.XPayClient:json_simple:${XPayClientVersion}")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompile("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")

@@ -26,6 +26,14 @@ public class Context<T extends PGPayment> {
         this.responseInfo = builder.responseInfo;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public Builder toBuilder() {
+        return new Builder();
+    }
+
     public Payment<T> getPayment() {
         return payment;
     }
@@ -50,16 +58,25 @@ public class Context<T extends PGPayment> {
         boolean executionSucceed = true;
         if (getRequestInfo().getExecutorType() == Executor.Type.HAPPYPOINT) {
             executionSucceed = getResponseInfo().getCode().equals(ErrorCode.SPC_OK.getCode());
+        } else if (getRequestInfo().getExecutorType() == Executor.Type.LGUDEPOSIT) {
+            executionSucceed = getResponseInfo().getCode().equals(ErrorCode.LGUPLUS_OK.getCode());
         }
         return executionSucceed;
     }
 
-    public Context<T> withPayment(Payment<T> payment) {
-        return new Context.Builder(requestInfo, payment, responseInfo).build();
+    public Context<T> request(RequestInfo request) {
+        this.requestInfo = request;
+        return this;
     }
 
-    public Context<T> withResponse(ResponseInfo response) {
-        return new Context.Builder(requestInfo, payment, response).build();
+    public Context<T> payment(Payment<T> payment) {
+        this.payment = payment;
+        return this;
+    }
+
+    public Context<T> response(ResponseInfo response) {
+        this.responseInfo = response;
+        return this;
     }
 
     public String printPretty() {
@@ -76,16 +93,29 @@ public class Context<T extends PGPayment> {
         private RequestInfo requestInfo;
         private ResponseInfo responseInfo;
 
-        public Builder(RequestInfo requestInfo, Payment<T> payment) {
-            this.requestInfo = requestInfo;
-            this.payment = payment;
-            this.responseInfo = new ResponseInfo(ErrorCode.LEZHIN_UNKNOWN);
+        public Builder() {
+
         }
 
-        public Builder(RequestInfo requestInfo, Payment<T> payment, ResponseInfo responseInfo) {
+        Builder(RequestInfo requestInfo, Payment<T> payment, ResponseInfo responseInfo) {
             this.requestInfo = requestInfo;
             this.payment = payment;
             this.responseInfo = responseInfo;
+        }
+
+        public Builder payment(Payment<T> payment) {
+            this.payment = payment;
+            return this;
+        }
+
+        public Builder requestInfo(RequestInfo requestInfo) {
+            this.requestInfo = requestInfo;
+            return this;
+        }
+
+        public Builder responseInfo(ResponseInfo responseInfo) {
+            this.responseInfo = responseInfo;
+            return this;
         }
 
         public Context build() {

@@ -44,7 +44,7 @@ function doPay() {
 </script>
 </head>
 <body>
-<form method="post" id="LGD_PAYINFO" action="/page/v1/lguplus2/reservation_org">
+<form method="post" id="LGD_PAYINFO" action="/page/v1/lguplus/deposit/reservation_org">
     <div>
         <table>
             <tr>

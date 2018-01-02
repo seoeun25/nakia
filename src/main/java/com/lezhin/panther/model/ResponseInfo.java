@@ -3,7 +3,9 @@ package com.lezhin.panther.model;
 import com.lezhin.panther.ErrorCode;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.io.Serializable;
 
@@ -12,7 +14,9 @@ import java.io.Serializable;
  * @since 2017.10.25
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Data
+@Builder (toBuilder = true)
+@Getter
+@ToString
 public class ResponseInfo implements Serializable {
 
     private String code;

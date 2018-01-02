@@ -1,6 +1,6 @@
 package com.lezhin.panther.controller;
 
-import com.lezhin.panther.CertificationService;
+import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.ResponseInfo;
@@ -30,7 +30,7 @@ public class CertifcationController {
     private static final Logger logger = LoggerFactory.getLogger(CertifcationController.class);
 
     @Autowired
-    private CertificationService certificationService;
+    private SimpleCacheService simpleCacheService;
 
     /**
      * 본인 인증이 성공했을 때 호출된다. ex-module에서는 api를 호출 한 후 다시 /callback 호출.
@@ -48,12 +48,12 @@ public class CertifcationController {
         logger.info("certification. userId = {}, name = {}, ci = {}",
                 certification.getUserId(), certification.getName(), certification.getCI());
 
-        certificationService.saveCertification(certification);
+        simpleCacheService.saveCertification(certification);
 
         // FIXME only for debugging. Need to Remove
         try {
             Thread.sleep(100);
-            Certification result = certificationService.getCertification(certification.getUserId());
+            Certification result = simpleCacheService.getCertification(certification.getUserId());
             logger.info("saved = {}", result.toString());
         } catch (Exception e) {
             logger.warn("Failed to retrieve ", e);

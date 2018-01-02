@@ -1,9 +1,9 @@
 package com.lezhin.panther.happypoint;
 
 import com.lezhin.avengers.panther.model.HappypointAggregator;
-import com.lezhin.panther.CertificationService;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.ErrorCode;
+import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.exception.CIException;
 import com.lezhin.panther.exception.ExceedException;
@@ -42,20 +42,18 @@ import java.util.Optional;
 @Scope("prototype")
 public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
-    private static final Logger logger = LoggerFactory.getLogger(HappyPointExecutor.class);
-
     /**
      * 2000point/mbrNo/month
      */
     public static final Integer POINT_LIMITATION = new Integer(2000);
-
+    private static final Logger logger = LoggerFactory.getLogger(HappyPointExecutor.class);
     private Map<Command.Type, Command.Type> transitionMap = ImmutableMap.of(
             Command.Type.RESERVE, Command.Type.AUTHENTICATE,
             Command.Type.AUTHENTICATE, Command.Type.PAY,
             Command.Type.PAY, Command.Type.COMPLETE);
 
     @Autowired
-    private CertificationService cacheService;
+    private SimpleCacheService cacheService;
     @Autowired
     private ClientHttpRequestFactory clientHttpRequestFactory;
 
@@ -66,6 +64,26 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     public HappyPointExecutor(Context<HappyPointPayment> context) {
         super(context);
         this.type = Type.HAPPYPOINT;
+    }
+
+    public void verifyPrecondition(Command.Type commandType) throws PreconditionException {
+        if (commandType == Command.Type.RESERVE) {
+            if (context.getPayment().getPgPayment().getMbrNo() == null ||
+                    context.getPayment().getPgPayment().getMbrNo().equals("")) {
+                throw new PreconditionException(type, "mbrNo can not be null nor empty");
+            }
+            if (context.getPayment().getPgPayment().getUseReqPt() == null) {
+                throw new PreconditionException(type, "useReqPt can not be null");
+            }
+            // 2000point/mbrNo/month
+            HappypointAggregator aggregator = cacheService.getHappypointAggregator(context.getPayment().getPgPayment().getMbrNo(),
+                    DateUtil.format(Instant.now().toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM"));
+            if (aggregator != null &&
+                    aggregator.getPointSum().intValue() + context.getPayment().getPgPayment().getUseReqPt().intValue() >
+                            POINT_LIMITATION.intValue()) {
+                throw new ExceedException(type, "Exceed 3000 point/ month");
+            }
+        }
     }
 
     public Payment<HappyPointPayment> checkPoint() throws HappyPointParamException, HappyPointSystemException {
@@ -96,8 +114,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         payment.setPgPayment(response);
 
-        context = context.withPayment(payment);
-        context = context.withResponse(new ResponseInfo(payment.getPgPayment().getRpsCd(),
+        context = context.payment(payment);
+        context = context.response(new ResponseInfo(payment.getPgPayment().getRpsCd(),
                 payment.getPgPayment().getRpsDtlMsg()));
 
         String responseCode = context.getResponseInfo().getCode();
@@ -150,9 +168,9 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         payment.setPgPayment(response);
 
-        context = context.withPayment(payment);
-        context = context.withResponse(new ResponseInfo(payment.getPgPayment().getRpsCd(),
-                payment.getPgPayment().getRpsDtlMsg()));
+        context = context.payment(payment)
+                .response(new ResponseInfo(payment.getPgPayment().getRpsCd(),
+                        payment.getPgPayment().getRpsDtlMsg()));
 
         String responseCode = context.getResponseInfo().getCode();
         handleResponseCode(responseCode);
@@ -165,25 +183,10 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     }
 
     public Payment<HappyPointPayment> reserve() {
-        if (context.getPayment().getPgPayment().getMbrNo() == null ||
-                context.getPayment().getPgPayment().getMbrNo().equals("")) {
-            throw new PreconditionException(type, "mbrNo can not be null nor empty");
-        }
-        if (context.getPayment().getPgPayment().getUseReqPt() == null) {
-            throw new PreconditionException(type, "useReqPt can not be null");
-        }
-        // 3000point/mbrNo/month
-        HappypointAggregator aggregator = cacheService.getPaymentResult(context.getPayment().getPgPayment().getMbrNo(),
-                DateUtil.format(Instant.now().toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM"));
-        if (aggregator != null &&
-                aggregator.getPointSum().intValue() + context.getPayment().getPgPayment().getUseReqPt().intValue() >
-                        POINT_LIMITATION.intValue()) {
-            throw new ExceedException(type, "Exceed 3000 point/ month");
-        }
 
         // do nothing
         Payment<HappyPointPayment> payment = context.getPayment();
-        context = context.withResponse(new ResponseInfo(ErrorCode.SPC_OK));
+        context = context.response(new ResponseInfo(ErrorCode.SPC_OK));
         return payment;
     }
 
@@ -194,7 +197,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         // do nothing. response ok
         Payment<HappyPointPayment> payment = context.getPayment();
-        context = context.withResponse(new ResponseInfo(ErrorCode.SPC_OK));
+        context = context.response(new ResponseInfo(ErrorCode.SPC_OK));
         return payment;
     }
 
@@ -228,8 +231,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         payment.setPgPayment(response);
 
-        context = context.withPayment(payment);
-        context = context.withResponse(new ResponseInfo(payment.getPgPayment().getRpsCd(),
+        context = context.payment(payment);
+        context = context.response(new ResponseInfo(payment.getPgPayment().getRpsCd(),
                 payment.getPgPayment().getRpsDtlMsg()));
 
         handleResponseCode(context.getResponseInfo().getCode());
@@ -248,7 +251,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
             HappypointAggregator aggregator = new HappypointAggregator(mbrNo, ym,
                     happyPointPayment.getUsePt());
-            cacheService.addPaymentResult(aggregator);
+            cacheService.saveHappypointAggregator(aggregator);
         }
         return context.getPayment();
     }
@@ -286,9 +289,9 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         payment.setPgPayment(response);
 
-        context = context.withPayment(payment);
-        context = context.withResponse(new ResponseInfo(payment.getPgPayment().getRpsCd(),
-                payment.getPgPayment().getRpsDtlMsg()));
+        context = context.payment(payment)
+                .response(new ResponseInfo(payment.getPgPayment().getRpsCd(),
+                        payment.getPgPayment().getRpsDtlMsg()));
 
         handleResponseCode(context.getResponseInfo().getCode());
 

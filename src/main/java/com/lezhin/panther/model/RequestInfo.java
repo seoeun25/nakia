@@ -1,11 +1,13 @@
 package com.lezhin.panther.model;
 
+import com.lezhin.constant.LezhinCurrency;
+import com.lezhin.constant.LezhinStore;
+import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.happypoint.HappyPointPayment;
+import com.lezhin.panther.lguplus.LguplusPayment;
 import com.lezhin.panther.util.JsonUtil;
-import com.lezhin.panther.util.Util;
-import com.lezhin.constant.LezhinStore;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
@@ -18,6 +20,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +29,7 @@ import java.util.Optional;
  * @author seoeun
  * @since 2017.10.24
  */
-public class RequestInfo {
+public class RequestInfo implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestInfo.class);
 
@@ -38,6 +41,7 @@ public class RequestInfo {
     private String returnToUrl;
     private String locale;
     private Long userId;
+    private PaymentType paymentType;
     private Executor.Type executorType;
     private Payment payment;
 
@@ -50,6 +54,7 @@ public class RequestInfo {
         this.returnToUrl = builder.returnToUrl;
         this.locale = builder.locale;
         this.userId = builder.userId;
+        this.paymentType = builder.paymentType;
         this.executorType = builder.executorType;
         this.payment = builder.payment;
     }
@@ -82,12 +87,21 @@ public class RequestInfo {
         return this.userId;
     }
 
+    public PaymentType getPaymentType() {
+        return this.paymentType;
+    }
+
     public Executor.Type getExecutorType() {
         return executorType;
     }
 
     public Payment getPayment() {
         return payment;
+    }
+
+    public RequestInfo withPayment(Payment payment) {
+        this.payment = payment;
+        return this;
     }
 
     @Override
@@ -114,6 +128,7 @@ public class RequestInfo {
         private String returnToUrl;
         private String locale;
         private Long userId;
+        private PaymentType paymentType;
         private Executor.Type executorType;
         private Payment payment;
 
@@ -126,31 +141,42 @@ public class RequestInfo {
             this.returnToUrl = requestInfo.returnToUrl;
             this.locale = requestInfo.locale;
             this.userId = requestInfo.userId;
+            this.paymentType = requestInfo.paymentType;
             this.executorType = requestInfo.executorType;
             this.payment = requestInfo.payment;
         }
 
-        public Builder(HttpServletRequest request, String pg) {
+        public Builder(Payment payment, String pg) {
+            findExecutor(pg, payment.getPaymentType().name());
+            withPayment(payment);
+        }
 
-            withPg(pg);
-            // TODO executor setting을 뭐 좀 다른 방법으로.
-            if ("happypoint".equals(pg)) {
-                withExecutor(Executor.Type.HAPPYPOINT);
-            } else if ("dummy".equals(pg)) {
-                withExecutor(Executor.Type.DUMMY);
-            } else {
-                throw new ParameterException(Executor.Type.DUMMY, "Unknown PG = " + pg);
-            }
+        public Builder(HttpServletRequest request, String pg) {
+            findExecutor(pg, request.getParameter("paymentType"));
 
             Map<String, Object> requestMap = new HashMap<>();
 
             try {
-                String result = CharStreams.toString(new InputStreamReader(request.getInputStream(), Charsets.UTF_8));
-                logger.info("requestBody = {}", result);
-                requestMap = JsonUtil.fromJson(result, Map.class);
+                if (executorType == Executor.Type.LGUDEPOSIT) {
+                    // from pageController. lguplus
+                    requestMap.put("locale", request.getParameter("locale"));
+                    requestMap.put("isMobile", request.getParameter("isMobile"));
+                    requestMap.put("isApp", request.getParameter("isApp"));
+                    requestMap.put("_lz_userId", request.getParameter("_lz_userId"));
+                    requestMap.put("returnToUrl", request.getParameter("returnToUrl"));
+                } else {
+                    // from apiController. happypoint
+                    String result = CharStreams.toString(new InputStreamReader(request.getInputStream(), Charsets.UTF_8));
+                    logger.info("requestBody = {}", result);
+                    requestMap = JsonUtil.fromJson(result, Map.class);
+                }
             } catch (IOException e) {
                 throw new ParameterException(executorType, "Failed to read requestBody");
             }
+            requestMap.entrySet().stream().forEach(e -> {
+                logger.info("requestMap. {} = {} /[{}]", e.getKey(), e.getValue(),
+                        e.getValue() == null ? "null" : e.getValue().getClass().getSimpleName());
+            });
 
             Optional.ofNullable(request).orElseThrow(() ->
                     new ParameterException(executorType, "HttpServletRequest can not be null"));
@@ -183,8 +209,9 @@ public class RequestInfo {
             withToken(token);
 
             withLocale(Optional.ofNullable(requestMap.get("locale")).orElse("ko-KR").toString());
-            withIsMobile(((Boolean) Optional.ofNullable(requestMap.get("isMobile")).orElse(Boolean.FALSE)));
-            withIsApp(((Boolean) Optional.ofNullable(requestMap.get("isApp")).orElse(Boolean.FALSE)));
+            withIsMobile(Boolean.valueOf(Optional.ofNullable(requestMap.get("isMobile"))
+                    .orElse(Boolean.FALSE).toString()));
+            withIsApp(Boolean.valueOf(Optional.ofNullable(requestMap.get("isApp")).orElse(Boolean.FALSE).toString()));
             withUserId(Long.valueOf((Optional.ofNullable(requestMap.get("_lz_userId")).orElseThrow(
                     () -> new ParameterException(executorType, "_lz_userId can not be null")
             )).toString()));
@@ -194,14 +221,13 @@ public class RequestInfo {
             // check the request param
             Payment payment = new Payment();
             payment.setPgCompany(pg);
-            payment.setLocale(Util.of(locale));
+            payment.setLocale(locale);
             if (executorType == Executor.Type.HAPPYPOINT) {
                 payment.setUserId(userId);
 
+                // happypoint 일 경우 coinProduct
                 payment.setExternalStoreProductId(
                         Optional.ofNullable(requestMap.get("_lz_externalStoreProductId")).orElse("").toString());
-                // happypoint 일 경우.
-                payment.setPaymentType(executorType.getPaymentType(payment.getExternalStoreProductId()));
                 payment.setStore(LezhinStore.valueOf(Optional.ofNullable(requestMap.get("_lz_store"))
                         .orElse("base").toString()));
                 payment.setStoreVersion(Optional.ofNullable(requestMap.get("_lz_storeVersion")).orElse("").toString());
@@ -210,13 +236,81 @@ public class RequestInfo {
                 pgPayment.setMbrNm(Optional.ofNullable(requestMap.get("pgPayment_mbrNm")).orElse("").toString());
                 pgPayment.setUseReqPt((Integer) Optional.ofNullable(requestMap.get("pgPayment_useReqPt"))
                         .orElse(0));
+                // TODO happypoint 의 경우 request에 paymentType을 받지 않아서, 임시로 externalStoreProductId를 사용
+                payment.setPaymentType(executorType.getPaymentType(payment.getExternalStoreProductId()));
+                withPaymentType(payment.getPaymentType());
                 payment.setPgPayment(pgPayment);
                 Meta meta = new Meta();
                 meta.setDynamicAmount(pgPayment.getUseReqPt());
                 payment.setMeta(meta);
                 withPayment(payment);
+            } else if (executorType == Executor.Type.LGUDEPOSIT) {
+                payment.setUserId(userId); // token base라 reserve에서 payment 만들 때 다시 세팅됨. 여기서는 딱히 필요 없음
+
+                // coin product
+                payment.setPaymentType(paymentType);
+                payment.setCoinProductId(Long.parseLong(Optional.ofNullable(request.getParameter("productId")
+                ).orElseThrow(
+                        () -> new ParameterException(executorType, "productId(coin) can not be null")
+                ).toString()));
+                payment.setCurrency(LezhinCurrency.valueOf(Optional.ofNullable(request.getParameter("currency")
+                ).orElseThrow(
+                        () -> new ParameterException(executorType, "currency can not be null")
+                ).toString()));
+                payment.setAmount(Float.parseFloat(Optional.ofNullable(request.getParameter("amount")
+                ).orElseThrow(
+                        () -> new ParameterException(executorType, "amount cat not be null")
+                ).toString()));
+                if (payment.getAmount() <= 0) {
+                    throw new ParameterException(executorType, "amount can not be less and equal than 0");
+                }
+                if (payment.getAmount() % 10 > 0) {
+                    throw new ParameterException(executorType, "amount should be integer, not float neither double");
+                }
+                payment.setPointAmount(Integer.parseInt(Optional.ofNullable(request.getParameter("point")
+                ).orElse("0").toString()));
+
+                payment.setStore(LezhinStore.valueOf(Optional.ofNullable(request.getParameter("store")
+                ).orElseThrow(
+                        () -> new ParameterException(executorType, "store can not be null")
+                ).toString()));
+                payment.setStore(LezhinStore.valueOf(Optional.ofNullable(request.getParameter("platform")
+                ).orElseThrow(
+                        () -> new ParameterException(executorType, "platform can not be null")
+                ).toString()));
+
+                LguplusPayment pgPayment = LguplusPayment.builder().build();
+                payment.setPgPayment(pgPayment);
+                payment.setMeta(new Meta());
+                withPayment(payment);
             }
 
+            logger.info("request. payment = {}", JsonUtil.toJson(payment));
+
+        }
+
+        private void findExecutor(final String pg, final String paymentType) {
+            withPg(pg);
+            // TODO executor setting을 뭐 좀 다른 방법으로.
+            if ("happypoint".equals(pg)) {
+                withExecutor(Executor.Type.HAPPYPOINT);
+            } else if ("lguplus".equals(pg)) {
+                PaymentType pType = PaymentType.valueOf(Optional.ofNullable(paymentType).orElseThrow(
+                        () -> new ParameterException(executorType, "paymentType can not be null")));
+                withPaymentType(pType);
+                if (pType == PaymentType.deposit || pType == PaymentType.mdeposit) {
+                    withExecutor(Executor.Type.LGUDEPOSIT);
+                } else {
+                    throw new ParameterException(Executor.Type.DUMMY, "Not support. PG = " + pg + ", paymentType = " +
+                            paymentType);
+                }
+            } else if ("dummy".equals(pg)) {
+                withPaymentType(PaymentType.unknown);
+                withExecutor(Executor.Type.DUMMY);
+            } else {
+                throw new ParameterException(Executor.Type.DUMMY, "Not support. PG = " + pg + ", paymentType = " +
+                        paymentType);
+            }
         }
 
         public Builder withPg(String pg) {
@@ -266,6 +360,11 @@ public class RequestInfo {
 
         public Builder withUserId(Long userId) {
             this.userId = userId;
+            return this;
+        }
+
+        public Builder withPaymentType(PaymentType paymentType) {
+            this.paymentType = paymentType;
             return this;
         }
 

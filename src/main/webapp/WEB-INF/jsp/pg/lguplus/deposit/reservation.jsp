@@ -59,17 +59,18 @@
     String LGD_CUSTOM_SKIN      = "red";                                                //상점정의 결제창 스킨(red)
 	String LGD_WINDOW_VER		= "2.5";												//결제창 버젼정보
 
-    String authFailUrl = request.getAttribute("authFailUrl").toString();
-    System.out.println("authFailUrl = " + authFailUrl);
+    String authFailUrl = request.getAttribute("failUrl").toString();
+    //System.out.println("authFailUrl = " + authFailUrl);
     String pantherUrl = request.getAttribute("pantherUrl").toString();
     // 가상계좌(무통장) 결제 연동을 하시는 경우 아래 LGD_CASNOTEURL 을 설정하여 주시기 바랍니다.
-    String LGD_CASNOTEURL		= pantherUrl + "/page/v1/lguplus2/payment/done";
-    System.out.println("LGD_CASNOTEURL = " + LGD_CASNOTEURL);
+    String LGD_CASNOTEURL		= pantherUrl + "/api/v1/lguplus/deposit/payment/done";
+    //System.out.println("LGD_CASNOTEURL = " + LGD_CASNOTEURL);
+    String LGD_CLOSEDATE        = request.getAttribute("LGD_CLOSEDATE").toString();
 
     
     // LGD_RETURNURL 을 설정하여 주시기 바랍니다. 반드시 현재 페이지와 동일한 프로트콜 및  호스트이어야 합니다. 아래 부분을 반드시 수정하십시요.
-    String LGD_RETURNURL		= pantherUrl + "/page/v1/lguplus2/authentication/done";// FOR MANUAL
-    System.out.println("LGD_RETURNURL = " + LGD_RETURNURL);
+    String LGD_RETURNURL		= pantherUrl + "/page/v1/lguplus/deposit/preauth/done";// FOR MANUAL
+    //System.out.println("LGD_RETURNURL = " + LGD_RETURNURL);
 
 	//&&&&PARAMETER EDIT END&&&&
 
@@ -155,6 +156,7 @@
      
      // 가상계좌(무통장) 결제연동을 하시는 경우  할당/입금 결과를 통보받기 위해 반드시 LGD_CASNOTEURL 정보를 LG 유플러스에 전송해야 합니다 .
      payReqMap.put("LGD_CASNOTEURL"          , LGD_CASNOTEURL );               // 가상계좌 NOTEURL
+     payReqMap.put("LGD_CLOSEDATE"           , LGD_CLOSEDATE );                // 결제 마감시간
 
 
 
@@ -217,21 +219,21 @@ function payment_return() {
 
 			document.getElementById("LGD_PAYKEY").value = fDoc.document.getElementById('LGD_PAYKEY').value;
 			document.getElementById("LGD_PAYINFO").target = "_self";
-			document.getElementById("LGD_PAYINFO").action = "/page/v1/lguplus2/payment";
+			document.getElementById("LGD_PAYINFO").action = "/page/v1/lguplus/deposit/authentication";
 			document.getElementById("LGD_PAYINFO").submit();
 	} else {
 	    var resCodde = fDoc.document.getElementById('LGD_RESPCODE').value;
 
 		alert("LGD_RESPCODE (결과코드) : " + fDoc.document.getElementById('LGD_RESPCODE').value + "\n" + "LGD_RESPMSG (결과메시지): " + fDoc.document.getElementById('LGD_RESPMSG').value);
 		closeIframe();
-        //window.location = 'https://localhost:9443/page/v1/lguplus2/sample';
+        //window.location = 'https://localhost:9443/page/v1/lguplus/sample';
 	}
 }
 
 </script>
 </head>
 <body onload="launchCrossPlatform()">
-<form method="post" name="LGD_PAYINFO" id="LGD_PAYINFO" action="/page/v1/lguplus2/payment">
+<form method="post" name="LGD_PAYINFO" id="LGD_PAYINFO" action="/page/v1/lguplus/deposit/authentication">
 <%
 	for(Iterator i = payReqMap.keySet().iterator(); i.hasNext();){
 		Object key = i.next();

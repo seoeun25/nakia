@@ -224,8 +224,8 @@ public class PaymentUtil extends Payment {
         Boolean $isMobile = Optional.ofNullable(isMobile).orElse(Boolean.TRUE);
         Boolean $isApp = Optional.ofNullable(isApp).orElse(Boolean.TRUE);
         String $returnTo = Optional.ofNullable(returnToUrl).orElse("");
-        String $lang = Optional.ofNullable(locale).orElse(LezhinLocale.KO_KR).getLanguageCode().toLowerCase();
-
+        //String $lang = Optional.ofNullable(locale).orElse(LezhinLocale.KO_KR).getLanguageCode().toLowerCase();
+        String $lang = "ko";
         // FIXME
         UriComponents uriComponents = UriComponentsBuilder.newInstance()
                 .scheme("https").host(host).path($lang + "/pay/" + paymentId + "/result")

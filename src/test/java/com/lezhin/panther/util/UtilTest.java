@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
+ *
+ * // FIXME json dependnecy가 2개라는 워닝.
  * @author seoeun
  * @since 2017.11.07
  */
@@ -71,6 +73,14 @@ public class UtilTest {
         a.add(product1);
 
         System.out.println(JsonUtil.toJson(a));
+    }
+
+    @Test
+    public void testLangFromLocale() {
+        assertEquals("en", Util.getLang("en-US"));
+        assertEquals("ko", Util.getLang("a"));
+        assertEquals("ko", Util.getLang("ko-KR"));
+        assertEquals("ko", Util.getLang(null));
     }
 
 }

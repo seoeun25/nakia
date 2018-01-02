@@ -2,7 +2,7 @@
 
 <%
     String targetUrl =
-            "/page/v1/lguplus2/reservation" +
+            "/page/v1/lguplus/deposit/reservation" +
                     "?amount=19900&platform=web&point=0&store=web&paymentType=deposit&locale=ko-KR&" +
                     "_lz_userId=6066665726148608&isMobile=false&" +
                     "_lz=3345d250-5165-439c-a8de-ce08c3c7e5ab&currency=KRW&productId=6395783134314496";

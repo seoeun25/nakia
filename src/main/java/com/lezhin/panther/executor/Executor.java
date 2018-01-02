@@ -1,15 +1,18 @@
 package com.lezhin.panther.executor;
 
+import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.dummy.DummyExecutor;
 import com.lezhin.panther.dummy.DummyPayment;
+import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.happypoint.HappyPointExecutor;
 import com.lezhin.panther.happypoint.HappyPointPayment;
+import com.lezhin.panther.lguplus.LguDepositExecutor;
+import com.lezhin.panther.lguplus.LguplusPayment;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
-import com.lezhin.constant.PaymentType;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,6 +27,11 @@ public abstract class Executor<T extends PGPayment> {
             @Override
             public Payment createPayment(Context context) {
                 return new Payment<DummyPayment>(System.currentTimeMillis());
+            }
+
+            @Override
+            public Payment createPayment(PGPayment pgPayment) {
+                return null;
             }
 
             @Override
@@ -43,6 +51,11 @@ public abstract class Executor<T extends PGPayment> {
             }
 
             @Override
+            public Payment createPayment(PGPayment pgPayment) {
+                return null;
+            }
+
+            @Override
             public PaymentType getPaymentType(String externalStoreProductId) {
                 if (externalStoreProductId == null) {
                     return PaymentType.happypoint;
@@ -55,23 +68,67 @@ public abstract class Executor<T extends PGPayment> {
             public Class getExecutorClass() {
                 return HappyPointExecutor.class;
             }
+        },
+        LGUDEPOSIT("lgudeposit") { // LGUplus를 사용하여 무통장입금 (deposit)
+            @Override
+            public Payment createPayment(Context context) {
+                return new Payment<com.lezhin.panther.lguplus.LguplusPayment>(System.currentTimeMillis());
+            }
+
+            @Override
+            public Payment createPayment(PGPayment pgPayment) {
+                LguplusPayment lguplusPayment = (LguplusPayment) pgPayment;
+                Payment<LguplusPayment> payment = new Payment<>();
+                payment.setUserId(Long.parseLong(lguplusPayment.getLGD_BUYER()));
+                payment.setPaymentId(Long.parseLong(lguplusPayment.getLGD_OID()));
+                payment.setAmount(Float.parseFloat(lguplusPayment.getLGD_AMOUNT()));
+                payment.setCoinProductName(lguplusPayment.getLGD_PRODUCTINFO());
+                payment.setPgPayment(lguplusPayment);
+                return payment;
+            }
+
+            @Override
+            public Class getExecutorClass() {
+                return LguDepositExecutor.class;
+            }
+
+            @Override
+            public PaymentType getPaymentType(String externalStoreProductId) {
+                return PaymentType.deposit;
+            }
+
+            @Override
+            public boolean isAsync() {
+                return true;
+            }
         };
 
-        private String name;
+        private String label;
 
-        Type(String name) {
-            this.name = name;
+        Type(String label) {
+            this.label = label;
         }
 
-        String getName() {
-            return name;
+        public String getLabel() {
+            return label;
         }
 
         public abstract Payment createPayment(Context context);
 
+        public abstract Payment createPayment(PGPayment pgPayment);
+
         public abstract <E> Class<E> getExecutorClass();
 
         public abstract PaymentType getPaymentType(String externalStoreProductId);
+
+        /**
+         * PG에서 callback으로 async하게 호출하는 경우.
+         *
+         * @return
+         */
+        public boolean isAsync() {
+            return false;
+        }
     }
 
     protected Type type;
@@ -95,6 +152,10 @@ public abstract class Executor<T extends PGPayment> {
         return context.getPayment();
     }
 
+    public Payment<T> preAuthenticate() {
+        return context.getPayment();
+    }
+
     public Payment<T> authenticate() {
         return context.getPayment();
     }
@@ -105,11 +166,11 @@ public abstract class Executor<T extends PGPayment> {
     }
 
     public Payment<T> complete() {
-        return  context.getPayment();
+        return context.getPayment();
     }
 
     public Payment refund() {
-        return  context.getPayment();
+        return context.getPayment();
     }
 
     public Command.Type nextTransition(Command.Type currentStep) {
@@ -123,6 +184,7 @@ public abstract class Executor<T extends PGPayment> {
 
     /**
      * Throws Exception if the responseCode is not OK state.
+     *
      * @param responseCode
      * @throws RuntimeException
      */
@@ -130,4 +192,11 @@ public abstract class Executor<T extends PGPayment> {
 
     }
 
+    public void verifyPrecondition(Command.Type type) throws PreconditionException {
+
+    }
+
+    public Type getType() {
+        return type;
+    }
 }

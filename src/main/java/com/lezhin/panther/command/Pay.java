@@ -47,7 +47,6 @@ public class Pay<T extends PGPayment> extends Command<T> {
             throw new PreconditionException(requestInfo.getExecutorType(),
                     String.format("Payment state should be %s but %s", PaymentState.PC, payment.getState()));
         }
-        logger.info("verifyPrecondition done");
     }
 
     @Override
@@ -62,17 +61,16 @@ public class Pay<T extends PGPayment> extends Command<T> {
             // do nothing. responseInfo에 이미 세팅되어 있음.
         } finally {
             payment = executor.getContext().getPayment();
+            context = context.payment(payment).response(executor.getContext().getResponseInfo());
+            logger.info("{} [{}] done. {}", commandType.name(), executor.getType(),
+                    context.getResponseInfo().toString());
+            logger.debug("payment = {}, \n{}", payment.getPaymentId(), JsonUtil.toJson(payment));
         }
-        context = context.withPayment(payment);
-        context = context.withResponse(executor.getContext().getResponseInfo());
-        logger.info("{} [{}] done. {}", commandType.name(), executor.getClass().getSimpleName(),
-                context.getResponseInfo().toString());
-        logger.debug("payment = {}, \n{}", payment.getPaymentId(), JsonUtil.toJson(payment));
 
         try {
             // execution이 성공이든 실패이든 internalPayment call.
             payment = internalPaymentService.pay(context);
-            context = context.withPayment(payment);
+            context = context.payment(payment);
         } catch (Throwable e) {
             logger.info("status = {}", context.getResponseInfo());
             logger.warn("Failed to internal.pay", e);
@@ -81,13 +79,13 @@ public class Pay<T extends PGPayment> extends Command<T> {
                 // purchase가 만들어 지지 않음. pg 취소
                 logger.error("{} !!! pg.pay succeed, but internalPayment.paymentVerified failed.\n" +
                                 " === This payment is going to REFUND to {}. paymentId = {}", commandType.name(),
-                        executor.getClass().getSimpleName(), payment.getPaymentId());
+                        executor.getType(), payment.getPaymentId());
 
                 // 환불
                 executor.refund();
 
                 // response는 panther.
-                context = context.withResponse(
+                context = context.response(
                         new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
                 throw new InternalPaymentException(requestInfo.getExecutorType(), e);
             } else {

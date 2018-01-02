@@ -19,7 +19,7 @@ public class PantherProperties {
     private String slackChannel;
     private String cloudWatch;
     private Happypoint happypoint;
-    private Lguplus2 lguplus2;
+    private Lguplus lguplus;
 
     @Data
     public static class Happypoint {
@@ -28,7 +28,10 @@ public class PantherProperties {
     }
 
     @Data
-    public static class Lguplus2 {
+    public static class Lguplus {
         private String confDir;
+        private String cstPlatform;
+        private String cstMid;
+        private String txName;
     }
 }

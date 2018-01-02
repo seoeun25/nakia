@@ -31,6 +31,11 @@ panther:
   happypoint:
     hpcUrl: http://dev-outbound-proxy.lezhin.net/spc/processHpc
     mchtNo: 100015851
+  lguplus:
+    confDir: /etc/panther/conf/beta/lgdacom
+    cstPlatform: test
+    cstMid: lezhin001
+    txName: PaymentByKey
   actuator:
     security:
       enabled: true
@@ -57,6 +62,9 @@ panther:
   happypoint:
     hpcUrl: http://outbound-proxy.lezhin.net/spc/processHpc
     mchtNo: 100031405
+  lguplus:
+    confDir: /etc/panther/conf/production/lgdacom
+    cstPlatform: service
 ---
 spring:
   profiles: staging
@@ -144,6 +152,8 @@ panther:
   webUrl: https://a-www.lezhin.com
   apiUrl: https://lezhincomix-alpha.appspot.com/api/v2/internal/payments
   pantherUrl: https://localhost:9443
+  lguplus:
+    confDir: conf/local/lgdacom
   actuator:
     security:
       enabled: false

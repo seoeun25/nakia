@@ -181,14 +181,14 @@ public class RequestInfoTest {
     }
 
     @Test
-    public void testLguplus2Request() throws Exception {
+    public void testLguplusRequest() throws Exception {
 
         MockHttpServletRequest request1 = createHttpServletRequest();
         request1.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
         request1.setParameter("_lz_userId", "123456789");
         request1.setParameter("paymentType", "deposit");
         try {
-            RequestInfo requestInfo = new RequestInfo.Builder(request1, "lguplus2").build();
+            RequestInfo requestInfo = new RequestInfo.Builder(request1, "lguplus").build();
         } catch (ParameterException e) {
             assertTrue(e.getMessage().contains("productId"));
         }
@@ -199,7 +199,7 @@ public class RequestInfoTest {
         request2.setParameter("paymentType", "deposit");
         request2.setParameter("productId", "9876543");
         try {
-            RequestInfo requestInfo = new RequestInfo.Builder(request2, "lguplus2").build();
+            RequestInfo requestInfo = new RequestInfo.Builder(request2, "lguplus").build();
         } catch (ParameterException e) {
             logger.info(e.getMessage());
             assertTrue(e.getMessage().contains("currency"));
@@ -212,7 +212,7 @@ public class RequestInfoTest {
         request3.setParameter("productId", "9876543");
         request3.setParameter("currency", "KRW");
         try {
-            RequestInfo requestInfo = new RequestInfo.Builder(request3, "lguplus2").build();
+            RequestInfo requestInfo = new RequestInfo.Builder(request3, "lguplus").build();
         } catch (ParameterException e) {
             logger.info(e.getMessage());
             assertTrue(e.getMessage().contains("amount"));
@@ -224,14 +224,14 @@ public class RequestInfoTest {
         request4.setParameter("paymentType", "deposit");
         request4.setParameter("productId", "9876543");
         request4.setParameter("currency", "KRW");
-        request4.setParameter("amount", "1230.5");
+        request4.setParameter("amount", "1230.0");
         request4.setParameter("store", "web");
         request4.setParameter("platform", "web");
 
-        RequestInfo requestInfo = new RequestInfo.Builder(request4, "lguplus2").build();
+        RequestInfo requestInfo = new RequestInfo.Builder(request4, "lguplus").build();
         assertEquals(9876543L, requestInfo.getPayment().getCoinProductId().longValue());
         assertEquals(LezhinCurrency.KRW, requestInfo.getPayment().getCurrency());
-        assertEquals(1230.5f, requestInfo.getPayment().getAmount().floatValue());
+        assertEquals(1230.0f, requestInfo.getPayment().getAmount().floatValue());
         assertEquals(0, requestInfo.getPayment().getPointAmount().intValue());
 
     }

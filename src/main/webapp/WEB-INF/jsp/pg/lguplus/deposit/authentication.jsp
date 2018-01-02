@@ -34,7 +34,7 @@ request.setCharacterEncoding("UTF-8");
 
     //해당 API를 사용하기 위해 WEB-INF/lib/XPayClient.jar 를 Classpath 로 등록하셔야 합니다. 
     XPayClient xpay = new XPayClient();
-   	boolean isInitOK = xpay.Init(configPath, CST_PLATFORM);   	
+   	boolean isInitOK = xpay.Init(configPath, CST_PLATFORM);
 
    	if( !isInitOK ) {
     	//API 초기화 실패 화면처리
@@ -45,7 +45,7 @@ request.setCharacterEncoding("UTF-8");
         return;
    	
    	}else{
-   	    System.out.println("payment.jsp - InitOK");
+   	    System.out.println("authentication.jsp - InitOK");
    	    System.out.println("CST_PLATFORM = " + CST_PLATFORM);
         System.out.println("CST_MID = " + CST_MID);
         System.out.println("LGD_MID = " + LGD_MID);
