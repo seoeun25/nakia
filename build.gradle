@@ -70,6 +70,12 @@ dependencies {
 	compile("org.mariadb.jdbc:mariadb-java-client:2.1.0")
 	compile("mysql:mysql-connector-java:5.1.43")
 
+    compile('com.google.cloud:gcloud-java-datastore:0.2.0') {
+		exclude(group: 'com.fasterxml.jackson.core')
+        exclude(group: 'org.apache.httpcomponents')
+        exclude(module: 'guava-jdk5')
+	}
+
 	compileOnly('org.projectlombok:lombok')
 	runtime('org.springframework.boot:spring-boot-devtools')
 	testCompile('com.h2database:h2')

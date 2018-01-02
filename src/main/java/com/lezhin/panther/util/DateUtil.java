@@ -3,6 +3,7 @@ package com.lezhin.panther.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 /**
  * @author seoeun
@@ -24,7 +26,9 @@ public class DateUtil {
 
     public static String DEFAULT_FORMAATER = "yyyyMMdd HH:mm:ss";
     public static String DATE_FORMATTER = "yyyyMMdd";
-    public static String TIME_FORMAATER = "HHmmss";
+    public static String TIME_FORMATTER = "HHmmss";
+    public static String DATE_TIME_FORMATTER = "yyyy-MM-dd HH:mm:ss";
+
 
     /**
      * Return Date String on SEOUL. "yyyyMMdd"
@@ -43,7 +47,7 @@ public class DateUtil {
      * @return
      */
     public static String getTimeString(long timestamp) {
-        return format(timestamp, ASIA_SEOUL_ZONE, TIME_FORMAATER);
+        return format(timestamp, ASIA_SEOUL_ZONE, TIME_FORMATTER);
     }
 
     /**
@@ -68,8 +72,8 @@ public class DateUtil {
      * Return the Instant corresponding {@code dateString} and {@code zoneId}
      *
      * @param dateTimeStr "2017-11-16 23:10:11"
-     * @param pattern    "yyyy-MM-dd HH:mm:ss"
-     * @param zoneId     ASIA_SEOUL_ZONE = ZoneId.of("Asia/Seoul")
+     * @param pattern     "yyyy-MM-dd HH:mm:ss"
+     * @param zoneId      ASIA_SEOUL_ZONE = ZoneId.of("Asia/Seoul")
      * @return
      */
     public static Instant toInstant(String dateTimeStr, String pattern, ZoneId zoneId) {
@@ -81,6 +85,18 @@ public class DateUtil {
 
     public static Instant toInstantFromDate(String dateStr, String pattern, ZoneId zoneId) {
         return toInstant(dateStr + " 00:00:00", pattern + " HH:mm:ss", zoneId);
+    }
+
+    public static String toDatePattern(String yyyyMMdd) {
+        SimpleDateFormat sf = new SimpleDateFormat("yyyyMMdd");
+
+        try {
+            Date dt = sf.parse(yyyyMMdd);
+            sf.applyPattern("yyyy-MM-dd");
+            return sf.format(dt);
+        } catch (Exception e) {
+            return yyyyMMdd;
+        }
     }
 
     public static void printDate() {

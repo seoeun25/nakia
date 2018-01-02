@@ -66,5 +66,12 @@ public class DateUtilTest {
 
     }
 
+    @Test
+    public void toDatePattern() {
+        String trxDt = "20171114";
+        String resultData = DateUtil.toDatePattern(trxDt);
+        assertEquals("2017-11-14", resultData);
+    }
+
 
 }

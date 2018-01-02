@@ -124,4 +124,21 @@ public class APIControllerTest {
 
     }
 
+    /**
+     * ParameterException Handle.
+     */
+    @Test
+    public void testPayLetter() throws Exception {
+
+        this.mockMvc
+                .perform(get("/payletter/v1/logs")
+                        .param("fromYMD", "20171207")
+                        .param("toYMD", "20171208")
+                        .param("locale", "ja-JP")
+                )
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("code").value(Integer.parseInt(ErrorCode.LEZHIN_OK.getCode())));
+    }
+
 }
