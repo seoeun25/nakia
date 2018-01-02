@@ -45,9 +45,9 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     private static final Logger logger = LoggerFactory.getLogger(HappyPointExecutor.class);
 
     /**
-     * 3000point/mbrNo/month
+     * 2000point/mbrNo/month
      */
-    public static final Integer POINT_LIMITATION = new Integer(3000);
+    public static final Integer POINT_LIMITATION = new Integer(2000);
 
     private Map<Command.Type, Command.Type> transitionMap = ImmutableMap.of(
             Command.Type.RESERVE, Command.Type.AUTHENTICATE,
