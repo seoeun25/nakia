@@ -1,6 +1,5 @@
 package com.lezhin.panther.model;
 
-import com.lezhin.beans.entity.common.LezhinLocale;
 import com.lezhin.constant.LezhinCurrency;
 import com.lezhin.constant.LezhinStore;
 import com.lezhin.constant.PaymentState;
@@ -51,7 +50,7 @@ public class Payment<T extends PGPayment> implements Serializable {
     protected PaymentType paymentType;
     protected LezhinStore store;
     protected String storeVersion;
-    protected LezhinLocale locale;
+    protected String locale;
 
     protected PaymentState state;
 
@@ -266,11 +265,11 @@ public class Payment<T extends PGPayment> implements Serializable {
         this.storeVersion = storeVersion;
     }
 
-    public LezhinLocale getLocale() {
+    public String getLocale() {
         return locale;
     }
 
-    public void setLocale(LezhinLocale locale) {
+    public void setLocale(String locale) {
         this.locale = locale;
     }
 
