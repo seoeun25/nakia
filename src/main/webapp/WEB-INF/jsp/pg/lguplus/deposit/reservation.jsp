@@ -174,13 +174,27 @@
     session.setAttribute("PAYREQ_MAP", payReqMap);
 
  %>
-
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>통합LG유플러스 전자결서비스</title>
+<style>
+    html, body { height: 100%; margin: 0; }
+</style>
 <script language="javascript" src="https://xpay.uplus.co.kr/xpay/js/xpay_crossplatform.js" type="text/javascript"></script>
 <script type="text/javascript">
+/*
+* 윈도우 크기 조정
+*/
+function windoResize(f) {
+    if (typeof f === 'function') {
+        var windowWidth = 650 + window.outerWidth - window.innerWidth;
+        var windowHeight = 650 + window.outerHeight - window.innerHeight;
+        window.resizeTo(windowWidth, windowHeight);
+        f(windowWidth);
+    }
+}
 
 /*
 * 수정불가.
@@ -191,15 +205,9 @@
 * 수정불가
 */
 function launchCrossPlatform(){
-    if (window.innerWidth < 700) {
-        window.innerWidth = 700;
-        window.resizeTo(window.innerWidth, window.innerHeight);
-    }
-    if (window.innerHeight < 700) {
-        window.innerHeight = 700;
-        window.resizeTo(window.innerWidth, window.innerHeight);
-    }
-    lgdwin = openXpay(document.getElementById('LGD_PAYINFO'), '<%= CST_PLATFORM %>', LGD_window_type, null, window.innerWidth, "");
+    windoResize(function(windowWidth){
+        lgdwin = openXpay(document.getElementById('LGD_PAYINFO'), '<%= CST_PLATFORM %>', LGD_window_type, null, windowWidth, "");
+    });
 }
 /*
 * FORM 명만  수정 가능
