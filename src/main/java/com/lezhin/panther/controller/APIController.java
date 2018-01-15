@@ -97,20 +97,20 @@ public class APIController {
 
     @RequestMapping(value = "/{pg}/{paymentType}/payment/done", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<String> paymentDone(HttpServletRequest request, HttpServletResponse response,
+    public <T> ResponseEntity<T> paymentDone(HttpServletRequest request, HttpServletResponse response,
                                           @PathVariable String pg,
                                           @PathVariable String paymentType) {
 
-        logger.info("API payment. [{}-{}]", pg, paymentType);
+        logger.info("API paymentDone. [{}-{}]", pg, paymentType);
         Payment payment = null;
-        Map<String, String[]> params = new HashMap(request.getParameterMap());
-        Map<String, Object> transformedParams = params.entrySet().stream()
+        Map<String, Object> transformedParams = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
 
-        params.entrySet().stream().forEach(e -> logger.info("request param. {} = {}", e.getKey(), e.getValue()[0]));
+        transformedParams.entrySet().stream().forEach(
+                e -> logger.info("request param. {} = {}", e.getKey(), e.getValue()));
         if (PGCompany.lguplus.name().equals(pg) &&
                 (PaymentType.deposit.name().equals(paymentType) || PaymentType.mdeposit.name().equals(paymentType))) {
-
+            // LGU는 post인데로 param
             String LGD_CASFLAG = Optional.ofNullable(transformedParams.get("LGD_CASFLAG")).orElse("").toString();
             if (!LGD_CASFLAG.equals("I")) {
                 logger.info("API LGD_CASFLAG = {}, LGD_RESCODE = {}, LGD_RESMSG = {}",
@@ -140,14 +140,14 @@ public class APIController {
             } catch (Throwable e) {
                 throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert to pgPayment", e);
             }
-            try {
 
+            //try {
+            // execptionHandler에 의해 처리됨
                 payment = payService.doCommand(Command.Type.PAY, requestInfo);
-
-            } catch (Throwable e) {
+            //} catch (Throwable e) {
                 // FIXME handle exception. Redirect to GCS
-                logger.warn("!!!! Failed to Payment ==> GCS /payment/result/fail", e);
-            }
+                //logger.warn("!!!! Failed to Payment ==> GCS /payment/result/fail", e);
+            //}
             // 성공이든 실패든 처리가 잘 되면 OK
             return new ResponseEntity("OK", HttpStatus.OK);
 
@@ -156,7 +156,7 @@ public class APIController {
             // TODO error noti
         }
 
-        // 성공이든 실패든 처리가 잘 되면 OK
+        // reached here. error.
         return new ResponseEntity("Error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     }

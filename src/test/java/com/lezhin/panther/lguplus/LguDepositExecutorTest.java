@@ -1,7 +1,5 @@
-package com.lezhin.lguplus;
+package com.lezhin.panther.lguplus;
 
-
-import com.lezhin.panther.lguplus.LguDepositExecutor;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

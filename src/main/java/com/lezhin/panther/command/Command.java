@@ -7,6 +7,7 @@ import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.FraudException;
+import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.internalpayment.InternalPaymentService;
@@ -106,16 +107,21 @@ public abstract class Command<T extends PGPayment> {
     /**
      * Load the payment from persistence and verify precondition.
      * @throws PreconditionException
+     * @throws FraudException
      */
     public void loadState() throws PreconditionException {
 
         if (requestInfo.getExecutorType().isAsync()) {
             // callback과 같이 async한 request로 pay step을  요청하는 경우, persisted data와 비교하여 fraud 방지.
-            // TODO set payment from InteranlPaymentService(GCS)
-            Payment persistedPayment = internalPaymentService.get(context);
-            Payment requestPayment = payment;
-            checkFraud(requestPayment, persistedPayment);
-            payment = persistedPayment;
+            try {
+                Payment persistedPayment = internalPaymentService.get(context);
+                Payment requestPayment = payment;
+                checkFraud(requestPayment, persistedPayment);
+                payment = persistedPayment;
+            } catch (InternalPaymentException e) {
+                throw new PreconditionException(requestInfo.getExecutorType(),
+                        "Failed to loadState caused by InternalPayment " + "Error : " + e.getMessage());
+            }
         } else {
             payment = requestInfo.getExecutorType().createPayment(context);
         }
@@ -126,22 +132,23 @@ public abstract class Command<T extends PGPayment> {
      * Request로 온 Payment와 DB에 저장된 Payment의 amount를 비교하여 fraud check.
      * @param requestPayment
      * @param persistedPayment
+     * @throws FraudException
      */
-    private void checkFraud(Payment requestPayment, Payment persistedPayment) {
+    private void checkFraud(Payment requestPayment, Payment persistedPayment) throws FraudException{
         if (requestPayment.getUserId().longValue() != persistedPayment.getUserId().longValue()) {
-            throw new FraudException(executor.getType(),
+            throw new FraudException(requestInfo.getExecutorType(),
                     String.format("request.user[%s] is diff with expected[%s]", requestPayment.getUserId(),
                             persistedPayment.getUserId()));
         }
 
         if (requestPayment.getPaymentId().longValue() != persistedPayment.getPaymentId().longValue()) {
-            throw new FraudException(executor.getType(),
+            throw new FraudException(requestInfo.getExecutorType(),
                     String.format("request.payment[%s] is diff with expected[%s]", requestPayment.getPaymentId(),
                             persistedPayment.getPaymentId()));
         }
 
         if (requestPayment.getAmount().floatValue() != persistedPayment.getAmount().floatValue()) {
-            throw new FraudException(executor.getType(),
+            throw new FraudException(requestInfo.getExecutorType(),
                     String.format("request.amount[%s] is diff with expected[%s]", requestPayment.getAmount(),
                             persistedPayment.getAmount()));
         }

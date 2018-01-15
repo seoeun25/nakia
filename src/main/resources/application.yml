@@ -118,7 +118,7 @@ spring:
     show-sql: true
 panther:
   webUrl: https://a-www.lezhin.com
-  apiUrl: https://lezhincomix-alpha.appspot.com/api/v2/internal/payments
+  apiUrl: https://a-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://alpha-panther.lezhin.com
 appengine:
   serviceAccountId: aws-image-server-alpha@lezhincomix-alpha.iam.gserviceaccount.com
@@ -150,7 +150,7 @@ server:
     key-password: panther
 panther:
   webUrl: https://a-www.lezhin.com
-  apiUrl: https://lezhincomix-alpha.appspot.com/api/v2/internal/payments
+  apiUrl: https://a-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://localhost:9443
   lguplus:
     confDir: conf/local/lgdacom

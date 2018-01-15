@@ -5,22 +5,26 @@ import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.happypoint.HappyPointPayment;
 import com.lezhin.panther.model.Meta;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.util.JsonUtil;
 
+import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 
@@ -36,18 +40,22 @@ public class InternalPaymentService {
     @Autowired
     private PantherProperties pantherProperties;
 
-    @Autowired
     private ClientHttpRequestFactory clientHttpRequestFactory;
 
-    public InternalPaymentService() {
+    private static final List<Class<? extends Exception>> TRANSIENT_EXECPTIONS = ImmutableList.of(
+            IOException.class,
+            ResourceAccessException.class);
+    private static final int RETRY_COUNT = 3;
 
+    public InternalPaymentService(final ClientHttpRequestFactory clientHttpRequestFactory) {
+        this.clientHttpRequestFactory = clientHttpRequestFactory;
     }
 
 
     public <T extends PGPayment> Payment<T> reserve(Context<T> context) {
 
         String url = pantherProperties.getApiUrl() + "/reserve";
-        logger.info("RESERVE. call to {}", url);
+        logger.info("RESERVE. call to {}. token = {}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -56,19 +64,16 @@ public class InternalPaymentService {
         Payment payment = context.getPayment();
         T pgPayment = (T) payment.getPgPayment();
         payment.setPgPayment(null); // internal에 없는 모델 제외. TODO annotation
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpEntity<Payment> request = new HttpEntity<>(payment, headers);
         logger.info("RESERVE. send : \n{}", JsonUtil.toJson(payment));
-        Result<Payment<T>> response = restTemplate.postForObject(url, request, Result.class);
 
-        logger.info("RESERVE internal.reserve response code = {}, {} ", response.getCode(), response.getDescription());
+        HttpEntity<Result> response = exchange(url, HttpMethod.POST, request,
+                context.getRequestInfo().getExecutorType());
+        logger.info("RESERVE. internal.reserve response code = {}, {} ", response.getBody().getCode(),
+                response.getBody().getDescription());
 
-        Payment<T> responsePayment = JsonUtil.fromJsonToPayment(JsonUtil.toJson(response.getData()),
-                (Class<T>) pgPayment.getClass());
-        responsePayment.setPgPayment(pgPayment);
-        logger.info("RESERVE internal.reserve responsePayment. paymentId = {}, userId = {}, coinProductId= {}",
-                responsePayment.getPaymentId(), responsePayment.getUserId(), responsePayment.getCoinProductId());
-        return responsePayment;
+        return convert(response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment, payment.getExternalStoreProductId(),
+                context.getRequestInfo().getExecutorType());
 
     }
 
@@ -110,28 +115,16 @@ public class InternalPaymentService {
             meta.setMeta(receipt);
         }
 
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpEntity<Meta> request = new HttpEntity<>(meta, headers);
         logger.info("AUTHENTICATE send : \n{}", JsonUtil.toJson(meta));
 
-        HttpEntity<Result> response = restTemplate.exchange(url, HttpMethod.PUT, request, Result.class);
-
+        HttpEntity<Result> response = exchange(url, HttpMethod.PUT, request,
+                context.getRequestInfo().getExecutorType());
         logger.info("AUTHENTICATE. internal.authenticate response code = {}, {} ", response.getBody().getCode(),
                 response.getBody().getDescription());
 
-        Result data = response.getBody();
-        String jsonData = JsonUtil.toJson(data.getData());
-        logger.info("jsonData :: \n{}", jsonData);
-        //response.getBody();
-        if (data.getData() != null) {
-            Payment<T> responsePayment = convert(jsonData, (Class<T>) context.getPayment().getPgPayment().getClass(),
-                    pgPayment, payment.getExternalStoreProductId());
-            return responsePayment;
-        }
-
-        // fail
-        throw new InternalPaymentException(context.getRequestInfo().getExecutorType(),
-                String.valueOf(response.getBody().getCode()));
+        return convert(response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment, payment.getExternalStoreProductId(),
+                context.getRequestInfo().getExecutorType());
     }
 
     public <T extends PGPayment> Payment<T> pay(Context<T> context) {
@@ -148,7 +141,7 @@ public class InternalPaymentService {
         } else {
             url += "/fail";
         }
-        logger.info("PAY. call to {}", url);
+        logger.info("PAY. call to {}. token = {}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -168,37 +161,28 @@ public class InternalPaymentService {
         if (executionSucceed) {
             meta.setReceipt(receipt);
         } else {
-            // FIXME fail 일 때 어떤 타입을 줘야 하나.
+            // TODO fail 일 때 어떤 타입을 줘야 하나.
             meta.setMeta(receipt);
         }
 
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpEntity<Meta> request = new HttpEntity<>(meta, headers);
         logger.info("PAY. send : \n{}", JsonUtil.toJson(meta));
 
-        HttpEntity<Result> response = restTemplate.exchange(url, HttpMethod.PUT, request, Result.class);
+        HttpEntity<Result> response = exchange(url, HttpMethod.PUT, request,
+                context.getRequestInfo().getExecutorType());
+
         logger.info("PAY. internal.pay response code = {}, {} ", response.getBody().getCode(),
                 response.getBody().getDescription());
 
-        Result data = response.getBody();
-        String jsonData = JsonUtil.toJson(response.getBody().getData());
-        logger.info("jsonData :: \n{}", jsonData);
-        //response.getBody();
-        if (data.getData() != null) {
-            Payment<T> responsePayment = convert(jsonData, (Class<T>) context.getPayment().getPgPayment().getClass(),
-                    pgPayment, payment.getExternalStoreProductId());
-            return responsePayment;
-        }
+        return convert(response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment, payment.getExternalStoreProductId(),
+                context.getRequestInfo().getExecutorType());
 
-        // fail
-        throw new InternalPaymentException(context.getRequestInfo().getExecutorType(),
-                String.valueOf(response.getBody().getCode()));
     }
 
     public <T extends PGPayment> Payment<T> get(Context<T> context) {
 
         String url = pantherProperties.getApiUrl() + "/" + context.getPayment().getPaymentId();
-        logger.info("GET. call to {}", url);
+        logger.info("GET. call to {}, token={}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -207,37 +191,89 @@ public class InternalPaymentService {
         Payment<T> payment = context.getPayment();
         T pgPayment = payment.getPgPayment();
 
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpEntity request = new HttpEntity<>(headers);
 
-        HttpEntity<Result> response = restTemplate.exchange(url, HttpMethod.GET, request, Result.class);
-        logger.info("GET. internal.get response code = {}, {} ", response.getBody().getCode(),
-                response.getBody().getDescription());
+        HttpEntity<Result> response = exchange(url, HttpMethod.GET, request,
+                context.getRequestInfo().getExecutorType());
 
-        Result data = response.getBody();
-        String jsonData = JsonUtil.toJson(response.getBody().getData());
-        logger.debug("jsonData :: \n{}", jsonData);
-        if (data.getData() != null) {
-            Payment<T> responsePayment = convert(jsonData, (Class<T>) context.getPayment().getPgPayment().getClass(),
-                    pgPayment, payment.getExternalStoreProductId());
-            return responsePayment;
-        }
-
-        // fail
-        throw new InternalPaymentException(context.getRequestInfo().getExecutorType(),
-                String.valueOf(response.getBody().getCode()));
+        return convert(response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment, payment.getExternalStoreProductId(),
+                context.getRequestInfo().getExecutorType());
     }
 
-    public <T extends PGPayment> Payment<T> convert(String jsonData, Class<T> pgPaymentClass, T pgPayment, String
-            externalStoreProductId) {
-        Payment<T> responsePayment = JsonUtil.fromJsonToPayment(jsonData, pgPaymentClass);
-        logger.info("responsePayment. paymentId={}, coinProductId={}, coinProductName={}, amount={}",
-                responsePayment.getPaymentId(), responsePayment.getCoinProductId(),
-                responsePayment.getCoinProductName(), responsePayment.getAmount());
-        logger.debug("responsedPayment = \n{}", JsonUtil.toJson(responsePayment));
-        responsePayment.setPgPayment(pgPayment);
-        responsePayment.setExternalStoreProductId(externalStoreProductId);
+    /**
+     * Execute the HTTP method to the given URI template, writing the given request entity to the request, and
+     * returns the response as {@link ResponseEntity}.
+     * It will retry {@linkplain #RETRY_COUNT} times if failed and then will throw
+     * {@linkplain InternalPaymentException} if failed.
+     *
+     * @return
+     * @throws {@linkplain InternalPaymentException}
+     */
+    public HttpEntity<Result> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Executor.Type type) {
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+        HttpEntity<Result> response = null;
+        for (int i = 1; i <= RETRY_COUNT + 1; i++) {
+            try {
+                response = restTemplate.exchange(url, method, requestEntity, Result.class);
+                break;
+            } catch (Throwable e) {
+                if (TRANSIENT_EXECPTIONS.contains(e.getClass()) && i <= RETRY_COUNT) {
+                    logger.info("Failed to reserve: " + e.getMessage());
+                    logger.info("Retrying ...... [{}]", i);
+                    try {
+                        Thread.sleep(500 * i);
+                    } catch (Exception ea) {
+                        logger.warn("Failed", ea);
+                    }
+                } else {
+                    if (i == RETRY_COUNT + 1) {
+                        logger.warn("All retry failed : " + e.getMessage());
+                    }
+                    throw new InternalPaymentException(type, e);
+                }
+            }
+        }
+        return response;
+    }
+
+
+    /**
+     * Returns the {@linkplain Payment} from given {@code result}.
+     *
+     * @return
+     * @throws {@linkplain InternalPaymentException}
+     */
+    public <T extends PGPayment> Payment<T> convert(Result result, Class<T> pgPaymentClass, T pgPayment,
+                                                    String externalStoreProductId, Executor.Type type) {
+        if (result == null) {
+            throw new InternalPaymentException(type, "Internal. result is null");
+        }
+
+        String jsonData = JsonUtil.toJson(result.getData());
+        if (jsonData == null) {
+            throw new InternalPaymentException(type,
+                    "Internal. result.data is null : " + String.valueOf(result.getCode()));
+        }
+
+        Payment<T> responsePayment = null;
+        try {
+            responsePayment = JsonUtil.fromJsonToPayment(jsonData, pgPaymentClass);
+            logger.info("Internal.RESPONSE. paymentId={}, userId={}, coinProductId={}, coinProductName={}, amount={}",
+                    responsePayment.getPaymentId(), responsePayment.getUserId(), responsePayment.getCoinProductId(),
+                    responsePayment.getCoinProductName(), responsePayment.getAmount());
+            logger.debug("responsedPayment = \n{}", JsonUtil.toJson(responsePayment));
+            responsePayment.setPgPayment(pgPayment);
+            responsePayment.setExternalStoreProductId(externalStoreProductId);
+        } catch (Exception e) {
+            throw new InternalPaymentException(type, e);
+        }
+
+        if (responsePayment == null) {
+            throw new InternalPaymentException(type, String.valueOf(result.getCode()));
+        }
+
         return responsePayment;
+
     }
 
 }

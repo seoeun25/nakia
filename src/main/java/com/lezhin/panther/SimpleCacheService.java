@@ -72,7 +72,7 @@ public class SimpleCacheService {
     public void saveRequestInfo(RequestInfo requestInfo) {
         String key = RedisService.generateKey("reservation", "requestinfo",
                 String.valueOf(requestInfo.getPayment().getPaymentId()));
-        redisService.setValue(key, requestInfo, 30, TimeUnit.MINUTES);
+        redisService.setValue(key, requestInfo, 4, TimeUnit.DAYS);
     }
 
     public RequestInfo getRequestInfo(Long paymentId) {

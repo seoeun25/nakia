@@ -4,6 +4,7 @@ import com.lezhin.constant.PaymentState;
 import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.InternalPaymentException;
+import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
@@ -47,13 +48,13 @@ public class Reserve<T extends PGPayment> extends Command<T> {
         // InternalPaymentService reserve 에 필요한 property set. check.
         payment.setLocale(requestInfo.getLocale());
         if (StringUtils.isEmpty(payment.getStore())) {
-            throw new PreconditionException(requestInfo.getExecutorType(), "store can not be null nor empty");
+            throw new ParameterException(requestInfo.getExecutorType(), "store can not be null nor empty");
         }
         if (StringUtils.isEmpty(payment.getPgCompany())) {
-            throw new PreconditionException(requestInfo.getExecutorType(), "pgCompany can not be null nor empty");
+            throw new ParameterException(requestInfo.getExecutorType(), "pgCompany can not be null nor empty");
         }
         if (payment.getPaymentType() == null) {
-            throw new PreconditionException(requestInfo.getExecutorType(), "paymentType can not be null");
+            throw new ParameterException(requestInfo.getExecutorType(), "paymentType can not be null");
         }
     }
 

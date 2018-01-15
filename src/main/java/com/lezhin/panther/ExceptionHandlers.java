@@ -70,10 +70,17 @@ public class ExceptionHandlers {
     }
 
     @ExceptionHandler(PreconditionException.class)
-    @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ErrorInfo handlePreconditionException(final PreconditionException e) {
         logger.error("PreconditionException", e);
+        slackNotifier.notify(SlackEvent.builder()
+                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.DUMMY).name())
+                .level(SlackMessage.LEVEL.ERROR)
+                .title(e.getMessage())
+                .message("")
+                .exception(e)
+                .build());
         return new ErrorInfo(ErrorCode.LEZHIN_PRECONDITION.getCode(), e.getMessage());
     }
 

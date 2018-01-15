@@ -35,7 +35,7 @@ public class PagePayService {
 
     public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final RequestInfo requestInfo) {
         logger.info("[{}, {}, u={}, p={}, token={}]", type, requestInfo.getExecutorType(), requestInfo.getUserId(),
-                requestInfo.getToken());
+                "paymentId", requestInfo.getToken());
         Payment<T> resultPayment = null;
         Command<T> command = null;
 

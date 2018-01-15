@@ -1,6 +1,7 @@
 package com.lezhin.panther.model;
 
 import com.lezhin.constant.LezhinCurrency;
+import com.lezhin.constant.LezhinPlatform;
 import com.lezhin.constant.LezhinStore;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.exception.ParameterException;
@@ -164,6 +165,8 @@ public class RequestInfo implements Serializable {
                     requestMap.put("isApp", request.getParameter("isApp"));
                     requestMap.put("_lz_userId", request.getParameter("_lz_userId"));
                     requestMap.put("returnToUrl", request.getParameter("returnToUrl"));
+                    requestMap.put("store", request.getParameter("store"));
+                    requestMap.put("platform", request.getParameter("platform")); // notUsed.
                 } else {
                     // from apiController. happypoint
                     String result = CharStreams.toString(new InputStreamReader(request.getInputStream(), Charsets.UTF_8));
@@ -274,11 +277,6 @@ public class RequestInfo implements Serializable {
                 ).orElseThrow(
                         () -> new ParameterException(executorType, "store can not be null")
                 ).toString()));
-                payment.setStore(LezhinStore.valueOf(Optional.ofNullable(request.getParameter("platform")
-                ).orElseThrow(
-                        () -> new ParameterException(executorType, "platform can not be null")
-                ).toString()));
-
                 LguplusPayment pgPayment = LguplusPayment.builder().build();
                 payment.setPgPayment(pgPayment);
                 payment.setMeta(new Meta());

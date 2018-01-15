@@ -256,14 +256,14 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             logger.warn("Failed to generate LGD_HASHDATA");
         }
 
-    /*
-     * 상점 처리결과 리턴메세지
-     *
-     * OK  : 상점 처리결과 성공
-     * 그외 : 상점 처리결과 실패
-     *
-     * ※ 주의사항 : 성공시 'OK' 문자이외의 다른문자열이 포함되면 실패처리 되오니 주의하시기 바랍니다.
-     */
+        /*
+         * 상점 처리결과 리턴메세지
+         *
+         * OK  : 상점 처리결과 성공
+         * 그외 : 상점 처리결과 실패
+         *
+         * ※ 주의사항 : 성공시 'OK' 문자이외의 다른문자열이 포함되면 실패처리 되오니 주의하시기 바랍니다.
+         */
         //String resultMSG = "결제결과 상점 DB처리(LGD_CASNOTEURL) 결과값을 입력해 주시기 바랍니다.";
         String resultMSG = LGD_RESPMSG;
 
@@ -272,7 +272,6 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             if ( ("0000".equals(LGD_RESPCODE.trim())) ){ //결제가 성공이면
                 if( "R".equals( LGD_CASFLAG.trim() ) ) {
                     // 가상 계좌 생성
-                    // TODO
                     responseInfo = responseInfo.toBuilder().description("CASFLAG should be 'I' but R").build();
                     context = context.response(responseInfo);
                     //resultMSG = "OK";
@@ -280,7 +279,6 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
 
                 }else if( "I".equals( LGD_CASFLAG.trim() ) ) {
                     // 입금
-
                     context = context.response(responseInfo);
                     resultMSG = "OK";
                 }else if( "C".equals( LGD_CASFLAG.trim() ) ) {
