@@ -1,7 +1,6 @@
 package com.lezhin.panther.model;
 
 import com.lezhin.constant.LezhinCurrency;
-import com.lezhin.constant.LezhinPlatform;
 import com.lezhin.constant.LezhinStore;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.exception.ParameterException;
@@ -39,7 +38,7 @@ public class RequestInfo implements Serializable {
     private String token;
     private Boolean isMobile;
     private Boolean isApp;
-    private String returnToUrl;
+    private String returnTo;
     private String locale;
     private Long userId;
     private PaymentType paymentType;
@@ -52,7 +51,7 @@ public class RequestInfo implements Serializable {
         this.token = builder.token;
         this.isMobile = builder.isMobile;
         this.isApp = builder.isApp;
-        this.returnToUrl = builder.returnToUrl;
+        this.returnTo = builder.returnTo;
         this.locale = builder.locale;
         this.userId = builder.userId;
         this.paymentType = builder.paymentType;
@@ -76,8 +75,8 @@ public class RequestInfo implements Serializable {
         return isApp;
     }
 
-    public String getReturnToUrl() {
-        return returnToUrl;
+    public String getReturnTo() {
+        return returnTo;
     }
 
     public String getLocale() {
@@ -113,7 +112,7 @@ public class RequestInfo implements Serializable {
                 .add("token", token)
                 .add("isMobile", isMobile)
                 .add("isApp", isApp)
-                .add("returnToUrl", returnToUrl)
+                .add("returnTo", returnTo)
                 .add("locale", locale)
                 .add("executorType", executorType)
                 .toString();
@@ -126,7 +125,7 @@ public class RequestInfo implements Serializable {
         private String token;
         private Boolean isMobile;
         private Boolean isApp;
-        private String returnToUrl;
+        private String returnTo;
         private String locale;
         private Long userId;
         private PaymentType paymentType;
@@ -139,7 +138,7 @@ public class RequestInfo implements Serializable {
             this.token = requestInfo.token;
             this.isMobile = requestInfo.isMobile;
             this.isApp = requestInfo.isApp;
-            this.returnToUrl = requestInfo.returnToUrl;
+            this.returnTo = requestInfo.returnTo;
             this.locale = requestInfo.locale;
             this.userId = requestInfo.userId;
             this.paymentType = requestInfo.paymentType;
@@ -164,7 +163,7 @@ public class RequestInfo implements Serializable {
                     requestMap.put("isMobile", request.getParameter("isMobile"));
                     requestMap.put("isApp", request.getParameter("isApp"));
                     requestMap.put("_lz_userId", request.getParameter("_lz_userId"));
-                    requestMap.put("returnToUrl", request.getParameter("returnToUrl"));
+                    requestMap.put("returnTo", request.getParameter("returnTo"));
                     requestMap.put("store", request.getParameter("store"));
                     requestMap.put("platform", request.getParameter("platform")); // notUsed.
                 } else {
@@ -172,6 +171,12 @@ public class RequestInfo implements Serializable {
                     String result = CharStreams.toString(new InputStreamReader(request.getInputStream(), Charsets.UTF_8));
                     logger.info("requestBody = {}", result);
                     requestMap = JsonUtil.fromJson(result, Map.class);
+                    if (requestMap.containsKey("returnToUrl")) {
+                        // TODO "returnToUrl" is deprecated. Use "returnTo"
+                        // https://wiki.lezhin.com/display/BIZDEV/happypoint
+                        Object value = requestMap.get("returnToUrl");
+                        requestMap.put("returnTo", value);
+                    }
                 }
             } catch (IOException e) {
                 throw new ParameterException(executorType, "Failed to read requestBody");
@@ -218,7 +223,7 @@ public class RequestInfo implements Serializable {
             withUserId(Long.valueOf((Optional.ofNullable(requestMap.get("_lz_userId")).orElseThrow(
                     () -> new ParameterException(executorType, "_lz_userId can not be null")
             )).toString()));
-            withReturnToUrl(Optional.ofNullable(requestMap.get("returnToUrl")).orElse("").toString());
+            withReturnTo(Optional.ofNullable(requestMap.get("returnTo")).orElse("").toString());
 
 
             // check the request param
@@ -336,8 +341,8 @@ public class RequestInfo implements Serializable {
             return this;
         }
 
-        public Builder withReturnToUrl(String returnToUrl) {
-            this.returnToUrl = returnToUrl;
+        public Builder withReturnTo(String returnTo) {
+            this.returnTo = returnTo;
             return this;
         }
 

@@ -379,8 +379,8 @@ public class PageController {
         attrs.put("__u", requestInfo.getUserId());
         attrs.put("isMobile", requestInfo.getIsMobile());
         attrs.put("isApp", requestInfo.getIsApp());
-        if (!StringUtils.isEmpty(requestInfo.getReturnToUrl())) {
-            attrs.put("returnTo", requestInfo.getReturnToUrl());
+        if (!StringUtils.isEmpty(requestInfo.getReturnTo())) {
+            attrs.put("returnTo", requestInfo.getReturnTo());
         }
         if (!StringUtils.isEmpty(failReason)) {
             attrs.put("reason", failReason);

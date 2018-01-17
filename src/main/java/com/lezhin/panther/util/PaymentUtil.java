@@ -3,7 +3,6 @@ package com.lezhin.panther.util;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Payment;
-import com.lezhin.beans.entity.common.LezhinLocale;
 import com.lezhin.constant.LezhinCurrency;
 
 import com.google.common.collect.ImmutableMap;
@@ -175,7 +174,7 @@ public class PaymentUtil extends Payment {
                 .queryParam("isMobile", Optional.ofNullable(isMobile).orElse(Boolean.TRUE))
                 .queryParam("isApp", Optional.ofNullable(isApp).orElse(Boolean.TRUE))
                 .queryParam("locale", locale)
-                .queryParam("returnTo", Optional.ofNullable(returnToUrl).orElse(""))
+                .queryParam("returnTo", Optional.ofNullable(returnTo).orElse(""))
                 .build()
                 .encode();
 
@@ -183,8 +182,8 @@ public class PaymentUtil extends Payment {
 
 //        String $url =  "$this->lezhinPgUrl/$this->pgId/pay?isMobile=".var_export($this->isMobile, true)."&isApp="
 //            .var_export($this->isApp, true)."&locale=$this->locale";
-//        if ($this->returnToUrl) {
-//            $url .= "&returnTo=".urlencode($this->returnToUrl);
+//        if ($this->returnTo) {
+//            $url .= "&returnTo=".urlencode($this->returnTo);
 //        }
 //        return $url;
     }
@@ -196,7 +195,7 @@ public class PaymentUtil extends Payment {
                 .queryParam("isMobile", Optional.ofNullable(isMobile).orElse(Boolean.TRUE))
                 .queryParam("isApp", Optional.ofNullable(isApp).orElse(Boolean.TRUE))
                 .queryParam("locale", locale)
-                .queryParam("returnTo", Optional.ofNullable(returnToUrl).orElse(""))
+                .queryParam("returnTo", Optional.ofNullable(returnTo).orElse(""))
                 .build()
                 .encode();
 
@@ -210,7 +209,7 @@ public class PaymentUtil extends Payment {
                 .queryParam("isMobile", Optional.ofNullable(isMobile).orElse(Boolean.TRUE))
                 .queryParam("isApp", Optional.ofNullable(isApp).orElse(Boolean.TRUE))
                 .queryParam("locale", locale)
-                .queryParam("returnTo", Optional.ofNullable(returnToUrl).orElse(""))
+                .queryParam("returnTo", Optional.ofNullable(returnTo).orElse(""))
                 .build()
                 .encode();
 
@@ -223,7 +222,7 @@ public class PaymentUtil extends Payment {
         Long $userId = Optional.ofNullable(userId).orElse(Long.valueOf(0L));
         Boolean $isMobile = Optional.ofNullable(isMobile).orElse(Boolean.TRUE);
         Boolean $isApp = Optional.ofNullable(isApp).orElse(Boolean.TRUE);
-        String $returnTo = Optional.ofNullable(returnToUrl).orElse("");
+        String $returnTo = Optional.ofNullable(returnTo).orElse("");
         //String $lang = Optional.ofNullable(locale).orElse(LezhinLocale.KO_KR).getLanguageCode().toLowerCase();
         String $lang = "ko";
         // FIXME
@@ -233,7 +232,7 @@ public class PaymentUtil extends Payment {
                 .queryParam("isMobile", Optional.ofNullable(isMobile).orElse(Boolean.TRUE))
                 .queryParam("isApp", Optional.ofNullable(isApp).orElse(Boolean.TRUE))
                 .queryParam("locale", locale)
-                .queryParam("returnTo", Optional.ofNullable(returnToUrl).orElse(""))
+                .queryParam("returnTo", Optional.ofNullable(returnTo).orElse(""))
                 .build()
                 .encode();
 

@@ -174,9 +174,10 @@ public class RequestInfoTest {
     public void testExecutor() throws Exception {
 
         MockHttpServletRequest request1 = createHttpServletRequest();
-        request1.setContent("{\"_lz_userId\": 10101}".getBytes());
+        request1.setContent("{\"_lz_userId\": 10101, \"returnToUrl\":\"a-www.lezhin.com\"}".getBytes());
         request1.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
         assertEquals(Executor.Type.HAPPYPOINT, new RequestInfo.Builder(request1, "happypoint").build().getExecutorType());
+        assertEquals("a-www.lezhin.com", new RequestInfo.Builder(request1, "happypoint").build().getReturnTo());
 
     }
 

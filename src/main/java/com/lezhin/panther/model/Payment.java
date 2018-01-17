@@ -97,7 +97,7 @@ public class Payment<T extends PGPayment> implements Serializable {
     @JsonIgnore
     protected Boolean isApp;
     @JsonIgnore
-    protected String returnToUrl;
+    protected String returnTo;
 
     // panther
     protected String externalStoreProductId;
@@ -114,15 +114,15 @@ public class Payment<T extends PGPayment> implements Serializable {
 
     // FIXME IntenalPaymentView로 로딩했을 때 Payment 생성 ???
 //    public Payment(String environment, String lezhinPgUrl, Long paymentId,
-//                   Boolean isMobile, Boolean isApp, String returnToUrl, LezhinLocale locale) {
+//                   Boolean isMobile, Boolean isApp, String returnTo, LezhinLocale locale) {
 //        this.pgId = getPGId();
 //        this.environment = environment;
 //        this.isMobile = isMobile;
 //        this.isApp = isApp;
 //        this.lezhinPgUrl = lezhinPgUrl;
 //        this.paymentId = paymentId;
-//        if (returnToUrl != null) {
-//            this.returnToUrl = ulrDecode(returnToUrl);
+//        if (returnTo != null) {
+//            this.returnTo = ulrDecode(returnTo);
 //        }
 //        this.locale = locale;
 //    }
@@ -361,12 +361,12 @@ public class Payment<T extends PGPayment> implements Serializable {
         isApp = app;
     }
 
-    public String getReturnToUrl() {
-        return returnToUrl;
+    public String getReturnTo() {
+        return returnTo;
     }
 
-    public void setReturnToUrl(String returnToUrl) {
-        this.returnToUrl = returnToUrl;
+    public void setReturnTo(String returnTo) {
+        this.returnTo = returnTo;
     }
 
     public String getExternalStoreProductId() {
