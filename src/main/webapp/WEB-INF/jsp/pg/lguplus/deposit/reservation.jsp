@@ -224,19 +224,31 @@ function payment_return() {
 		fDoc = lgdwin.contentWindow || lgdwin.contentDocument;
 
 	if (fDoc.document.getElementById('LGD_RESPCODE').value == "0000") {
-
-			document.getElementById("LGD_PAYKEY").value = fDoc.document.getElementById('LGD_PAYKEY').value;
-			document.getElementById("LGD_PAYINFO").target = "_self";
-			document.getElementById("LGD_PAYINFO").action = "/page/v1/lguplus/deposit/authentication";
-			document.getElementById("LGD_PAYINFO").submit();
+        document.getElementById("LGD_PAYKEY").value = fDoc.document.getElementById('LGD_PAYKEY').value;
+        document.getElementById("LGD_PAYINFO").target = "_self";
+        document.getElementById("LGD_PAYINFO").action = "/page/v1/lguplus/deposit/authentication";
+        document.getElementById("LGD_PAYINFO").submit();
 	} else {
 	    var resCodde = fDoc.document.getElementById('LGD_RESPCODE').value;
 
-		alert("LGD_RESPCODE (결과코드) : " + fDoc.document.getElementById('LGD_RESPCODE').value + "\n" + "LGD_RESPMSG (결과메시지): " + fDoc.document.getElementById('LGD_RESPMSG').value);
+		console.log("LGD_RESPCODE (결과코드) : " + fDoc.document.getElementById('LGD_RESPCODE').value + "\n" + "LGD_RESPMSG (결과메시지): " + fDoc.document.getElementById('LGD_RESPMSG').value);
 		closeIframe();
         //window.location = 'https://localhost:9443/page/v1/lguplus/sample';
 	}
 }
+
+/*
+ * 아이프레임 인증결과 이벤트 리스너
+ */
+window.addEventListener('message', function (event) {
+    console.log(`postMessage : event.data.message : ${event.data.message}`);
+    if (event.origin === window.origin && event.data.message === 'payment_return') {
+        payment_return();
+    }
+    else {
+        console.log('Origin not allowed!');
+    }
+}, false);
 
 </script>
 </head>
