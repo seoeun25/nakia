@@ -2,6 +2,7 @@ package com.lezhin.panther.executor;
 
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
+import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.dummy.DummyExecutor;
@@ -11,8 +12,10 @@ import com.lezhin.panther.happypoint.HappyPointExecutor;
 import com.lezhin.panther.happypoint.HappyPointPayment;
 import com.lezhin.panther.lguplus.LguDepositExecutor;
 import com.lezhin.panther.lguplus.LguplusPayment;
+import com.lezhin.panther.model.Meta;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
+import com.lezhin.panther.model.ResponseInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,12 +67,17 @@ public abstract class Executor<T extends PGPayment> {
                         PaymentType.happypoint;
             }
 
+            public boolean succeeded(ResponseInfo responseInfo) {
+                return responseInfo.getCode().equals(ErrorCode.SPC_OK.getCode());
+            }
+
             @Override
             public Class getExecutorClass() {
                 return HappyPointExecutor.class;
             }
         },
         LGUDEPOSIT("lgudeposit") { // LGUplus를 사용하여 무통장입금 (deposit)
+
             @Override
             public Payment createPayment(Context context) {
                 return new Payment<com.lezhin.panther.lguplus.LguplusPayment>(System.currentTimeMillis());
@@ -84,6 +92,7 @@ public abstract class Executor<T extends PGPayment> {
                 payment.setAmount(Float.parseFloat(lguplusPayment.getLGD_AMOUNT()));
                 payment.setCoinProductName(lguplusPayment.getLGD_PRODUCTINFO());
                 payment.setPgPayment(lguplusPayment);
+                payment.setMeta(new Meta());
                 return payment;
             }
 
@@ -95,6 +104,10 @@ public abstract class Executor<T extends PGPayment> {
             @Override
             public PaymentType getPaymentType(String externalStoreProductId) {
                 return PaymentType.deposit;
+            }
+
+            public boolean succeeded(ResponseInfo responseInfo) {
+                return responseInfo.getCode().equals(ErrorCode.LGUPLUS_OK.getCode());
             }
 
             @Override
@@ -120,6 +133,16 @@ public abstract class Executor<T extends PGPayment> {
         public abstract <E> Class<E> getExecutorClass();
 
         public abstract PaymentType getPaymentType(String externalStoreProductId);
+
+        /**
+         * Determines if the execution is successful by {@code responseInfo}
+         *
+         * @param responseInfo
+         * @return
+         */
+        public boolean succeeded(ResponseInfo responseInfo) {
+            return true;
+        }
 
         /**
          * PG에서 callback으로 async하게 호출하는 경우.
@@ -180,6 +203,16 @@ public abstract class Executor<T extends PGPayment> {
 
     public Context<T> getContext() {
         return context;
+    }
+
+    /**
+     * Determines if the execution is successful by {@code responseInfo}
+     *
+     * @param responseInfo
+     * @return
+     */
+    public boolean succeeded(ResponseInfo responseInfo) {
+        return getType().succeeded(responseInfo);
     }
 
     /**

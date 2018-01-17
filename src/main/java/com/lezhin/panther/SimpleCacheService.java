@@ -1,6 +1,8 @@
 package com.lezhin.panther;
 
 import com.lezhin.avengers.panther.model.HappypointAggregator;
+import com.lezhin.panther.exception.SessionException;
+import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.redis.RedisService;
@@ -70,12 +72,15 @@ public class SimpleCacheService {
     }
 
     public void saveRequestInfo(RequestInfo requestInfo) {
+        if (requestInfo.getPayment().getPaymentId() == null) {
+            throw new SessionException(Executor.Type.DUMMY, "Failed to save session. paymentId is null");
+        }
         String key = RedisService.generateKey("reservation", "requestinfo",
                 String.valueOf(requestInfo.getPayment().getPaymentId()));
         redisService.setValue(key, requestInfo, 4, TimeUnit.DAYS);
     }
 
-    public RequestInfo getRequestInfo(Long paymentId) {
+    public RequestInfo getRequestInfo(long paymentId) {
         String key = RedisService.generateKey("reservation", "requestinfo", String.valueOf(paymentId));
         RequestInfo value = (RequestInfo) redisService.getValue(key);
         return value;

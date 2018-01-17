@@ -176,7 +176,7 @@ public class PageController {
         logger.info("PAGE preauth_done. [{}-{}]", pg, paymentType);
         Payment payment = null;
 
-        Map<String, Object> transformedParams = request.getParameterMap().entrySet().stream()
+        Map<String, Object> params = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
 
         if (PGCompany.lguplus.name().equals(pg) &&
@@ -189,17 +189,18 @@ public class PageController {
             if (!ErrorCode.LGUPLUS_OK.getCode().equals(resCode)) {
                 // encoding 깨짐. 내용 파악은 브라우저에서 직접. 대충의 내용만.
                 String newResMsg = LguDepositExecutor.extractResMsg(resMsg);
-                transformedParams.put("LGD_RESPMSG", newResMsg);
+                params.put("LGD_RESPMSG", newResMsg);
             }
             // TODO builder default=true.
             Context context = null;
             // TODO builder default=true
             RequestInfo requestInfo = null;
             try {
-                LguplusPayment pgPayment = JsonUtil.fromMap(transformedParams, LguplusPayment.class);
+                LguplusPayment pgPayment = JsonUtil.fromMap(params, LguplusPayment.class);
                 requestInfo = simpleCacheService.getRequestInfo(Long.valueOf(pgPayment.getLGD_OID()));
                 Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
+                params.put("isMobile", requestInfo.getIsApp().booleanValue());
 
                 logger.info("PAGE preauth [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
 
@@ -230,7 +231,7 @@ public class PageController {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("pantherUrl", pantherProperties.getPantherUrl());
         modelAndView.addObject("failUrl", pantherProperties.getWebUrl() + "/ko/payment/");
-        modelAndView.addAllObjects(transformedParams);
+        modelAndView.addAllObjects(params);
         modelAndView.setViewName(jspName);
 
         modelAndView.getModel().entrySet().stream().forEach(e -> logger.debug("model.  {} = {}", e.getKey(),

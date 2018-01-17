@@ -4,6 +4,7 @@ import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.constant.LezhinStore;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.SimpleCacheService;
+import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Certification;
@@ -26,6 +27,7 @@ import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author seoeun
@@ -162,6 +164,40 @@ public class SimpleCacheServiceTest {
         assertEquals("9876", resultPgPayment.getCST_MID());
         assertEquals("123", resultPgPayment.getLGD_OID());
         assertEquals("100", resultPgPayment.getLGD_AMOUNT());
+
+    }
+
+    /**
+     * paymentId == null 이라 saving 실패
+     */
+    @Test
+    public void testRequestInfoSaveFail() {
+        LguplusPayment lguPayment = LguplusPayment.builder()
+                .CST_MID("9876")
+                .LGD_OID(null)
+                .LGD_AMOUNT("100")
+                .build();
+        Payment payment = new Payment();
+        payment.setPaymentId(null);
+        payment.setUserId(2L);
+        payment.setAmount(Float.parseFloat("20"));
+        payment.setCoinProductId(3L);
+        payment.setPgPayment(lguPayment);
+        payment.setStore(LezhinStore.web);
+        payment.setLocale("ko-KR");
+        payment.setPgCompany("lguplus");
+        payment.setPaymentType(PaymentType.deposit);
+
+        RequestInfo requestInfo = new RequestInfo.Builder(payment, "lguplus")
+                .withToken("4ea0f867-ad9c-4ad7-b024-0b8c258f853d")
+                .withUserId(2L).build();
+
+        try {
+            simpleCacheService.saveRequestInfo(requestInfo);
+            fail("Saving session should be failed");
+        } catch (SessionException e) {
+            
+        }
 
     }
 

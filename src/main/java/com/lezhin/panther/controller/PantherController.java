@@ -1,7 +1,12 @@
 package com.lezhin.panther.controller;
 
+import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.ErrorCode;
+import com.lezhin.panther.executor.Executor;
+import com.lezhin.panther.lguplus.LguplusPayment;
+import com.lezhin.panther.model.Payment;
+import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.Util;
@@ -92,5 +97,29 @@ public class PantherController {
 
         return new ResponseInfo(ErrorCode.LEZHIN_OK.getCode(), ErrorCode.LEZHIN_OK.getMessage());
     }
+
+    @RequestMapping(value = "/info", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseInfo saveRequestInfo(HttpServletRequest request, HttpServletResponse response,
+                                        @RequestBody Map<String, Object> map) {
+
+        LguplusPayment lguplusPayment = LguplusPayment.builder()
+                .LGD_BUYER(map.get("LGD_BUYER").toString())
+                .LGD_OID(map.get("LGD_OID").toString())
+                .LGD_AMOUNT(map.get("LGD_AMOUNT").toString())
+                .LGD_PRODUCTINFO(map.get("LGD_PRODUCTINFO").toString()).build();
+        Payment payment = Executor.Type.LGUDEPOSIT.createPayment(lguplusPayment);
+        payment.setPaymentType(PaymentType.deposit);
+        RequestInfo requestInfo = new RequestInfo.Builder(payment, "lguplus")
+                .withToken(map.get("token").toString()).build();
+
+        simpleCacheService.saveRequestInfo(requestInfo);
+
+
+
+        return new ResponseInfo(ErrorCode.LEZHIN_OK.getCode(), ErrorCode.LEZHIN_OK.getMessage());
+    }
+
+
 
 }

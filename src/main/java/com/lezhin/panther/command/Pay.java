@@ -58,7 +58,7 @@ public class Pay<T extends PGPayment> extends Command<T> {
         try {
             executor.pay();
         } catch (PantherException e) {
-            // do nothing. responseInfo에 이미 세팅되어 있음.
+            // do nothing. executor.context.responseInfo에 이미 세팅되어 있음.
         } finally {
             payment = executor.getContext().getPayment();
             context = context.payment(payment).response(executor.getContext().getResponseInfo());

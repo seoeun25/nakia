@@ -2,6 +2,7 @@ package com.lezhin.panther.happypoint;
 
 import com.lezhin.panther.Context;
 import com.lezhin.panther.ErrorCode;
+import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
@@ -135,6 +136,24 @@ public class HappyPointExecutorTest {
         // receipt으로 internal로 갔지만 가서 webReceiptData 로 저장. 리턴 json 도 webReceiptData.
         String webReceiptData = payment.getMeta().getWebReceiptData();
         logger.info("webReceiptData = {}", webReceiptData);
+
+    }
+
+    /**
+     * ResponseInfo를 기준으로 executor가 succeeded 한지 결정하는 메서드 테스트
+     */
+    @Test
+    public void testExcecutorResult() {
+
+        assertEquals(false, Executor.Type.HAPPYPOINT.succeeded(ResponseInfo.builder()
+                .code(ErrorCode.SPC_DENY_44.getCode())
+                .description(ErrorCode.SPC_DENY_44.getMessage()).build()));
+        assertEquals(false, Executor.Type.HAPPYPOINT.succeeded(ResponseInfo.builder()
+                .code("XZXZ")
+                .description("hello").build()));
+        assertEquals(true, Executor.Type.HAPPYPOINT.succeeded(ResponseInfo.builder()
+                .code(ErrorCode.SPC_OK.getCode())
+                .description(ErrorCode.SPC_OK.getMessage()).build()));
 
     }
 

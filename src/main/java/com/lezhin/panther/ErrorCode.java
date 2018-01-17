@@ -25,6 +25,7 @@ public enum ErrorCode {
     LEZHIN_INTERNAL_PAYMNENT("1005", "InternalPayment Error"),
     LEZHIN_EXCEED("1007", "Exceed throttle"),
     LEZHIN_CI("1008", "No ConnectionInfo"),
+    LEZHIN_SESSION("1009", "No Session"),
     LEZHIN_THROWABLE("9001", "Unexpected Error");
 
     private String code;

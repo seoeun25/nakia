@@ -99,8 +99,14 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
         String configPath = pantherProperties.getLguplus().getConfDir();
 
         // 결제 요청 - BEGIN
-        String CST_PLATFORM = payment.getPgPayment().getCST_PLATFORM();
-        String CST_MID = payment.getPgPayment().getCST_MID();
+        String CST_PLATFORM = lguplusPayment.getCST_PLATFORM();
+        if (CST_PLATFORM == null) {
+            CST_PLATFORM = pantherProperties.getLguplus().getCstPlatform();
+        }
+        String CST_MID = lguplusPayment.getCST_MID();
+        if (CST_MID == null) {
+            CST_MID = pantherProperties.getLguplus().getCstMid();
+        }
         String LGD_MID = ("test".equals(CST_PLATFORM.trim()) ? "t" : "") + CST_MID;
         String LGD_PAYKEY = payment.getPgPayment().getLGD_PAYKEY();
 
@@ -150,6 +156,12 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
         if (xpay.TX()) {
             ResponseInfo responseInfo = ResponseInfo.builder()
                     .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
+            if (!succeeded(responseInfo)) {
+                context = context.response(responseInfo);
+                logger.info("[TX] done. failed = {}", responseInfo.toString());
+                throw new LguDepositException(type, "Tx failed : " + xpay.m_szResCode +
+                        ":" + xpay.m_szResMsg);
+            }
 
             logger.info("[TX] done = {}", responseInfo.toString());
             logger.info("[TX]   LGD_TID = {}", xpay.Response("LGD_TID", 0) );

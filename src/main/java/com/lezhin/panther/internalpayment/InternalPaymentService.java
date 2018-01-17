@@ -1,7 +1,6 @@
 package com.lezhin.panther.internalpayment;
 
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.executor.Executor;
@@ -55,7 +54,7 @@ public class InternalPaymentService {
     public <T extends PGPayment> Payment<T> reserve(Context<T> context) {
 
         String url = pantherProperties.getApiUrl() + "/reserve";
-        logger.info("RESERVE. call to {}. token = {}", url, context.getRequestInfo().getToken());
+        logger.info("RESERVE. to {}. token = {}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -80,17 +79,15 @@ public class InternalPaymentService {
     public <T extends PGPayment> Payment<T> authenticate(Context<T> context) {
 
         // 각 PGExecutor.authenticate 실패했는지 성공했는 지.
-        boolean executionSucceed = true;
-        if (context.getRequestInfo().getExecutorType() == Executor.Type.HAPPYPOINT) {
-            executionSucceed = context.getResponseInfo().getCode().equals(ErrorCode.SPC_OK.getCode());
-        }
+        boolean executionSucceed = context.getRequestInfo().getExecutorType()
+                .succeeded(context.getResponseInfo());
         String url = pantherProperties.getApiUrl() + "/" + context.getPayment().getPaymentId();
         if (executionSucceed) {
             url += "/authentication/success";
         } else {
             url += "/authentication/fail";
         }
-        logger.info("AUTHENTICATE. call to {}, token = {}", url, context.getRequestInfo().getToken());
+        logger.info("AUTHENTICATE. to {}, token = {}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -129,11 +126,10 @@ public class InternalPaymentService {
 
     public <T extends PGPayment> Payment<T> pay(Context<T> context) {
 
+
         // 각 pg 사의 pay execution이 실패했는지 성공했는 지.
-        boolean executionSucceed = true;
-        if (context.getRequestInfo().getExecutorType() == Executor.Type.HAPPYPOINT) {
-            executionSucceed = context.getResponseInfo().getCode().equals(ErrorCode.SPC_OK.getCode());
-        }
+        boolean executionSucceed = context.getRequestInfo().getExecutorType()
+                .succeeded(context.getResponseInfo());
 
         String url = pantherProperties.getApiUrl() + "/" + context.getPayment().getPaymentId();
         if (executionSucceed) {
@@ -141,7 +137,7 @@ public class InternalPaymentService {
         } else {
             url += "/fail";
         }
-        logger.info("PAY. call to {}. token = {}", url, context.getRequestInfo().getToken());
+        logger.info("PAY. to {}. token = {}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -182,7 +178,7 @@ public class InternalPaymentService {
     public <T extends PGPayment> Payment<T> get(Context<T> context) {
 
         String url = pantherProperties.getApiUrl() + "/" + context.getPayment().getPaymentId();
-        logger.info("GET. call to {}, token={}", url, context.getRequestInfo().getToken());
+        logger.info("GET. to {}, token={}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -258,8 +254,9 @@ public class InternalPaymentService {
         Payment<T> responsePayment = null;
         try {
             responsePayment = JsonUtil.fromJsonToPayment(jsonData, pgPaymentClass);
-            logger.info("Internal.RESPONSE. paymentId={}, userId={}, coinProductId={}, coinProductName={}, amount={}",
-                    responsePayment.getPaymentId(), responsePayment.getUserId(), responsePayment.getCoinProductId(),
+            logger.info("Internal.RESPONSE. paymentId={}, state={}, userId={}, coinProductId={}, coinProductName={}, " +
+                            "amount={}", responsePayment.getPaymentId(), responsePayment.getState(),
+                    responsePayment.getUserId(), responsePayment.getCoinProductId(),
                     responsePayment.getCoinProductName(), responsePayment.getAmount());
             logger.debug("responsedPayment = \n{}", JsonUtil.toJson(responsePayment));
             responsePayment.setPgPayment(pgPayment);
