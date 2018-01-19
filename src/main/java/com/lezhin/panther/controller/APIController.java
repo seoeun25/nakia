@@ -28,14 +28,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * API controller. Json을 return.
- *
  *
  * @author seoeun
  * @since 2017.10.24
@@ -102,8 +100,8 @@ public class APIController {
     @RequestMapping(value = "/{pg}/{paymentType}/payment/done", method = RequestMethod.POST)
     @ResponseBody
     public <T> ResponseEntity<T> paymentDone(HttpServletRequest request, HttpServletResponse response,
-                                          @PathVariable String pg,
-                                          @PathVariable String paymentType) {
+                                             @PathVariable String pg,
+                                             @PathVariable String paymentType) {
 
         logger.info("API paymentDone. [{}-{}]", pg, paymentType);
         Payment payment = null;
@@ -117,13 +115,12 @@ public class APIController {
             // LGU는 post인데도 param
             String LGD_CASFLAG = Optional.ofNullable(transformedParams.get("LGD_CASFLAG")).orElse("").toString();
             if (!LGD_CASFLAG.equals("I")) {
-                logger.info("API LGD_CASFLAG = {}, LGD_RESCODE = {}, LGD_RESMSG = {}",
+                logger.info("API paymentDone. LGD_CASFLAG = {}, LGD_RESCODE = {}, LGD_RESMSG = {}",
                         transformedParams.get("LGD_CASFLAG"), transformedParams.get("LGD_RESPCODE"),
-                        transformedParams.get("LGD_RESPMSG") );
+                        transformedParams.get("LGD_RESPMSG"));
                 return new ResponseEntity("OK", HttpStatus.OK);
             }
 
-            // TODO builder default=true.
             Context context = null;
             RequestInfo requestInfo = null;
             try {
@@ -151,19 +148,12 @@ public class APIController {
                 throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert to pgPayment", e);
             }
 
-            //try {
-            // execptionHandler에 의해 처리됨
-                payment = payService.doCommand(Command.Type.PAY, requestInfo);
-            //} catch (Throwable e) {
-                // FIXME handle exception. Redirect to GCS
-                //logger.warn("!!!! Failed to Payment ==> GCS /payment/result/fail", e);
-            //}
-            // 성공이든 실패든 처리가 잘 되면 OK
+            // 실패시 exceptionHandler에 의해 처리됨
+            payment = payService.doCommand(Command.Type.PAY, requestInfo);
             return new ResponseEntity("OK", HttpStatus.OK);
 
         } else {
             logger.warn("Unsupported executor. pg = " + pg + ", paymentType = " + paymentType);
-            // TODO error noti
         }
 
         // reached here. error.

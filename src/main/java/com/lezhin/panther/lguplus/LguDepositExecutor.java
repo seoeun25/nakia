@@ -33,6 +33,7 @@ import static com.lezhin.panther.ErrorCode.LGUPLUS_OK;
 
 /**
  * LguPlus의 무통장입금을 처리
+ *
  * @author seoeun
  * @since 2017.12.16
  */
@@ -95,18 +96,19 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
         // do nothing. response ok
         Payment<LguplusPayment> payment = context.getPayment();
         LguplusPayment lguplusPayment = payment.getPgPayment();
+        if (lguplusPayment.getCST_PLATFORM() == null) {
+            lguplusPayment = lguplusPayment.toBuilder().CST_PLATFORM(pantherProperties.getLguplus().getCstPlatform())
+                    .build();
+        }
+        if (lguplusPayment.getCST_MID() == null) {
+            lguplusPayment = lguplusPayment.toBuilder().CST_MID(pantherProperties.getLguplus().getCstMid()).build();
+        }
 
         String configPath = pantherProperties.getLguplus().getConfDir();
 
         // 결제 요청 - BEGIN
         String CST_PLATFORM = lguplusPayment.getCST_PLATFORM();
-        if (CST_PLATFORM == null) {
-            CST_PLATFORM = pantherProperties.getLguplus().getCstPlatform();
-        }
         String CST_MID = lguplusPayment.getCST_MID();
-        if (CST_MID == null) {
-            CST_MID = pantherProperties.getLguplus().getCstMid();
-        }
         String LGD_MID = ("test".equals(CST_PLATFORM.trim()) ? "t" : "") + CST_MID;
         String LGD_PAYKEY = payment.getPgPayment().getLGD_PAYKEY();
 
@@ -152,27 +154,27 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
         }
 
         // 최종 결제 요청 결과처리
-        logger.info("[TX] start transaction ......");
+        logger.info("[TX PaymentByKey] start transaction ......");
         if (xpay.TX()) {
             ResponseInfo responseInfo = ResponseInfo.builder()
                     .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
             if (!succeeded(responseInfo)) {
                 context = context.response(responseInfo);
-                logger.info("[TX] done. failed = {}", responseInfo.toString());
+                logger.info("[TX] done. failed. PaymentByKey= {}", responseInfo.toString());
                 throw new LguDepositException(type, "Tx failed : " + xpay.m_szResCode +
                         ":" + xpay.m_szResMsg);
             }
 
-            logger.info("[TX] done = {}", responseInfo.toString());
-            logger.info("[TX]   LGD_TID = {}", xpay.Response("LGD_TID", 0) );
-            logger.info("[TX]   LGD_MID = {}", xpay.Response("LGD_MID", 0) );
+            logger.info("[TX PaymentByKey] done = {}", responseInfo.toString());
+            logger.info("[TX]   LGD_TID = {}", xpay.Response("LGD_TID", 0));
+            logger.info("[TX]   LGD_MID = {}", xpay.Response("LGD_MID", 0));
             logger.info("[TX]   LGD_OID = {}", xpay.Response("LGD_OID", 0));
-            logger.info("[TX]   LGD_AMOUNT = {}", xpay.Response("LGD_AMOUNT", 0) );
-            logger.info("[TX]   LGD_FINANCENAME = {}", xpay.Response("LGD_FINANCENAME", 0) );
-            logger.info("[TX]   LGD_ACCOUNTNUM = {}", xpay.Response("LGD_ACCOUNTNUM", 0) );
-            logger.info("[TX]   LGD_PAYER = {}", xpay.Response("LGD_PAYER", 0) );
-            logger.info("[TX]   LGD_TIMESTAMP = {}", xpay.Response("LGD_TIMESTAMP", 0) );
-            logger.info("[TX]   LGD_BUYER = {}", xpay.Response("LGD_BUYER", 0) );
+            logger.info("[TX]   LGD_AMOUNT = {}", xpay.Response("LGD_AMOUNT", 0));
+            logger.info("[TX]   LGD_FINANCENAME = {}", xpay.Response("LGD_FINANCENAME", 0));
+            logger.info("[TX]   LGD_ACCOUNTNUM = {}", xpay.Response("LGD_ACCOUNTNUM", 0));
+            logger.info("[TX]   LGD_PAYER = {}", xpay.Response("LGD_PAYER", 0));
+            logger.info("[TX]   LGD_TIMESTAMP = {}", xpay.Response("LGD_TIMESTAMP", 0));
+            logger.info("[TX]   LGD_BUYER = {}", xpay.Response("LGD_BUYER", 0));
 
             if (StringUtils.isEmpty(xpay.Response("LGD_FINANCENAME", 0))) {
                 throw new LguDepositException(type, "LGD_FINANCENAME can not be empty");
@@ -197,20 +199,14 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             payment.setPgPayment(resPgPayment);
             context.payment(payment).response(responseInfo);
 
-            if (LGUPLUS_OK.getCode().equals(xpay.m_szResCode)) { // "0000"
-                // succeed!!
-                logger.info("[TX] Succeed !!!!. paymentId = {}, LGD_TID = {}", payment.getPaymentId(),
-                        payment.getPgPayment().getLGD_TID());
+            // succeed!!
+            logger.info("[TX PaymentByKey] Succeed !!!!. paymentId = {}, LGD_TID = {}", payment.getPaymentId(),
+                    payment.getPgPayment().getLGD_TID());
 
-            } else {
-                logger.info("[TX] failed !!!!");
-                throw new LguDepositException(type, "Failed to TX(PaymentByKey): " + resPgPayment.getLGD_RESPCODE() +
-                        ":" + resPgPayment.getLGD_RESPMSG());
-            }
         } else {
             ResponseInfo responseInfo = ResponseInfo.builder()
                     .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
-            logger.info("[TX] result is false !!!!. FAILED. response = {}", responseInfo.toString());
+            logger.info("[TX PaymentByKey] result is false !!!!. FAILED. response = {}", responseInfo.toString());
             context.response(responseInfo);
             throw new LguDepositException(type, "Tx result is false. TX(PaymentByKey): " + xpay.m_szResCode +
                     ":" + xpay.m_szResMsg);
@@ -233,11 +229,13 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
         String LGD_RESPCODE = lguplusPayment.getLGD_RESPCODE();
         String LGD_RESPMSG = lguplusPayment.getLGD_RESPMSG();
         String LGD_MID = lguplusPayment.getLGD_MID();
-        String LGD_OID =lguplusPayment.getLGD_OID();
+        String LGD_OID = lguplusPayment.getLGD_OID();
         String LGD_AMOUNT = lguplusPayment.getLGD_AMOUNT();
         String LGD_TIMESTAMP = lguplusPayment.getLGD_TIMESTAMP();
         String LGD_CASFLAG = lguplusPayment.getLGD_CASFLAG();
         String LGD_HASHDATA = lguplusPayment.getLGD_HASHDATA();
+
+        logger.info("LGD_TIMESTAMP = {}", LGD_TIMESTAMP);
 
         String LGD_MERTKEY = "f1232cf4cee3670e3bf6af125608275a"; //mertkey TODO lombok default 처리
 
@@ -251,6 +249,14 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             sb.append(LGD_TIMESTAMP);
             sb.append(LGD_MERTKEY);
 
+            logger.info(LGD_MID);
+            logger.info(LGD_OID);
+            logger.info(LGD_AMOUNT);
+            logger.info(LGD_RESPCODE);
+            logger.info(LGD_TIMESTAMP);
+            logger.info(LGD_MERTKEY);
+            logger.info("---- sb = {}", sb.toString());
+
             byte[] bNoti = sb.toString().getBytes();
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] digest = md.digest(bNoti);
@@ -263,6 +269,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
                 }
                 strBuf.append(Integer.toHexString(c));
             }
+            logger.info("strBuf ::" + strBuf.toString());
             LGD_HASHDATA2 = strBuf.toString();
         } catch (Exception e) {
             logger.warn("Failed to generate LGD_HASHDATA");
@@ -277,59 +284,117 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
          * ※ 주의사항 : 성공시 'OK' 문자이외의 다른문자열이 포함되면 실패처리 되오니 주의하시기 바랍니다.
          */
         //String resultMSG = "결제결과 상점 DB처리(LGD_CASNOTEURL) 결과값을 입력해 주시기 바랍니다.";
-        String resultMSG = LGD_RESPMSG;
-
         ResponseInfo responseInfo = ResponseInfo.builder().code(LGD_RESPCODE).description(LGD_RESPMSG).build();
         if (LGD_HASHDATA2.trim().equals(LGD_HASHDATA)) { //해쉬값 검증이 성공이면
-            if ( ("0000".equals(LGD_RESPCODE.trim())) ){ //결제가 성공이면
-                if( "R".equals( LGD_CASFLAG.trim() ) ) {
+            if (("0000".equals(LGD_RESPCODE.trim()))) { //결제가 성공이면
+                if ("R".equals(LGD_CASFLAG.trim())) {
                     // 가상 계좌 생성
                     responseInfo = responseInfo.toBuilder().description("CASFLAG should be 'I' but R").build();
                     context = context.response(responseInfo);
-                    //resultMSG = "OK";
                     throw new LguDepositException(type, "CASFLAG should be 'I' but 'R'");
 
-                }else if( "I".equals( LGD_CASFLAG.trim() ) ) {
+                } else if ("I".equals(LGD_CASFLAG.trim())) {
                     // 입금
                     context = context.response(responseInfo);
-                    resultMSG = "OK";
-                }else if( "C".equals( LGD_CASFLAG.trim() ) ) {
+                    logger.info("==== Deposit Succeed !!!! ====");
+                } else if ("C".equals(LGD_CASFLAG.trim())) {
                     // 입금 취소
                     responseInfo = responseInfo.toBuilder().description("CASFLAG should be 'I' but C").build();
                     context = context.response(responseInfo);
                     throw new LguDepositException(type, "CASFLAG should be 'I' but C");
-                    //resultMSG = "OK";
                 }
             } else { //결제가 실패이면
                 responseInfo = responseInfo.toBuilder().description("LGU payment failed").build();
                 context = context.response(responseInfo);
-                //resultMSG = "OK";
                 throw new LguDepositException(type, "LGU deposit payment failed:" + LGD_RESPMSG);
             }
         } else { //해쉬값이 검증이 실패이면
             responseInfo = responseInfo.toBuilder().code(ErrorCode.LGUPLUS_ERROR.getCode())
                     .description("LGD_HASHDATA is not valid").build();
             context = context.response(responseInfo);
-            resultMSG = "결제결과 상점 DB처리(LGD_CASNOTEURL) 해쉬값 검증이 실패하였습니다.";
             throw new LguDepositException(type, "LGD_HASHDATA is not valid");
         }
-
-        System.out.println(resultMSG.toString());
 
         return payment;
     }
 
     public Payment refund() {
-        logger.info("______Lgu Depsoit REFUND");
+        Payment payment = context.getPayment();
+        LguplusPayment lguplusPayment = context.getPayment().getPgPayment();
+        if (lguplusPayment.getCST_PLATFORM() == null) {
+            lguplusPayment = lguplusPayment.toBuilder().CST_PLATFORM(pantherProperties.getLguplus().getCstPlatform())
+                    .build();
+        }
+        if (lguplusPayment.getCST_MID() == null) {
+            lguplusPayment = lguplusPayment.toBuilder().CST_MID(pantherProperties.getLguplus().getCstMid()).build();
+        }
+        logger.info("== REFUND LGD_TID={}, CST_MID={}", lguplusPayment.getLGD_TID(), lguplusPayment.getCST_MID());
+
+        String CST_PLATFORM = lguplusPayment.getCST_PLATFORM();
+        String CST_MID = lguplusPayment.getCST_MID();
+        String LGD_MID = ("test".equals(CST_PLATFORM.trim()) ? "t" : "") + CST_MID;
+        String LGD_TID = lguplusPayment.getLGD_TID();
+
+        String configPath = pantherProperties.getLguplus().getConfDir();
+        LGD_TID = (LGD_TID == null) ? "" : LGD_TID;
+
+        logger.info("[TX Cancel] init config with {}", configPath);
+        XPayClient xpay = new XPayClient();
+        xpay.Init(configPath, CST_PLATFORM);
+        xpay.Init_TX(LGD_MID);
+        xpay.Set("LGD_TXNAME", "Cancel");
+        xpay.Set("LGD_TID", LGD_TID);
+
+        /*
+         * 1. 결제취소 요청 결과처리
+         *
+         * 취소결과 리턴 파라미터는 연동메뉴얼을 참고하시기 바랍니다.
+         *
+         * [[[중요]]] 고객사에서 정상취소 처리해야할 응답코드
+         * 1. 신용카드 : 0000, AV11
+         * 2. 계좌이체 : 0000, RF00, RF10, RF09, RF15, RF19, RF23, RF25 (환불진행중 응답건-> 환불결과코드.xls 참고)
+         * 3. 나머지 결제수단의 경우 0000(성공) 만 취소성공 처리
+         *
+         */
+        logger.info("[TX Cancel] start transaction ......");
+        if (xpay.TX()) {
+            ResponseInfo responseInfo = ResponseInfo.builder()
+                    .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
+            if (!succeeded(responseInfo)) {
+                context = context.response(responseInfo);
+                logger.info("[TX] done. failed = {}", responseInfo.toString());
+                throw new LguDepositException(type, "Tx failed : " + xpay.m_szResCode +
+                        ":" + xpay.m_szResMsg);
+            }
+            logger.info("[TX] done = {}", responseInfo.toString());
+            logger.info("[TX]   LGD_TID = {}", xpay.Response("LGD_TID", 0));
+            logger.info("[TX]   LGD_MID = {}", xpay.Response("LGD_MID", 0));
+            logger.info("[TX]   LGD_OID = {}", xpay.Response("LGD_OID", 0));
+            logger.info("[TX]   LGD_AMOUNT = {}", xpay.Response("LGD_AMOUNT", 0));
+
+            // succeed!!
+            logger.info("[TX Cancel] Succeed !!!!. paymentId = {}, LGD_TID = {}", payment.getPaymentId(),
+                    lguplusPayment.getLGD_TID());
+
+        } else {
+            ResponseInfo responseInfo = ResponseInfo.builder()
+                    .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
+            logger.info("[TX Cancel] result is false !!!!. FAILED. response = {}", responseInfo.toString());
+            context.response(responseInfo);
+            throw new LguDepositException(type, "Tx result is false. TX(Cancel): " + xpay.m_szResCode +
+                    ":" + xpay.m_szResMsg);
+        }
+
         return context.getPayment();
+
     }
 
-        /**
-         * Throws Exception if lguplus execution failed.
-         *
-         * @param responseCode
-         * @throws LguDepositException
-         */
+    /**
+     * Throws Exception if lguplus execution failed.
+     *
+     * @param responseCode
+     * @throws LguDepositException
+     */
     public void handleResponseCode(String responseCode) throws HappyPointParamException, HappyPointSystemException {
         if (!responseCode.equals(ErrorCode.LGUPLUS_OK.getCode())) {
             throw new HappyPointSystemException(type, context.getResponseInfo().getCode(),
@@ -363,6 +428,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
 
     /**
      * Return LGD_CLOSEDATE which is after 3days than LGD_TIMESTAMP
+     *
      * @param LGD_TIMESTAMP
      * @return
      */
