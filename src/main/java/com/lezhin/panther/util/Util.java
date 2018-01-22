@@ -2,6 +2,8 @@ package com.lezhin.panther.util;
 
 import com.lezhin.beans.entity.common.LezhinLocale;
 import com.lezhin.constant.PaymentType;
+import com.lezhin.panther.exception.PantherException;
+import com.lezhin.panther.executor.Executor;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
@@ -121,6 +123,12 @@ public class Util {
             return source;
         }
         return decodedHelloString;
+    }
+
+    public static Executor.Type getType(Throwable e) {
+        Executor.Type executorType = Optional.of(e).filter(ex -> (ex instanceof PantherException))
+                .map(ex -> ((PantherException)ex).getType()).orElse(Executor.Type.DUMMY);
+        return executorType;
     }
 
 }

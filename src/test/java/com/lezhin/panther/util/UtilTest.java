@@ -1,5 +1,7 @@
 package com.lezhin.panther.util;
 
+import com.lezhin.panther.exception.PantherException;
+import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.happypoint.HappyPointPayment;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -81,6 +84,15 @@ public class UtilTest {
         assertEquals("ko", Util.getLang("a"));
         assertEquals("ko", Util.getLang("ko-KR"));
         assertEquals("ko", Util.getLang(null));
+    }
+
+    @Test
+    public void testExecutorTypeFromException() {
+
+        assertEquals(Executor.Type.DUMMY, Util.getType(new RuntimeException("Hello error")));
+        assertEquals(Executor.Type.LGUDEPOSIT, Util.getType(new PantherException(Executor.Type.LGUDEPOSIT, "Hello " +
+                "panther error")));
+
     }
 
 }

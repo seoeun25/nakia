@@ -9,8 +9,12 @@ import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.ExecutorException;
+import com.lezhin.panther.exception.FraudException;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.exception.PantherException;
+import com.lezhin.panther.exception.ParameterException;
+import com.lezhin.panther.exception.PreconditionException;
+import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.lguplus.LguDepositExecutor;
 import com.lezhin.panther.lguplus.LguplusPayment;
@@ -149,7 +153,8 @@ public class PageController {
             payment = pagePayService.doCommand(Command.Type.RESERVE, requestInfo);
         } catch (Throwable e) {
             logger.warn("Failed to reserve !!!", e);
-            throw e;
+            String redirectUrl = getPaymentUrl(requestInfo, -1L);
+            return redirect(redirectUrl, requestInfo, null, null, null, e);
         }
 
         Map<String, Object> map = JsonUtil.toMap(payment.getPgPayment());
@@ -191,36 +196,37 @@ public class PageController {
                 String newResMsg = LguDepositExecutor.extractResMsg(resMsg);
                 params.put("LGD_RESPMSG", newResMsg);
             }
-            // TODO builder default=true.
-            Context context = null;
-            // TODO builder default=true
             RequestInfo requestInfo = null;
+            String redirectUrl = null;
             try {
+                requestInfo = simpleCacheService.getRequestInfo(Long.valueOf(params.get("LGD_OID").toString().trim()));
+                redirectUrl = getPaymentUrl(requestInfo, Long.valueOf(params.get("LGD_OID").toString()));
+
                 LguplusPayment pgPayment = JsonUtil.fromMap(params, LguplusPayment.class);
-                requestInfo = simpleCacheService.getRequestInfo(Long.valueOf(pgPayment.getLGD_OID()));
                 Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
                 params.put("isMobile", requestInfo.getIsApp().booleanValue());
 
                 logger.info("PAGE preauth [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
 
-                context = Context.builder()
+                Context context = Context.builder()
                         .requestInfo(requestInfo)
                         .payment(requestPayment)
                         .responseInfo(ResponseInfo.builder().code(pgPayment
                                 .getLGD_RESPCODE()).description(pgPayment.getLGD_RESPMSG()).build())
                         .build();
 
-            } catch (Throwable e) {
-                throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert to pgPayment", e);
-            }
-
-            try {
                 payment = pagePayService.doCommand(Command.Type.PREAUTHENTICATE, context);
+
+            } catch (SessionException e) {
+                logger.warn("Failed to get RequestInfo. paymentId = {}",
+                        Long.valueOf(params.get("LGD_OID").toString()));
+                redirectUrl = getPaymentUrl(requestInfo, Long.valueOf(params.get("LGD_OID").toString()));
+                return redirect(redirectUrl, requestInfo, null, null, null, e);
             } catch (Throwable e) {
-                // FIXME handle exception. Redirect to GCS
                 logger.warn("Failed to PREAUTHENTICATE", e);
-                throw e;
+                return redirect(redirectUrl, requestInfo, null, null, null, new PantherException(Executor.Type
+                        .LGUDEPOSIT, e));
             }
 
         }
@@ -247,52 +253,46 @@ public class PageController {
         logger.info("PAGE authentication. [{}-{}]", pg, paymentType);
         Payment payment = null;
 
-        Map<String, String[]> params = new HashMap(request.getParameterMap());
-        Map<String, Object> transformedParams = params.entrySet().stream()
+        Map<String, Object> params = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
 
-        params.entrySet().stream().forEach(e -> logger.debug("param. {} = {}", e.getKey(), e.getValue()[0]));
+        params.entrySet().stream().forEach(e -> logger.info("param. {} = {}", e.getKey(), e.getValue()));
         if (PGCompany.lguplus.name().equals(pg) &&
                 (PaymentType.deposit.name().equals(paymentType) || PaymentType.mdeposit.name().equals(paymentType))) {
 
-            // TODO builder default=true.
-            Context context = null;
-            // TODO builder default=true
-            RequestInfo requestInfo = null;
-            try {
-                LguplusPayment pgPayment = JsonUtil.fromMap(transformedParams, LguplusPayment.class);
-                Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
 
-                requestInfo = simpleCacheService.getRequestInfo(Long.valueOf(pgPayment.getLGD_OID()));
+            RequestInfo requestInfo = null;
+            String redirectUrl = null;
+            try {
+                requestInfo = simpleCacheService.getRequestInfo(Long.valueOf(params.get("LGD_OID").toString()));
+                redirectUrl = getPaymentUrl(requestInfo, Long.valueOf(params.get("LGD_OID").toString()));
+
+                LguplusPayment pgPayment = JsonUtil.fromMap(params, LguplusPayment.class);
+                Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
 
                 logger.info("PAGE [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
 
-                context = Context.builder()
+                Context context = Context.builder()
                         .requestInfo(requestInfo)
                         .payment(requestPayment)
                         .responseInfo(ResponseInfo.builder().code(pgPayment
                                 .getLGD_RESPCODE()).description(pgPayment.getLGD_RESPMSG()).build()).build();
 
-            } catch (Throwable e) {
-                throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert to pgPayment", e);
-            }
-
-            try {
                 payment = pagePayService.doCommand(Command.Type.AUTHENTICATE, context);
+
+            } catch (SessionException e) {
+                logger.warn("Failed to get RequestInfo. paymentId = {}",
+                        Long.valueOf(params.get("LGD_OID").toString()));
+                redirectUrl = getPaymentUrl(requestInfo, Long.valueOf(params.get("LGD_OID").toString()));
+                return redirect(redirectUrl, requestInfo, null, null, null, e);
             } catch (Throwable e) {
-                // FIXME handle exception. Redirect to GCS
-                logger.warn("Failed to AUTHENTICATE ==> GCS /payment/result/fail", e);
-                throw e;
+                logger.warn("Failed to AUTHENTICATE: {}. need to redirect ==> {}", e.getMessage(), redirectUrl);
+                return redirect(redirectUrl, requestInfo, null, null, null, new PantherException(Executor.Type
+                        .LGUDEPOSIT, e));
             }
 
-            String redirectUrl = String.format("%s/%s/payment/%s/result", pantherProperties.getWebUrl(),
-                    Util.getLang(requestInfo.getLocale()), payment.getPaymentId());
-            if (pantherProperties.getPantherUrl().contains("localhost")) {
-                // for localhost test
-                redirectUrl = String.format("%s/page/v1/%s/result",
-                        pantherProperties.getPantherUrl(), payment.getPaymentId());
-            }
+
             LguplusPayment finalPayment = (LguplusPayment) payment.getPgPayment();
             return redirect(redirectUrl, requestInfo, finalPayment.getLGD_FINANCENAME(),
                     finalPayment.getLGD_ACCOUNTNUM(), finalPayment.getLGD_CLOSEDATE(), null);
@@ -308,83 +308,32 @@ public class PageController {
 
     }
 
-    @RequestMapping(value = "/{pg}/{paymentType}/payment", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<String> payment(HttpServletRequest request, HttpServletResponse response,
-                                          @PathVariable String pg,
-                                          @PathVariable String paymentType) {
-
-        logger.info("PAGE payment. [{}-{}]", pg, paymentType);
-        Payment payment = null;
-        Map<String, String[]> params = new HashMap(request.getParameterMap());
-        Map<String, Object> transformedParams = params.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
-
-        params.entrySet().stream().forEach(e -> logger.info("request param. {} = {}", e.getKey(), e.getValue()[0]));
-        if (PGCompany.lguplus.name().equals(pg) &&
-                (PaymentType.deposit.name().equals(paymentType) || PaymentType.mdeposit.name().equals(paymentType))) {
-
-            String LGD_CASFLAG = Optional.ofNullable(transformedParams.get("LGD_CASFLAG")).orElse("").toString();
-            if (!LGD_CASFLAG.equals("I")) {
-                logger.info("LGD_CASFLAG = {}, LGD_RESCODE = {}, LGD_RESMSG = {}",
-                        transformedParams.get("LGD_CASFLAG"), transformedParams.get("LGD_RESPCODE"),
-                        transformedParams.get("LGD_RESPMSG") );
-                return new ResponseEntity("OK", HttpStatus.OK);
-            }
-
-            // TODO default builder.
-            Context context = null;
-            try {
-                LguplusPayment pgPayment = JsonUtil.fromMap(transformedParams, LguplusPayment.class);
-                Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
-                requestPayment.setPaymentType(PaymentType.valueOf(paymentType));
-                RequestInfo requestInfo = new RequestInfo.Builder(requestPayment, pg).build();
-
-                logger.info("PAGE [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
-
-                context = Context.builder()
-                        .requestInfo(requestInfo)
-                        .payment(requestPayment)
-                        .responseInfo(ResponseInfo.builder().code(pgPayment
-                                .getLGD_RESPCODE()).description(pgPayment.getLGD_RESPMSG()).build()).build();
-
-            } catch (Throwable e) {
-                throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert to pgPayment", e);
-            }
-            try {
-
-                payment = pagePayService.doCommand(Command.Type.PAY, context);
-
-            } catch (Throwable e) {
-                // FIXME handle exception. Redirect to GCS
-                logger.warn("!!!! Failed to Payment ==> GCS /payment/result/fail", e);
-            }
-            // 성공이든 실패든 처리가 잘 되면 OK
-            return new ResponseEntity("OK", HttpStatus.OK);
-
-        } else {
-            logger.warn("Unsupported executor. pg = " + pg + ", paymentType = " + paymentType);
-            // TODO error noti
+    private String getPaymentUrl(RequestInfo requestInfo, Long paymentId) {
+        String paymentUrl = String.format("%s/%s/payment/%s/result", pantherProperties.getWebUrl(),
+                Util.getLang(Optional.ofNullable(requestInfo)
+                        .map(requestInfo1 -> requestInfo1.getLocale())
+                        .orElse(null)),
+                paymentId);
+        if (pantherProperties.getPantherUrl().contains("localhost")) {
+            // for localhost test
+            paymentUrl = String.format("%s/page/v1/%s/result",
+                    pantherProperties.getPantherUrl(), paymentId);
         }
-
-        // 성공이든 실패든 처리가 잘 되면 OK
-        return new ResponseEntity("Error", HttpStatus.INTERNAL_SERVER_ERROR);
-
+        return paymentUrl;
     }
 
     private ModelAndView redirect(String redirectTargetUrl, RequestInfo requestInfo, String bank,
-                                  String accountNumber, String date, String failReason) {
+                                  String accountNumber, String date, Throwable e) {
         RedirectView redirectView = new RedirectView(redirectTargetUrl);
         logger.info("REDIRECT to = {}", redirectView.getUrl());
         Map<String, Object> attrs = new HashMap<>();
-        attrs.put("__u", requestInfo.getUserId());
-        attrs.put("isMobile", requestInfo.getIsMobile());
-        attrs.put("isApp", requestInfo.getIsApp());
-        if (!StringUtils.isEmpty(requestInfo.getReturnTo())) {
+        attrs.put("__u", Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getUserId()).orElse(-1L));
+        attrs.put("isMobile", Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getIsMobile())
+                .orElse(Boolean.FALSE));
+        attrs.put("isApp", Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getIsApp())
+                .orElse(Boolean.FALSE));
+        if (!StringUtils.isEmpty(requestInfo) && !StringUtils.isEmpty(requestInfo.getReturnTo())) {
             attrs.put("returnTo", requestInfo.getReturnTo());
-        }
-        if (!StringUtils.isEmpty(failReason)) {
-            attrs.put("reason", failReason);
         }
         if (!StringUtils.isEmpty(bank)) {
             attrs.put("bank", bank);
@@ -394,6 +343,27 @@ public class PageController {
         }
         if (!StringUtils.isEmpty(date)) {
             attrs.put("date", date);
+        }
+        if (!StringUtils.isEmpty(e)) {
+            String failReason = "Internal Error";
+            if (e instanceof SessionException) {
+                failReason = "Session expired";
+            } else if (e instanceof ParameterException || e instanceof PreconditionException ||
+                    e instanceof FraudException) {
+                failReason = e.getMessage();
+            } else {
+                failReason = "Internal Error";
+            }
+            attrs.put("reason", failReason);
+            Executor.Type executorType = Util.getType(e);
+            slackNotifier.notify(SlackEvent.builder()
+                    .header(executorType.name())
+                    .level(SlackMessage.LEVEL.ERROR)
+                    .title(e.getMessage())
+                    .message(e.getMessage())
+                    .exception(e)
+                    .build());
+            logger.error("Failed. will redirect. ", e);
         }
         redirectView.setAttributesMap(attrs);
         return new ModelAndView(redirectView);
@@ -448,52 +418,14 @@ public class PageController {
 
     }
 
-    @ExceptionHandler({InternalPaymentException.class, PantherException.class})
-    public ModelAndView handleInternalPaymentExceptionException(HttpServletRequest request,
-                                                                PantherException e) {
-        logger.error("panther error. requestedUrl = " + request.getRequestURI(), e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(e.getType().name())
-                .level(SlackMessage.LEVEL.ERROR)
-                .title(e.getClass().getName())
-                .message(e.getMessage())
-                .exception(e)
-                .build());
-
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("exception", e);
-        modelAndView.addObject("url", request.getRequestURL());
-
-        modelAndView.setViewName("error_internal");
-        return modelAndView;
-    }
-
-    @ExceptionHandler({ExecutorException.class})
-    public ModelAndView handleException(HttpServletRequest request, Exception e) {
-        logger.error("PAGE executor error. requestedUrl = " + request.getRequestURI(), e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(((PantherException) e).getType().name())
-                .level(SlackMessage.LEVEL.ERROR)
-                .title(e.getClass().getName())
-                .message(e.getMessage())
-                .exception(e)
-                .build());
-
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("exception", e);
-        modelAndView.addObject("url", request.getRequestURL());
-
-        modelAndView.setViewName("error_page");
-        return modelAndView;
-    }
-
     @ExceptionHandler(Throwable.class)
-    public ModelAndView handleUnexpectedException(HttpServletRequest request, Exception e) {
+    public ModelAndView handleUnexpectedException(HttpServletRequest request, Throwable e) {
         logger.error("PAGE unexpected error. requestedUrl = " + request.getRequestURI(), e);
+        Executor.Type executorType = Util.getType(e);
         slackNotifier.notify(SlackEvent.builder()
-                .header(Executor.Type.DUMMY.name())
+                .header(executorType.name())
                 .level(SlackMessage.LEVEL.ERROR)
-                .title("Unexpected error")
+                .title(e.getMessage())
                 .message(e.getMessage())
                 .exception(e)
                 .build());

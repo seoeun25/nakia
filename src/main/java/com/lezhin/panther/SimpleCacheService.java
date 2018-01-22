@@ -83,6 +83,9 @@ public class SimpleCacheService {
     public RequestInfo getRequestInfo(long paymentId) {
         String key = RedisService.generateKey("reservation", "requestinfo", String.valueOf(paymentId));
         RequestInfo value = (RequestInfo) redisService.getValue(key);
+        if (value == null) {
+            throw new SessionException(Executor.Type.DUMMY, "RequestInfo not found: paymentId=" + paymentId);
+        }
         return value;
     }
 

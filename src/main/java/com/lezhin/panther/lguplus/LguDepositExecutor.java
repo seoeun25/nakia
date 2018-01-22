@@ -237,7 +237,8 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
 
         logger.info("LGD_TIMESTAMP = {}", LGD_TIMESTAMP);
 
-        String LGD_MERTKEY = "f1232cf4cee3670e3bf6af125608275a"; //mertkey TODO lombok default 처리
+        String LGD_MERTKEY = LguplusPayment.LGD_MERTKEY;
+        logger.info("LGD_MERTKEY = {}", LGD_MERTKEY);
 
         String LGD_HASHDATA2 = "";
         try {
@@ -255,7 +256,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             logger.info(LGD_RESPCODE);
             logger.info(LGD_TIMESTAMP);
             logger.info(LGD_MERTKEY);
-            logger.info("---- sb = {}", sb.toString());
+            logger.info("sb = {}", sb.toString());
 
             byte[] bNoti = sb.toString().getBytes();
             MessageDigest md = MessageDigest.getInstance("MD5");

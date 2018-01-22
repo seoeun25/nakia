@@ -125,12 +125,6 @@ public class APIController {
             RequestInfo requestInfo = null;
             try {
                 requestInfo = simpleCacheService.getRequestInfo(Long.valueOf(transformedParams.get("LGD_OID").toString()));
-                if (requestInfo == null) {
-                    // TODO 만약에 redis가 죽었다가 살아나서 requestInfo가 모두 reset 될 수도 있다면.
-                    // 그런데 입금했다면, purchase는 안되어서 결국은 CR로.
-                    throw new SessionException(Executor.Type.LGUDEPOSIT, "RequestInfo not found: paymentId=" +
-                            transformedParams.get("LGD_OD"));
-                }
 
                 LguplusPayment pgPayment = JsonUtil.fromMap(transformedParams, LguplusPayment.class);
                 Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
@@ -143,7 +137,12 @@ public class APIController {
                         .payment(requestPayment)
                         .responseInfo(ResponseInfo.builder().code(pgPayment
                                 .getLGD_RESPCODE()).description(pgPayment.getLGD_RESPMSG()).build()).build();
-
+            } catch (SessionException e) {
+                // TODO 만약에 redis가 죽었다가 살아나서 requestInfo가 모두 reset 될 수도 있다면.
+                // 그런데 입금했다면, purchase는 안되어서 결국은 CR로.
+                logger.warn("Failed to get RequestInfo. paymentId = {}",
+                        Long.valueOf(transformedParams.get("LGD_OID").toString()));
+                throw new SessionException(Executor.Type.LGUDEPOSIT, e);
             } catch (Throwable e) {
                 throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert to pgPayment", e);
             }

@@ -37,8 +37,7 @@ public class JsonUtilTest {
         assertEquals("20.5", map.get("LGD_AMOUNT"));
         assertNull(map.get("LGD_BUYERIP"));
 
-
-        com.lezhin.panther.lguplus.LguplusPayment pgPayment1 = JsonUtil.fromMap(map, com.lezhin.panther.lguplus.LguplusPayment.class);
+        LguplusPayment pgPayment1 = JsonUtil.fromMap(map, LguplusPayment.class);
         logger.info("pgPayment1 = {}", pgPayment1);
         assertEquals("cst_mid", pgPayment1.getCST_MID());
         assertEquals("20.5", pgPayment1.getLGD_AMOUNT());

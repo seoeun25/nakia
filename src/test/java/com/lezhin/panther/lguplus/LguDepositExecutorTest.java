@@ -50,8 +50,4 @@ public class LguDepositExecutorTest {
 
     }
 
-    public void testCST_FLATORM() {
-
-    }
-
 }

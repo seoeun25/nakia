@@ -23,6 +23,7 @@ public class LguplusPayment extends PGPayment {
 
     //public static final String DEFAULT_CST_MID =  "lezhin001";
     public static final String DEFAULT_WINDOW_TYPE = "iframe";
+    public static final String LGD_MERTKEY = "f1232cf4cee3670e3bf6af125608275a"; // mall.conf 상점키
 
     private String CST_MID; // 상점 아이디
     private String CST_PLATFORM; // 플랫폼. test or service
@@ -82,6 +83,7 @@ public class LguplusPayment extends PGPayment {
     private String LGD_CASHRECEIPTNUM;     // 현금영수증 승인번호
     private String LGD_CASHRECEIPTSELFYN;  // 현금영수증자진발급제유무 Y: 자진발급제 적용, 그외 : 미적용
     private String LGD_CASHRECEIPTKIND;    // 현금영수증 종류 0: 소득공제용 , 1: 지출증빙용
+    private String LGD_CASHRECEIPTCODE;
     // 구매정보
     private String LGD_BUYERSSN;           // 구매자 주민번호
     private String LGD_RECEIVER;           // 수취인
@@ -305,6 +307,11 @@ public class LguplusPayment extends PGPayment {
     @JsonProperty("LGD_CASHRECEIPTKIND")
     public String getLGD_CASHRECEIPTKIND() {
         return LGD_CASHRECEIPTKIND;
+    }
+
+    @JsonProperty("LGD_CASHRECEIPTCODE")
+    public String getLGD_CASHRECEIPTCODE() {
+        return LGD_CASHRECEIPTCODE;
     }
 
     @JsonProperty("LGD_PAYER")
