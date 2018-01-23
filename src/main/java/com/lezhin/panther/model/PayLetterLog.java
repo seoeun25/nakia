@@ -31,5 +31,6 @@ public class PayLetterLog implements Serializable {
     private String paymentType;
     private String pgCompany;
     private String locale;
+    private Long refIdPayment;
 
 }
