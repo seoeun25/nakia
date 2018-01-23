@@ -89,66 +89,13 @@ public class PageController {
         return modelAndView;
     }
 
-    @RequestMapping(value = "/{pg}/sample_org", method = RequestMethod.GET)
-    public ModelAndView sampleOrg(HttpServletRequest request, HttpServletResponse response,
-                                  @PathVariable String pg) {
-
-        String pageKey = String.format("pg/%s/sample_org", pg);
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("name", "there, This is panther");
-        modelAndView.setViewName(pageKey);
-
-        return modelAndView;
-    }
-
-    @RequestMapping(value = "/{pg}/reservation_org", method = {RequestMethod.GET, RequestMethod.POST})
-    public <T extends PGPayment> String reservationOrg(HttpServletRequest request, HttpServletResponse response,
-                                                       Model model, @PathVariable String pg) {
-
-        // TODO cookie 에 token 저장이 필요?
-        //RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
-        //logger.info("HTTP. Page reservation. requestInfo = {}", requestInfo);
-        //Payment<T> payment = pagePayService.doCommand(Command.Type.RESERVE, requestInfo);
-
-        //Class<T> claz = (Class<T>) payment.getPgPayment().getClass();
-        //Map<String, Object> map = JsonUtil.toMap(payment.getPgPayment());
-
-
-        model.addAttribute("pantherUrl", pantherProperties.getPantherUrl());
-        //model.addAllAttributes(map);
-
-        model.asMap().entrySet().stream().forEach(e -> logger.info("model. {} = {}", e.getKey(), e.getValue()));
-
-        String pageKey = String.format("pg/%s/reservation_org", pg);
-
-        logger.info("reservation. pg = {}, pageKey = {}", pg, pageKey);
-
-        return pageKey;
-
-    }
-
-
-    @RequestMapping(value = "/{pg}/{paymentType}/sample", method = RequestMethod.GET)
-    public ModelAndView sample(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg,
-                               @PathVariable String paymentType) {
-
-        String jpsName = String.format("pg/%s/%s/sample", pg, paymentType);
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("name", "there, This is panther");
-        modelAndView.setViewName(jpsName);
-
-        return modelAndView;
-    }
-
     @RequestMapping(value = "/{pg}/{paymentType}/reservation", method = {RequestMethod.GET, RequestMethod.POST})
-    public <T extends PGPayment> ModelAndView reservation(HttpServletRequest request, HttpServletResponse response,
+    public ModelAndView reservation(HttpServletRequest request, HttpServletResponse response,
                                                           @PathVariable String pg, @PathVariable String paymentType) {
 
         logger.info("PAGE reservation [{}-{}]", pg, paymentType);
-        // TODO cookie 에 token 저장이 필요?
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
-        logger.info("PAGE reservation. requestInfo = {}", requestInfo);
-        Payment<T> payment = null;
+        Payment payment = null;
         try {
             payment = pagePayService.doCommand(Command.Type.RESERVE, requestInfo);
         } catch (Throwable e) {
@@ -255,7 +202,6 @@ public class PageController {
 
         Map<String, Object> params = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
-
         params.entrySet().stream().forEach(e -> logger.info("param. {} = {}", e.getKey(), e.getValue()));
         if (PGCompany.lguplus.name().equals(pg) &&
                 (PaymentType.deposit.name().equals(paymentType) || PaymentType.mdeposit.name().equals(paymentType))) {
@@ -298,11 +244,11 @@ public class PageController {
                     finalPayment.getLGD_ACCOUNTNUM(), finalPayment.getLGD_CLOSEDATE(), null);
         }
 
-        logger.info("payment = {}", payment);
-        String pageKey = String.format("pg/%s/%s/authentication_done_tmp", pg, paymentType);
+        String jspName = String.format("pg/%s/%s/authentication", pg, paymentType);
+        logger.info("PAGE [{}] will show = {}", pg, jspName);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addAllObjects(JsonUtil.toMap(payment.getPgPayment()));
-        modelAndView.setViewName(pageKey);
+        modelAndView.setViewName(jspName);
 
         return modelAndView;
 
@@ -369,6 +315,9 @@ public class PageController {
         return new ModelAndView(redirectView);
     }
 
+    /**
+     * For local test. Mock payment_result page.
+     */
     @RequestMapping(value = "/{paymentId}/result", method = RequestMethod.GET)
     public ModelAndView paymentResult(HttpServletRequest request, HttpServletResponse response,
                                       @PathVariable String paymentId,
@@ -393,28 +342,6 @@ public class PageController {
         modelAndView.setViewName(jspName);
 
         return modelAndView;
-
-    }
-
-
-    @RequestMapping(value = "/{pg}/ping", method = RequestMethod.GET)
-    public String ping(HttpServletRequest request, HttpServletResponse response, Model model,
-                       @PathVariable String pg) {
-
-        String pageKey = String.format("pg/%s/ping", pg);
-
-        logger.info("ping. pg = {}, pageKey = {}", pg, pageKey);
-
-        String confDirStr = pantherProperties.getLguplus().getConfDir();
-        model.addAttribute("confDir", confDirStr);
-        model.addAttribute("CST_PLATFORM", "test");
-        model.addAttribute("CST_MID", "lezhin001");
-        File file = new File(confDirStr);
-        File mallConf = new File(file, "/conf/mall.conf");
-        logger.info("confDirStr = {}, file = {}, mallConf.exists = {}", confDirStr, file.getAbsoluteFile(),
-                mallConf.exists());
-
-        return pageKey;
 
     }
 
