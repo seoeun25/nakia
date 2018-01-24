@@ -88,11 +88,7 @@ public class PayLetterPaymentRepository implements PaymentRepository<PayLetterLo
                 log.setLocale(localeData);
                 log.setIdApproval(currentEntity.getString("idApproval"));
                 log.setPgCompany(currentEntity.getString("pgCompany"));
-                if(currentEntity.getString("refIdPayment") != null){
-                    log.setRefIdPayment(currentEntity.getLong("refIdPayment"));
-                }else{
-                    log.setRefIdPayment(null);
-                }
+                log.setRefIdPayment(currentEntity.isNull("refIdPayment") ? null : currentEntity.getLong("refIdPayment"));
 
                 logs.add(log);
             }
