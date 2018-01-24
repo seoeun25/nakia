@@ -6,6 +6,7 @@ import com.lezhin.panther.util.DateUtil;
 import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -20,9 +21,13 @@ import java.util.Optional;
  * @since 2017.11.24
  */
 @Service
+@Qualifier("slackNotifier")
 public class SlackNotifier {
 
-    public static final String LEZHIN_SLACK_URL = "https://hooks.slack.com/services/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";
+    public static final String LEZHIN_SLACK_URL =
+            "https://hooks.slack.com/services/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";
+    public static final String DONDOG_SLACK_URL =
+            "https://hooks.slack.com/services/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";
     private static final Logger logger = LoggerFactory.getLogger(SlackNotifier.class);
     private String channel;
 
