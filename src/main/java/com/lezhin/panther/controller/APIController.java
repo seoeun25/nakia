@@ -149,6 +149,7 @@ public class APIController {
 
             // 실패시 exceptionHandler에 의해 처리됨
             payment = payService.doCommand(Command.Type.PAY, requestInfo);
+            logger.info("API response OK");
             return new ResponseEntity("OK", HttpStatus.OK);
 
         } else {

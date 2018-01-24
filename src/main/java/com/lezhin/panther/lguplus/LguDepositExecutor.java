@@ -435,6 +435,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
      */
     public static String getLGD_CLOSEDATE(String LGD_TIMESTAMP) {
         long timestamp = DateUtil.toInstant(LGD_TIMESTAMP, "yyyyMMddHHmmss", DateUtil.ASIA_SEOUL_ZONE).toEpochMilli();
-        return DateUtil.getDateTimeString(timestamp + (1000 * 60 * 60 * 24 * CLOSE_PERIOD));
+        //return DateUtil.getDateTimeString(timestamp + (1000 * 60 * 60 * 24 * CLOSE_PERIOD));
+        return DateUtil.getDateTimeString(timestamp + (1000 * 60 * 60 * 1)); // For test. 1 hour
     }
 }
