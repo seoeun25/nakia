@@ -2,6 +2,7 @@ package com.lezhin.panther;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Panther Application Main.
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @since 2017.10.24
  */
 @SpringBootApplication
+@EnableScheduling
 public class PantherApplication {
 
     public static final String APP_NAME = "panther";

@@ -33,6 +33,7 @@ panther:
     mchtNo: 100015851
   lguplus:
     confDir: /etc/panther/conf/beta/lgdacom
+    logDir: /var/log/panther/lguplus
     cstPlatform: test
     cstMid: lezhin001
     txName: PaymentByKey
@@ -57,7 +58,6 @@ panther:
   webUrl: https://www.lezhin.com
   apiUrl: https://api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://panther.lezhin.com
-  slackChannel: panther
   cloudWatch: https://ap-northeast-2.console.aws.amazon.com/cloudwatch/home?region=ap-northeast-2#logStream:group=panther
   happypoint:
     hpcUrl: http://outbound-proxy.lezhin.net/spc/processHpc

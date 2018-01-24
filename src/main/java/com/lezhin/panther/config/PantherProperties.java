@@ -30,6 +30,7 @@ public class PantherProperties {
     @Data
     public static class Lguplus {
         private String confDir;
+        private String logDir;
         private String cstPlatform;
         private String cstMid;
         private String txName;
