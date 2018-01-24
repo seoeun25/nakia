@@ -23,7 +23,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -80,7 +79,7 @@ public class APIControllerTest {
 
         // PreFlight from www.lezhin.com. OK
         this.mockMvc
-                .perform(options("/v1/api/happypoint/reservation")
+                .perform(options("/api/vi/happypoint/reservation")
                         .header("Access-Control-Request-Method", "GET")
                         .header("Origin", "http://www.lezhin.com")
                         .param("_lz_userId", "1212121"))
@@ -89,7 +88,7 @@ public class APIControllerTest {
                 .andExpect(header().string("Access-Control-Allow-Methods", "GET,HEAD,POST"));
 
         this.mockMvc
-                .perform(options("/v1/api/happypoint/reservation")
+                .perform(options("/api/vi/happypoint/reservation")
                         .header("Access-Control-Request-Method", "GET")
                         .header("Origin", "http://beta-www.lezhin.com")
                         .param("_lz_userId", "1212121"))
@@ -100,27 +99,13 @@ public class APIControllerTest {
 
         // PreFlight from abc.lezhin.com. forbidden.
         this.mockMvc
-                .perform(options("/v1/api/happypoint/reservation")
+                .perform(options("/api/vi/happypoint/reservation")
                         .header("Access-Control-Request-Method", "GET")
                         .header("Origin", "http://abc.lezhin.com")
                         .param("_lz_userId", "1212121"))
                 .andDo(print())
                 .andExpect(status().isForbidden())
                 .andExpect(header().doesNotExist("Access-Control-Allow-Methods"));
-
-    }
-
-    /**
-     * ParameterException Handle.
-     */
-    @Test
-    public void testParameterException() throws Exception {
-
-        this.mockMvc
-                .perform(post("/v1/api/hello/reservation").content("{\"_lz_userId\":\"10101\"}"))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("code").value(ErrorCode.LEZHIN_PARAM.getCode()));
 
     }
 
