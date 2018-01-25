@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 /**
- * 실제로 slack (Lezhin Entertainment #panther)로 메시지가 전달되기 때문에 @Test 를 막아놓음. 필요시 풀어서 테스트.
+ * 실제로 slack (Lezhin Entertainment #panther_beta)로 메시지가 전달되기 때문에 @Test 를 막아놓음. 필요시 풀어서 테스트.
  * @author seoeun
  * @since 2017.11.25
  */

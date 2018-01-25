@@ -26,7 +26,7 @@ panther:
   webUrl: https://beta-www.lezhin.com
   apiUrl: https://beta-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://beta-panther.lezhin.com
-  slackChannel: panther
+  slackChannel: panther_beta
   cloudWatch: https://ap-northeast-2.console.aws.amazon.com/cloudwatch
   happypoint:
     hpcUrl: http://dev-outbound-proxy.lezhin.net/spc/processHpc
