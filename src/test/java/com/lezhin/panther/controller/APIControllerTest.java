@@ -23,6 +23,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -106,6 +107,20 @@ public class APIControllerTest {
                 .andDo(print())
                 .andExpect(status().isForbidden())
                 .andExpect(header().doesNotExist("Access-Control-Allow-Methods"));
+
+    }
+
+    /**
+     * ParameterException Handle.
+     */
+    @Test
+    public void testParameterException() throws Exception {
+
+        this.mockMvc
+                .perform(post("/v1/api/hello/reservation").content("{\"_lz_userId\":\"10101\"}"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("code").value(ErrorCode.LEZHIN_PARAM.getCode()));
 
     }
 
