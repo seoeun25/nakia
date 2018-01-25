@@ -398,7 +398,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
      */
     public void handleResponseCode(String responseCode) throws HappyPointParamException, HappyPointSystemException {
         if (!responseCode.equals(ErrorCode.LGUPLUS_OK.getCode())) {
-            throw new HappyPointSystemException(type, context.getResponseInfo().getCode(),
+            throw new LguDepositException(type, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
     }

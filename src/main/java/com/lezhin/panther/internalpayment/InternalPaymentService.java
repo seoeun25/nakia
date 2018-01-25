@@ -1,6 +1,7 @@
 package com.lezhin.panther.internalpayment;
 
 import com.lezhin.panther.Context;
+import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.executor.Executor;
@@ -12,7 +13,6 @@ import com.lezhin.panther.util.JsonUtil;
 import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -35,19 +35,17 @@ import java.util.Map;
 public class InternalPaymentService {
 
     private static final Logger logger = LoggerFactory.getLogger(InternalPaymentService.class);
-
-    @Autowired
-    private PantherProperties pantherProperties;
-
-    private ClientHttpRequestFactory clientHttpRequestFactory;
-
     private static final List<Class<? extends Exception>> TRANSIENT_EXECPTIONS = ImmutableList.of(
             IOException.class,
             ResourceAccessException.class);
     private static final int RETRY_COUNT = 3;
+    private PantherProperties pantherProperties;
+    private ClientHttpRequestFactory clientHttpRequestFactory;
 
-    public InternalPaymentService(final ClientHttpRequestFactory clientHttpRequestFactory) {
+    public InternalPaymentService(final ClientHttpRequestFactory clientHttpRequestFactory,
+                                  final PantherProperties pantherProperties) {
         this.clientHttpRequestFactory = clientHttpRequestFactory;
+        this.pantherProperties = pantherProperties;
     }
 
 
@@ -229,6 +227,11 @@ public class InternalPaymentService {
                 }
             }
         }
+        if (response.getBody() == null) {
+            ResponseEntity<Result> re = (ResponseEntity<Result>) response;
+            logger.warn("Response is null. Status = {}", re.getStatusCode());
+            throw new InternalPaymentException(type, "InternalPaymentService Error. Status:" + re.getStatusCode());
+        }
         return response;
     }
 
@@ -243,6 +246,11 @@ public class InternalPaymentService {
                                                     String externalStoreProductId, Executor.Type type) {
         if (result == null) {
             throw new InternalPaymentException(type, "Internal. result is null");
+        }
+
+        if (!ErrorCode.INTERNAL_OK.getCode().equals(String.valueOf(result.getCode()))) {
+            throw new InternalPaymentException(type, "InternalFailed: " + result.getCode() + ":" +
+                    result.getDescription());
         }
 
         String jsonData = JsonUtil.toJson(result.getData());
