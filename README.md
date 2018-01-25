@@ -31,3 +31,31 @@ config 항목은 spring profiles를 이용하여 설정한다
 * `local`: 개발용. 로컬에서 실행. 로컬 mysql(or mariadb) 사용. 로컬 redis 사용
 * `test`: 유닛 테스트용. 로컬에서 실행. h2 메모리 사용. JPA DDL create-drop. (redis는 ?)
 
+## How to deploy
+1. version.txt 를 수정하여 version을 업그레이드. 
+예를 들면, version이 1.0.98일 경우 v1.0.98
+2. docker image 빌드
+
+    2.1. tag를 push 하면 travis를 통해 자동으로 docker image 생성되고 docker repo에 push 된다.
+    tag naming은 버전 앞에 v를 붙인다. 예를 들면 v1.0.98 
+    
+    2.2. local에서는 다음과 같이 내장된 script를 이용하면 travis를 통하지 않고 바로 docker repo에 push 된다
+    ```
+    $ ./build_local.sh 1.0.98
+    
+    ```
+3. deploy docker image
+    
+    slack의 panther_beta 채널에서 다음과 같이 입력하고 묻는 대로 하면 된다
+    버전은 alpha, beta, qa, production에서 global로 사용한다. (어떤 docker image로 deploy하겠다)
+    ```
+    /ecs deploy panther 1.0.98
+    원하는 infra 선택: 예를 들면 qa
+    ```
+4. aws ecs 에서 instance 확인.
+5. 배포 버전 확인
+    ```
+    https://qa-panther.lezhin.com/panther/version
+
+    ```
+
