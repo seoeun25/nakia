@@ -64,10 +64,11 @@ public class InternalPaymentServiceTest {
     @BeforeEach
     public void setUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).build();
+        mockPantherProperties = new PantherProperties();
         mockClientHttpRequestFactory = new
                 HttpComponentsClientHttpRequestFactory();
         mockClientHttpRequestFactory.setConnectTimeout(1);
-        internalPaymentService = new InternalPaymentService(mockClientHttpRequestFactory);
+        internalPaymentService = new InternalPaymentService(mockClientHttpRequestFactory, mockPantherProperties);
         MockitoAnnotations.initMocks(this);
     }
 
