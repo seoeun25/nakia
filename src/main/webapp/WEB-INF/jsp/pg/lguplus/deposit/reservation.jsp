@@ -187,7 +187,7 @@
 /*
 * 윈도우 크기 조정
 */
-function windoResize(f) {
+function windowResize(f) {
     if (typeof f === 'function') {
         var windowWidth = 650 + window.outerWidth - window.innerWidth;
         var windowHeight = 650 + window.outerHeight - window.innerHeight;
@@ -205,7 +205,7 @@ function windoResize(f) {
 * 수정불가
 */
 function launchCrossPlatform(){
-    windoResize(function(windowWidth){
+    windowResize(function(windowWidth){
         lgdwin = openXpay(document.getElementById('LGD_PAYINFO'), '<%= CST_PLATFORM %>', LGD_window_type, null, windowWidth, "");
     });
 }
@@ -237,22 +237,13 @@ function payment_return() {
 	}
 }
 
-/*
- * 아이프레임 인증결과 이벤트 리스너
- */
-window.addEventListener('message', function (event) {
-    console.log(`postMessage : event.data.message : ${event.data.message}`);
-    if (event.origin === window.origin && event.data.message === 'payment_return') {
-        payment_return();
-    }
-    else {
-        console.log('Origin not allowed!');
-    }
-}, false);
+document.addEventListener('DOMContentLoaded', function() {
+    launchCrossPlatform();
+});
 
 </script>
 </head>
-<body onload="launchCrossPlatform()">
+<body>
 <form method="post" name="LGD_PAYINFO" id="LGD_PAYINFO" action="/page/v1/lguplus/deposit/authentication">
 <%
 	for(Iterator i = payReqMap.keySet().iterator(); i.hasNext();){

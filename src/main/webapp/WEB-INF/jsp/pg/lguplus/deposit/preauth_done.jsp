@@ -53,7 +53,7 @@
                 lgdReturnInfo.action = "/page/v1/lguplus/deposit/authentication";
                 lgdReturnInfo.submit();
             } else {
-                window.parent.postMessage({ message: 'payment_return' }, window.origin);
+                parent.payment_return();
             }
         }
     </script>
