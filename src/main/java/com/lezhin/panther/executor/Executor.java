@@ -192,6 +192,10 @@ public abstract class Executor<T extends PGPayment> {
         return context.getPayment();
     }
 
+    public Payment cancel() {
+        return context.getPayment();
+    }
+
     public Payment refund() {
         return context.getPayment();
     }

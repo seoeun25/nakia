@@ -44,7 +44,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
 
     private static final Logger logger = LoggerFactory.getLogger(LguDepositExecutor.class);
 
-    public static final int CLOSE_PERIOD = 3; // 3 days. 무통장 입금 마감시간.
+    public static final int CLOSE_PERIOD = 4; // 무통장 입금 마감시간.
 
     public LguDepositExecutor() {
         this.type = Type.LGUDEPOSIT;
@@ -155,8 +155,8 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
         if (xpay.TX()) {
             ResponseInfo responseInfo = ResponseInfo.builder()
                     .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
+            context = context.response(responseInfo);
             if (!succeeded(responseInfo)) {
-                context = context.response(responseInfo);
                 logger.info("[TX] done. failed. PaymentByKey= {}", responseInfo.toString());
                 throw new LguDepositException(type, "Tx failed : " + xpay.m_szResCode +
                         ":" + xpay.m_szResMsg);
@@ -316,6 +316,133 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
         return payment;
     }
 
+    public Payment cancel() {
+        // 무통장 가상계좌를 close 한다. (closeDate를 현재 시간으로 업데이트 하여 만료시킨다)
+
+        Payment<LguplusPayment> payment = context.getPayment();
+        LguplusPayment lguplusPayment = payment.getPgPayment();
+        if (lguplusPayment.getCST_PLATFORM() == null) {
+            lguplusPayment = lguplusPayment.toBuilder().CST_PLATFORM(pantherProperties.getLguplus().getCstPlatform())
+                    .build();
+        }
+        if (lguplusPayment.getCST_MID() == null) {
+            lguplusPayment = lguplusPayment.toBuilder().CST_MID(pantherProperties.getLguplus().getCstMid()).build();
+        }
+
+        String configPath = pantherProperties.getLguplus().getConfDir();
+        logger.info("request lguplusPayment = {}", JsonUtil.toJson(lguplusPayment));
+
+        String CST_PLATFORM           = lguplusPayment.getCST_PLATFORM();
+        String CST_MID                = lguplusPayment.getCST_MID();
+        String LGD_MID                = ("test".equals(CST_PLATFORM.trim())?"t":"")+CST_MID;
+        String LGD_METHOD   		  = "CHANGE";                   //ASSIGN:할당, CHANGE:변경
+        String LGD_OID                = lguplusPayment.getLGD_OID();
+        String LGD_AMOUNT     		  = lguplusPayment.getLGD_AMOUNT();
+        String LGD_PRODUCTINFO		  = lguplusPayment.getLGD_PRODUCTINFO();
+        String LGD_BUYER       		  = lguplusPayment.getLGD_BUYER();
+        String LGD_ACCOUNTOWNER       = lguplusPayment.getLGD_ACCOUNTNUM();
+        String LGD_ACCOUNTPID		  = "";			  	  //구매자 개인식별변호 (6자리~13자리)(옵션)
+        String LGD_BUYERPHONE		  = lguplusPayment.getLGD_BUYERPHONE();
+        String LGD_BUYEREMAIL		  = lguplusPayment.getLGD_BUYEREMAIL();
+        String LGD_BANKCODE        	  = "";				  //입금계좌은행코드
+        String LGD_CASHRECEIPTUSE	  = "";			  //현금영수증 발행구분('1':소득공제, '2':지출증빙)
+        String LGD_CASHCARDNUM	  	  = "";			  //현금영수증 카드번호
+        String LGD_CLOSEDATE		  = DateUtil.getDateTimeString(Instant.now().toEpochMilli());
+        String LGD_TAXFREEAMOUNT	  = "";		  	  //면세금액
+        String LGD_CASNOTEURL		  = pantherProperties.getPantherUrl() + "/api/v1/lguplus/deposit/payment/done";
+
+        LGD_METHOD       			  = ( LGD_METHOD == null )?"":LGD_METHOD;
+        LGD_OID       		    	  = ( LGD_OID == null )?"":LGD_OID;
+        LGD_AMOUNT   		    	  = ( LGD_AMOUNT == null )?"":LGD_AMOUNT;
+        LGD_PRODUCTINFO				  = ( LGD_PRODUCTINFO == null ) ?"":LGD_PRODUCTINFO;
+        LGD_BANKCODE				  = ( LGD_BANKCODE == null ) ?"":LGD_BANKCODE;
+        LGD_CASHRECEIPTUSE			  = ( LGD_CASHRECEIPTUSE == null ) ? "":LGD_CASHRECEIPTUSE;
+        LGD_CASHCARDNUM				  = ( LGD_CASHCARDNUM == null ) ? "":LGD_CASHCARDNUM;
+        LGD_CLOSEDATE				  = ( LGD_CLOSEDATE == null ) ? "":LGD_CLOSEDATE;
+        LGD_CASNOTEURL				  = ( LGD_CASNOTEURL == null ) ? "":LGD_CASNOTEURL;
+        LGD_TAXFREEAMOUNT			  = ( LGD_TAXFREEAMOUNT == null ) ? "":LGD_TAXFREEAMOUNT;
+        LGD_BUYER			  		  = ( LGD_BUYER == null ) ? "":LGD_BUYER;
+        LGD_ACCOUNTOWNER			  = ( LGD_ACCOUNTOWNER == null ) ? "":LGD_ACCOUNTOWNER;
+        LGD_ACCOUNTPID			  	  = ( LGD_ACCOUNTPID == null ) ? "":LGD_ACCOUNTPID;
+        LGD_BUYERPHONE			  	  = ( LGD_BUYERPHONE == null ) ? "":LGD_BUYERPHONE;
+        LGD_BUYEREMAIL			  	  = ( LGD_BUYEREMAIL == null ) ? "":LGD_BUYEREMAIL;
+
+        XPayClient xpay = new XPayClient();
+        xpay.Init(configPath, CST_PLATFORM);
+        xpay.Init_TX(LGD_MID);
+        xpay.Set("LGD_TXNAME", "CyberAccount");
+        xpay.Set("LGD_METHOD", LGD_METHOD);
+        xpay.Set("LGD_OID", LGD_OID);
+        xpay.Set("LGD_AMOUNT", LGD_AMOUNT);
+        xpay.Set("LGD_PRODUCTINFO", LGD_PRODUCTINFO);
+        xpay.Set("LGD_BANKCODE", LGD_BANKCODE);
+        xpay.Set("LGD_CASHRECEIPTUSE", LGD_CASHRECEIPTUSE);
+        xpay.Set("LGD_CASHCARDNUM", LGD_CASHCARDNUM);
+        xpay.Set("LGD_CLOSEDATE", LGD_CLOSEDATE);
+        xpay.Set("LGD_CASNOTEURL", LGD_CASNOTEURL);
+        xpay.Set("LGD_TAXFREEAMOUNT", LGD_TAXFREEAMOUNT);
+        xpay.Set("LGD_BUYER", LGD_BUYER);
+        xpay.Set("LGD_ACCOUNTOWNER", LGD_ACCOUNTOWNER);
+        xpay.Set("LGD_ACCOUNTPID", LGD_ACCOUNTPID);
+        xpay.Set("LGD_BUYERPHONE", LGD_BUYERPHONE);
+        xpay.Set("LGD_BUYEREMAIL", LGD_BUYEREMAIL);
+
+        logger.info("[TX CyberAccount] start transaction ......");
+        if (xpay.TX()) {
+            if( LGD_METHOD.equals("ASSIGN")){ //가상계좌 발급의 경우
+
+                //1)가상계좌 발급/변경결과 화면처리(성공,실패 결과 처리를 하시기 바랍니다.)
+                logger.info("가상계좌 발급 요청처리가 완료되었습니다.  <br>");
+                logger.info( "TX Response_code = " + xpay.m_szResCode + "<br>");
+                logger.info( "TX Response_msg = " + xpay.m_szResMsg + "<p>");
+                logger.info("거래번호 : " + xpay.Response("LGD_TID",0) + "<br>");
+                logger.info("결과코드 : " + xpay.Response("LGD_RESPCODE",0) + "<p>");
+
+                for (int i = 0; i < xpay.ResponseNameCount(); i++)
+                {
+                    logger.info(xpay.ResponseName(i) + " = ");
+                    for (int j = 0; j < xpay.ResponseCount(); j++)
+                    {
+                        logger.info("\t" + xpay.Response(xpay.ResponseName(i), j) + "<br>");
+                    }
+                }
+
+            }else{		//가상계좌 변경의 경우
+
+                ResponseInfo responseInfo = ResponseInfo.builder()
+                        .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
+                context = context.response(responseInfo);
+                if (!succeeded(responseInfo)) {
+                    logger.info("[TX] done. failed. PaymentByKey= {}", responseInfo.toString());
+                    throw new LguDepositException(type, "Tx failed : " + xpay.m_szResCode +
+                            ":" + xpay.m_szResMsg);
+                }
+
+                logger.info("[TX CyberAccount] done = {}", responseInfo.toString());
+                logger.info("[TX]   LGD_OID = {}", xpay.Response("LGD_OID", 0));
+                // succeed!!
+                logger.info("[TX CyberAccount] Succeed !!!!. paymentId = {}, LGD_TID = {}, LGD_CLOSEDATE: {} ==> {}",
+                        payment.getPaymentId(), payment.getPgPayment().getLGD_TID(),
+                        lguplusPayment.getLGD_CLOSEDATE(), LGD_CLOSEDATE);
+
+                lguplusPayment.setLGD_CLOSEDATE(LGD_CLOSEDATE);
+                payment.setPgPayment(lguplusPayment);
+                context.payment(payment).response(responseInfo);
+
+            }
+
+        }else {
+            ResponseInfo responseInfo = ResponseInfo.builder()
+                    .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
+            logger.info("[TX CyberAccount] result is false !!!!. FAILED. response = {}", responseInfo.toString());
+            context.response(responseInfo);
+            throw new LguDepositException(type, "Tx result is false. TX(CyberAccount): " + xpay.m_szResCode +
+                    ":" + xpay.m_szResMsg);
+        }
+
+        return payment;
+    }
+
     public Payment refund() {
         // 무통장 입금은 API로 refund 불가(계약자체가 CR을 통해서만 refund 하도록)
         Payment payment = context.getPayment();
@@ -371,14 +498,20 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
     }
 
     /**
-     * Return LGD_CLOSEDATE which is after 3days than LGD_TIMESTAMP
+     * LGD_CLOSEDATE는 LGD_TIMESTAMP + 3 일 한 날의 자정까지.
+     *
+     * <p>
+     * ex> 2018-01-24 13:01:01 -> 2018-01-28 00:00:00
+     * </p>
      *
      * @param LGD_TIMESTAMP
      * @return
      */
     public static String getLGD_CLOSEDATE(String LGD_TIMESTAMP) {
         long timestamp = DateUtil.toInstant(LGD_TIMESTAMP, "yyyyMMddHHmmss", DateUtil.ASIA_SEOUL_ZONE).toEpochMilli();
-        //return DateUtil.getDateTimeString(timestamp + (1000 * 60 * 60 * 24 * CLOSE_PERIOD));
-        return DateUtil.getDateTimeString(timestamp + (1000 * 60 * 60 * 1)); // For test. 1 hour
+        //String dateStr = DateUtil.getDateString(timestamp + (1000 * 60 * 60 * 24) * CLOSE_PERIOD);
+        //return dateStr + "000000";
+        String dateStr = DateUtil.getDateTimeString(timestamp + (1000 * 60 * 60 * 1)); // For test. 1 hour
+        return dateStr;
     }
 }

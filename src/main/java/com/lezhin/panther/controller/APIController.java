@@ -3,6 +3,7 @@ package com.lezhin.panther.controller;
 import com.lezhin.constant.PGCompany;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
+import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.PayService;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.command.Command;
@@ -149,7 +150,64 @@ public class APIController {
 
             // 실패시 exceptionHandler에 의해 처리됨
             payment = payService.doCommand(Command.Type.PAY, requestInfo);
-            logger.info("API response OK");
+            logger.info("API response OK = {}", JsonUtil.toJson(payment));
+            return new ResponseEntity("OK", HttpStatus.OK);
+
+        } else {
+            logger.warn("Unsupported executor. pg = " + pg + ", paymentType = " + paymentType);
+        }
+
+        // reached here. error.
+        return new ResponseEntity("Error", HttpStatus.INTERNAL_SERVER_ERROR);
+
+    }
+
+    @RequestMapping(value = "/{pg}/{paymentType}/{paymentId}/cancel", method = RequestMethod.PUT)
+    @ResponseBody
+    public <T> ResponseEntity<T> paymentCancel(HttpServletRequest request, HttpServletResponse response,
+                                              @PathVariable String pg,
+                                              @PathVariable String paymentType,
+                                              @PathVariable Long paymentId) {
+
+        logger.info("API cancel. [{}-{}], paymentId = {}", pg, paymentType, paymentId);
+        if (request.getHeader("__x") == null || !request.getHeader("__x").toString().equals("nakia")) {
+            // TODO 임시로 fraud detecting.
+            logger.info("We need __x nakia");
+            return new ResponseEntity("Fraud", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (paymentId == null) {
+            return new ResponseEntity(ErrorCode.LEZHIN_PARAM.getCode(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        Payment payment = null;
+        if (PGCompany.lguplus.name().equals(pg) &&
+                (PaymentType.deposit.name().equals(paymentType) || PaymentType.mdeposit.name().equals(paymentType))) {
+
+            Context context = null;
+            RequestInfo requestInfo = null;
+            try {
+                requestInfo = simpleCacheService.getRequestInfo(paymentId);
+
+                Payment<LguplusPayment> requestPayment = requestInfo.getPayment();
+
+                logger.info("API [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
+
+                context = Context.builder()
+                        .requestInfo(requestInfo)
+                        .payment(requestPayment)
+                        .responseInfo(ResponseInfo.builder().code(ErrorCode.LEZHIN_UNKNOWN.getCode()
+                                ).description(ErrorCode.LEZHIN_UNKNOWN.getMessage()).build()).build();
+            } catch (SessionException e) {
+                // TODO 만약에 redis가 죽었다가 살아나서 requestInfo가 모두 reset 될 수도 있다면.
+                // 그런데 입금했다면, purchase는 안되어서 결국은 CR로.
+                logger.warn("Failed to get RequestInfo. paymentId = {}", paymentId);
+                throw new SessionException(Executor.Type.LGUDEPOSIT, e);
+            } catch (Throwable e) {
+                throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert to pgPayment", e);
+            }
+
+            // 실패시 exceptionHandler에 의해 처리됨
+            payment = payService.doCommand(Command.Type.CANCEL, requestInfo);
+            logger.info("API cancel response OK = {}", JsonUtil.toJson(payment));
             return new ResponseEntity("OK", HttpStatus.OK);
 
         } else {

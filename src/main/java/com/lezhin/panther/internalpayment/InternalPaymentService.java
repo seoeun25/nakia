@@ -105,7 +105,7 @@ public class InternalPaymentService {
             logger.info("receipt length = {}", receipt.length());
         }
         if (executionSucceed) {
-            // do nothing
+            meta.setReceipt(receipt);
         } else {
             meta.setMeta(receipt);
         }
@@ -212,7 +212,7 @@ public class InternalPaymentService {
                 break;
             } catch (Throwable e) {
                 if (TRANSIENT_EXECPTIONS.contains(e.getClass()) && i <= RETRY_COUNT) {
-                    logger.info("Failed to reserve: " + e.getMessage());
+                    logger.info("Failed to exchange: " + e.getMessage());
                     logger.info("Retrying ...... [{}]", i);
                     try {
                         Thread.sleep(500 * i);

@@ -45,8 +45,7 @@ public class PantherConfiguration {
                                 "http://mirror-www.lezhin.com", "https://q-www.lezhin.com",
                                 "http://a-www.lezhin.com", "https://a-www.lezhin.com",
                                 "http://local.lezhin.com", "https://local.lezhin.com",
-                                "http://xpay.lgdacom.net:7080", "https://xpay.lgdacom.net:7080",
-                                "http://xpay.lgdacom.net:7443", "https://xpay.lgdacom.net:7443"
+                                "https://xpay.lgdacom.net:7443", "https://xpay.lgdacom.net"
                         )
                         .maxAge(1800);
             }

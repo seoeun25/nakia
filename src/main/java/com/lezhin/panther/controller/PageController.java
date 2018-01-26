@@ -251,7 +251,8 @@ public class PageController {
                         .LGUDEPOSIT, e));
             }
 
-
+            requestInfo = requestInfo.withPayment(payment);
+            simpleCacheService.saveRequestInfo(requestInfo);
             LguplusPayment finalPayment = (LguplusPayment) payment.getPgPayment();
             return redirect(redirectUrl, requestInfo, finalPayment.getLGD_FINANCENAME(),
                     finalPayment.getLGD_ACCOUNTNUM(), finalPayment.getLGD_CLOSEDATE(), null);

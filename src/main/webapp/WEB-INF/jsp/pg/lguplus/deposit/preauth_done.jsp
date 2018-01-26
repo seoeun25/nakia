@@ -94,7 +94,7 @@
         <div class="is-preloader is-preloader--big"></div>
         <div class="container">
             <h1> 인증결과 </h1>
-            <p class="msg">결재가 진행 중입니다. 잠시 기다려 주세요.</p>
+            <p class="msg">결제가 진행 중입니다. 잠시 기다려 주세요.</p>
         </div>
     </div>
 </div>
