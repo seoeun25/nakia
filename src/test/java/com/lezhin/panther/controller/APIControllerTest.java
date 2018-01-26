@@ -114,20 +114,6 @@ public class APIControllerTest {
      * ParameterException Handle.
      */
     @Test
-    public void testParameterException() throws Exception {
-
-        this.mockMvc
-                .perform(post("/v1/api/hello/reservation").content("{\"_lz_userId\":\"10101\"}"))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("code").value(ErrorCode.LEZHIN_PARAM.getCode()));
-
-    }
-
-    /**
-     * ParameterException Handle.
-     */
-    @Test
     public void testPayLetter() throws Exception {
 
         this.mockMvc

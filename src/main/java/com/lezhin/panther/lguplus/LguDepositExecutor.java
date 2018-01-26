@@ -83,10 +83,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
 
     public Payment<LguplusPayment> preAuthenticate() {
         // pg.preAuthenticate는 이미 page를 통해서 처리 되었고, 결과가 인자로 들어옴
-
-        // do nothing. response ok
         Payment<LguplusPayment> payment = context.getPayment();
-        context = context.response(new ResponseInfo(LGUPLUS_OK));
         return payment;
     }
 

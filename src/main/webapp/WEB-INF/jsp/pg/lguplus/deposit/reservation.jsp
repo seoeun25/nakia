@@ -59,8 +59,8 @@
     String LGD_CUSTOM_SKIN      = "red";                                                //상점정의 결제창 스킨(red)
 	String LGD_WINDOW_VER		= "2.5";												//결제창 버젼정보
 
-    String authFailUrl = request.getAttribute("failUrl").toString();
-    //System.out.println("authFailUrl = " + authFailUrl);
+    String failUrl = request.getAttribute("failUrl").toString();
+    System.out.println("-- reserve. failUrl = " + failUrl);
     String pantherUrl = request.getAttribute("pantherUrl").toString();
     // 가상계좌(무통장) 결제 연동을 하시는 경우 아래 LGD_CASNOTEURL 을 설정하여 주시기 바랍니다.
     String LGD_CASNOTEURL		= pantherUrl + "/api/v1/lguplus/deposit/payment/done";
@@ -232,8 +232,9 @@ function payment_return() {
 	    var resCodde = fDoc.document.getElementById('LGD_RESPCODE').value;
 
 		console.log("LGD_RESPCODE (결과코드) : " + fDoc.document.getElementById('LGD_RESPCODE').value + "\n" + "LGD_RESPMSG (결과메시지): " + fDoc.document.getElementById('LGD_RESPMSG').value);
-		closeIframe();
-        //window.location = 'https://localhost:9443/page/v1/lguplus/sample';
+        //alert("LGD_RESPCODE (결과코드) : " + fDoc.document.getElementById('LGD_RESPCODE').value + "\n" + "LGD_RESPMSG (결과메시지): " + fDoc.document.getElementById('LGD_RESPMSG').value);
+        closeIframe();
+        window.location = '<%=failUrl%>';
 	}
 }
 
