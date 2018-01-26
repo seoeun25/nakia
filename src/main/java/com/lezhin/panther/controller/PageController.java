@@ -89,6 +89,18 @@ public class PageController {
         return modelAndView;
     }
 
+    @RequestMapping(value = "/{pg}/{paymentType}/sample", method = RequestMethod.GET)
+    public ModelAndView sample(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg,
+                               @PathVariable String paymentType) {
+
+        String jpsName = String.format("pg/%s/%s/sample", pg, paymentType);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("name", "there, This is panther");
+        modelAndView.setViewName(jpsName);
+
+        return modelAndView;
+    }
+
     @RequestMapping(value = "/{pg}/{paymentType}/reservation", method = {RequestMethod.GET, RequestMethod.POST})
     public ModelAndView reservation(HttpServletRequest request, HttpServletResponse response,
                                                           @PathVariable String pg, @PathVariable String paymentType) {
