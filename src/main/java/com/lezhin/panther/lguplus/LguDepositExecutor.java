@@ -320,6 +320,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
     }
 
     public Payment refund() {
+        // 무통장 입금은 API로 refund 불가(계약자체가 CR을 통해서만 refund 하도록)
         Payment payment = context.getPayment();
         LguplusPayment lguplusPayment = context.getPayment().getPgPayment();
         if (lguplusPayment.getCST_PLATFORM() == null) {
@@ -329,65 +330,10 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
         if (lguplusPayment.getCST_MID() == null) {
             lguplusPayment = lguplusPayment.toBuilder().CST_MID(pantherProperties.getLguplus().getCstMid()).build();
         }
-        logger.info("== REFUND LGD_TID={}, CST_MID={}", lguplusPayment.getLGD_TID(), lguplusPayment.getCST_MID());
-
-        String CST_PLATFORM = lguplusPayment.getCST_PLATFORM();
-        String CST_MID = lguplusPayment.getCST_MID();
-        String LGD_MID = ("test".equals(CST_PLATFORM.trim()) ? "t" : "") + CST_MID;
-        String LGD_TID = lguplusPayment.getLGD_TID();
-
-        String configPath = pantherProperties.getLguplus().getConfDir();
-        LGD_TID = (LGD_TID == null) ? "" : LGD_TID;
-
-        logger.info("[TX Cancel] init config with {}", configPath);
-        XPayClient xpay = new XPayClient();
-        xpay.Init(configPath, CST_PLATFORM);
-        xpay.Init_TX(LGD_MID);
-        xpay.Set("LGD_TXNAME", "Cancel");
-        xpay.Set("LGD_TID", LGD_TID);
-
-        /*
-         * 1. 결제취소 요청 결과처리
-         *
-         * 취소결과 리턴 파라미터는 연동메뉴얼을 참고하시기 바랍니다.
-         *
-         * [[[중요]]] 고객사에서 정상취소 처리해야할 응답코드
-         * 1. 신용카드 : 0000, AV11
-         * 2. 계좌이체 : 0000, RF00, RF10, RF09, RF15, RF19, RF23, RF25 (환불진행중 응답건-> 환불결과코드.xls 참고)
-         * 3. 나머지 결제수단의 경우 0000(성공) 만 취소성공 처리
-         *
-         */
-        logger.info("[TX Cancel] start transaction ......");
-        if (xpay.TX()) {
-            ResponseInfo responseInfo = ResponseInfo.builder()
-                    .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
-            if (!succeeded(responseInfo)) {
-                context = context.response(responseInfo);
-                logger.info("[TX] done. failed = {}", responseInfo.toString());
-                throw new LguDepositException(type, "Tx failed : " + xpay.m_szResCode +
-                        ":" + xpay.m_szResMsg);
-            }
-            logger.info("[TX] done = {}", responseInfo.toString());
-            logger.info("[TX]   LGD_TID = {}", xpay.Response("LGD_TID", 0));
-            logger.info("[TX]   LGD_MID = {}", xpay.Response("LGD_MID", 0));
-            logger.info("[TX]   LGD_OID = {}", xpay.Response("LGD_OID", 0));
-            logger.info("[TX]   LGD_AMOUNT = {}", xpay.Response("LGD_AMOUNT", 0));
-
-            // succeed!!
-            logger.info("[TX Cancel] Succeed !!!!. paymentId = {}, LGD_TID = {}", payment.getPaymentId(),
-                    lguplusPayment.getLGD_TID());
-
-        } else {
-            ResponseInfo responseInfo = ResponseInfo.builder()
-                    .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
-            logger.info("[TX Cancel] result is false !!!!. FAILED. response = {}", responseInfo.toString());
-            context.response(responseInfo);
-            throw new LguDepositException(type, "Tx result is false. TX(Cancel): " + xpay.m_szResCode +
-                    ":" + xpay.m_szResMsg);
-        }
+        logger.warn("== CR need REFUND. LGD_TID={}, paymentId(LGD_OID)={}, userId={}, amount={}",
+                lguplusPayment.getLGD_TID(), lguplusPayment.getLGD_OID(), payment.getUserId(), payment.getAmount());
 
         return context.getPayment();
-
     }
 
     /**
