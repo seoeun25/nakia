@@ -9,15 +9,8 @@
     String LGD_RESPMSG = request.getParameter("LGD_RESPMSG");
 
     Map payReqMap = request.getParameterMap();
-    System.out.println("-- page. LGD_RESPCODE = " + LGD_RESPCODE + ", LGD_RESPMSG = " + LGD_RESPMSG);
     boolean isMobile = request.getAttribute("isMobile")  == null ? false :
             Boolean.valueOf(request.getAttribute("isMobile").toString());
-    System.out.println("-- page. isMobile = " + isMobile);
-
-    boolean succeed = "0000".equals(LGD_RESPCODE);
-    System.out.println("-- succeed = " + succeed);
-    String failUrl = request.getAttribute("failUrl").toString();
-    System.out.println("-- reserve. failUrl = " + failUrl);
 
 %>
 <!DOCTYPE html>

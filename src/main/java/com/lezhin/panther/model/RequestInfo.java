@@ -169,7 +169,6 @@ public class RequestInfo implements Serializable {
                 } else {
                     // from apiController. happypoint
                     String result = CharStreams.toString(new InputStreamReader(request.getInputStream(), Charsets.UTF_8));
-                    logger.info("requestBody = {}", result);
                     requestMap = JsonUtil.fromJson(result, Map.class);
                     if (requestMap.containsKey("returnToUrl")) {
                         // TODO "returnToUrl" is deprecated. Use "returnTo"
@@ -182,7 +181,7 @@ public class RequestInfo implements Serializable {
                 throw new ParameterException(executorType, "Failed to read requestBody");
             }
             requestMap.entrySet().stream().forEach(e -> {
-                logger.info("requestMap. {} = {} /[{}]", e.getKey(), e.getValue(),
+                logger.info("request. {} = {} / [{}]", e.getKey(), e.getValue(),
                         e.getValue() == null ? "null" : e.getValue().getClass().getSimpleName());
             });
 
@@ -214,6 +213,7 @@ public class RequestInfo implements Serializable {
                 token = request.getParameter("_lz");
             }
             Optional.ofNullable(token).orElseThrow(() -> new ParameterException(executorType, "token can not be null"));
+            logger.info("request. token = {}", token);
             withToken(token);
 
             withLocale(Optional.ofNullable(requestMap.get("locale")).orElse("ko-KR").toString());

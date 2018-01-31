@@ -104,19 +104,19 @@ public class APIController {
                                              @PathVariable String pg,
                                              @PathVariable String paymentType) {
 
-        logger.info("API paymentDone. [{}-{}]", pg, paymentType);
+        logger.info("PAYMENT_DONE [{}-{}]", pg, paymentType);
         Payment payment = null;
         Map<String, Object> transformedParams = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
 
         transformedParams.entrySet().stream().forEach(
-                e -> logger.info("request param. {} = {}", e.getKey(), e.getValue()));
+                e -> logger.debug("request param. {} = {}", e.getKey(), e.getValue()));
         if (PGCompany.lguplus.name().equals(pg) &&
                 (PaymentType.deposit.name().equals(paymentType) || PaymentType.mdeposit.name().equals(paymentType))) {
             // LGU는 post인데도 param
             String LGD_CASFLAG = Optional.ofNullable(transformedParams.get("LGD_CASFLAG")).orElse("").toString();
             if (!LGD_CASFLAG.equals("I")) {
-                logger.info("API paymentDone. LGD_CASFLAG = {}, LGD_RESCODE = {}, LGD_RESMSG = {}",
+                logger.info(" LGD_CASFLAG = {}, LGD_RESCODE = {}, LGD_RESMSG = {}",
                         transformedParams.get("LGD_CASFLAG"), transformedParams.get("LGD_RESPCODE"),
                         transformedParams.get("LGD_RESPMSG"));
                 return new ResponseEntity("OK", HttpStatus.OK);
@@ -131,7 +131,7 @@ public class APIController {
                 Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
 
-                logger.info("API [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
+                logger.debug("API [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
 
                 context = Context.builder()
                         .requestInfo(requestInfo)
@@ -150,7 +150,7 @@ public class APIController {
 
             // 실패시 exceptionHandler에 의해 처리됨
             payment = payService.doCommand(Command.Type.PAY, requestInfo);
-            logger.info("API response OK = {}", JsonUtil.toJson(payment));
+            logger.info("PAYMENT_DONE. OK. \n{}", JsonUtil.toJson(payment));
             return new ResponseEntity("OK", HttpStatus.OK);
 
         } else {
@@ -169,7 +169,7 @@ public class APIController {
                                               @PathVariable String paymentType,
                                               @PathVariable Long paymentId) {
 
-        logger.info("API cancel. [{}-{}], paymentId = {}", pg, paymentType, paymentId);
+        logger.info("CANCEL. [{}-{}], paymentId = {}", pg, paymentType, paymentId);
         if (request.getHeader("__x") == null || !request.getHeader("__x").toString().equals("nakia")) {
             // TODO 임시로 fraud detecting.
             logger.info("We need __x nakia");
@@ -189,8 +189,6 @@ public class APIController {
 
                 Payment<LguplusPayment> requestPayment = requestInfo.getPayment();
 
-                logger.info("API [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
-
                 context = Context.builder()
                         .requestInfo(requestInfo)
                         .payment(requestPayment)
@@ -207,7 +205,7 @@ public class APIController {
 
             // 실패시 exceptionHandler에 의해 처리됨
             payment = payService.doCommand(Command.Type.CANCEL, requestInfo);
-            logger.info("API cancel response OK = {}", JsonUtil.toJson(payment));
+            logger.info("CANCEL OK. paymentId={}, userId={}", payment.getPaymentId(), payment.getUserId());
             return new ResponseEntity("OK", HttpStatus.OK);
 
         } else {

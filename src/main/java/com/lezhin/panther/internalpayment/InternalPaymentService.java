@@ -176,7 +176,7 @@ public class InternalPaymentService {
     public <T extends PGPayment> Payment<T> get(Context<T> context) {
 
         String url = pantherProperties.getApiUrl() + "/" + context.getPayment().getPaymentId();
-        logger.info("GET. to {}, token={}", url, context.getRequestInfo().getToken());
+        logger.debug("GET. to {}, token={}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -262,7 +262,7 @@ public class InternalPaymentService {
         Payment<T> responsePayment = null;
         try {
             responsePayment = JsonUtil.fromJsonToPayment(jsonData, pgPaymentClass);
-            logger.info("Internal.RESPONSE. paymentId={}, state={}, userId={}, coinProductId={}, coinProductName={}, " +
+            logger.info("RESPONSE. paymentId={}, state={}, userId={}, coinProductId={}, coinProductName={}, " +
                             "amount={}", responsePayment.getPaymentId(), responsePayment.getState(),
                     responsePayment.getUserId(), responsePayment.getCoinProductId(),
                     responsePayment.getCoinProductName(), responsePayment.getAmount());

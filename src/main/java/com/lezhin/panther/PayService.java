@@ -23,6 +23,8 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 /**
  * @author seoeun
  * @since 2017.10.24
@@ -44,8 +46,8 @@ public class PayService {
     }
 
     public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final RequestInfo requestInfo) {
-        logger.info("doCommand = [{}, {}, u={}, p={}]", type, requestInfo.getExecutorType(), requestInfo.getUserId(),
-                requestInfo.getToken());
+        logger.info("[{}, {}, u={}, p={}]", type, requestInfo.getExecutorType(), requestInfo.getUserId(),
+                Optional.ofNullable(requestInfo.getPayment()).map(e -> e.getPaymentId()).orElse(-1l));
         Payment<T> resultPayment = null;
         Command<T> command = null;
         try {

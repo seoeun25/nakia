@@ -33,14 +33,14 @@ public class RedisService {
     public void setValue(final String key, final Object value) {
         template.opsForValue().set(key, value);
 
-        logger.info("Save to redis. key = {}", key);
+        logger.debug("Save to redis. key = {}", key);
     }
 
     public void setValue(final String key, final Object value, final long timeout, final TimeUnit unit) {
         template.opsForValue().set(key, value);
 
         template.expire(key, timeout, unit);
-        logger.info("Save to redis. key = {}", key);
+        logger.debug("Save to redis. key = {}", key);
     }
 
     public Boolean deleteValue(final String key) {

@@ -98,7 +98,7 @@ public class PageController {
     public ModelAndView reservation(HttpServletRequest request, HttpServletResponse response,
                                                           @PathVariable String pg, @PathVariable String paymentType) {
 
-        logger.info("PAGE reservation [{}-{}]", pg, paymentType);
+        logger.info("  >>  RESERVATION [{}-{}]", pg, paymentType);
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
         Payment payment = null;
         try {
@@ -112,7 +112,7 @@ public class PageController {
         Map<String, Object> map = JsonUtil.toMap(payment.getPgPayment());
 
         String jspName = String.format("pg/%s/%s/reservation", pg, paymentType);
-        logger.info("PAGE [{}] will show = {}", pg, jspName);
+        logger.info("[{}] will show = {}", pg, jspName);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("pantherUrl", pantherProperties.getPantherUrl());
         modelAndView.addObject("failUrl",
@@ -131,7 +131,7 @@ public class PageController {
     public ModelAndView preAuthDone(HttpServletRequest request, HttpServletResponse response,
                                     @PathVariable String pg, @PathVariable String paymentType) {
 
-        logger.info("PAGE preauth_done. [{}-{}]", pg, paymentType);
+        logger.info("PREAUTH_DONE [{}-{}]", pg, paymentType);
         Payment payment = null;
 
         Map<String, Object> params = request.getParameterMap().entrySet().stream()
@@ -143,7 +143,7 @@ public class PageController {
 
             String resCode = request.getParameter("LGD_RESPCODE").toString();
             String resMsg = request.getParameter("LGD_RESPMSG").toString();
-            logger.info("pg.preauth RESCODE = {}, RESPMSG = {}", resCode, resMsg);
+            logger.info("LguReuslt: RESCODE = {}, RESPMSG = {}", resCode, resMsg);
 
             RequestInfo requestInfo = null;
             String redirectUrl = null;
@@ -163,8 +163,6 @@ public class PageController {
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
                 params.put("isMobile", requestInfo.getIsMobile().booleanValue());
 
-                logger.info("PAGE preauth [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
-
                 Context context = Context.builder()
                         .requestInfo(requestInfo)
                         .payment(requestPayment)
@@ -178,22 +176,17 @@ public class PageController {
                         Long.valueOf(params.get("LGD_OID").toString()));
                 redirectUrl = getPaymentUrl(requestInfo, Long.valueOf(params.get("LGD_OID").toString()));
                 failUrl = getFailUrl(redirectUrl, requestInfo);
-                //return redirect(redirectUrl, requestInfo, null, null, null, e);
+                // jsp 내의 script에서 failUrl로 redirect 시킴.
             } catch (PantherException e) {
                 logger.warn("Failed to PREAUTHENTICATE: {}", e.getMessage());
-                //failUrl = getFailUrl(redirectUrl, requestInfo);
-                //return redirect(redirectUrl, requestInfo, null, null, null, e);
             } catch (Throwable e) {
                 logger.warn("Failed to PREAUTHENTICATE: {}", e.getMessage());
-                //failUrl = getFailUrl(redirectUrl, requestInfo);
-                //return redirect(redirectUrl, requestInfo, null, null, null, new PantherException(Executor.Type
-                //        .LGUDEPOSIT, e));
             }
 
         }
 
         String jspName = String.format("pg/%s/%s/preauth_done", pg, paymentType);
-        logger.info("PAGE [{}] will show = {}", pg, jspName);
+        logger.info("[{}] will show = {}", pg, jspName);
 
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("pantherUrl", pantherProperties.getPantherUrl());
@@ -211,12 +204,12 @@ public class PageController {
     @RequestMapping(value = "/{pg}/{paymentType}/authentication", method = RequestMethod.POST)
     public ModelAndView authenticate(HttpServletRequest request, HttpServletResponse response,
                                      @PathVariable String pg, @PathVariable String paymentType) {
-        logger.info("PAGE authentication. [{}-{}]", pg, paymentType);
+        logger.info("Authentication. [{}-{}]", pg, paymentType);
         Payment payment = null;
 
         Map<String, Object> params = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
-        params.entrySet().stream().forEach(e -> logger.info("param. {} = {}", e.getKey(), e.getValue()));
+        params.entrySet().stream().forEach(e -> logger.debug("param. {} = {}", e.getKey(), e.getValue()));
         if (PGCompany.lguplus.name().equals(pg) &&
                 (PaymentType.deposit.name().equals(paymentType) || PaymentType.mdeposit.name().equals(paymentType))) {
 
@@ -230,8 +223,6 @@ public class PageController {
                 LguplusPayment pgPayment = JsonUtil.fromMap(params, LguplusPayment.class);
                 Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
-
-                logger.info("PAGE [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
 
                 Context context = Context.builder()
                         .requestInfo(requestInfo)
@@ -259,6 +250,9 @@ public class PageController {
                     DateUtil.toInstant(finalPayment.getLGD_CLOSEDATE(), "yyyyMMddHHmmss", DateUtil.ASIA_SEOUL_ZONE)
                             .toEpochMilli(),
                     DateUtil.ASIA_SEOUL_ZONE, "yyyy/MM/dd");
+            logger.info("  >>>  [LGUDEPOSIT] authentication done. payment={}, user={}, bank={}, account={}",
+                    finalPayment.getLGD_OID(), finalPayment.getLGD_BUYER(), finalPayment.getLGD_FINANCENAME(),
+                    finalPayment.getLGD_ACCOUNTNUM());
             return redirect(redirectUrl, requestInfo, finalPayment.getLGD_FINANCENAME(),
                     finalPayment.getLGD_ACCOUNTNUM(), date, null);
         }
