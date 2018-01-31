@@ -20,6 +20,7 @@ import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.notification.SlackEvent;
 import com.lezhin.panther.notification.SlackMessage;
 import com.lezhin.panther.notification.SlackNotifier;
+import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
 
@@ -254,8 +255,12 @@ public class PageController {
             requestInfo = requestInfo.withPayment(payment);
             simpleCacheService.saveRequestInfo(requestInfo);
             LguplusPayment finalPayment = (LguplusPayment) payment.getPgPayment();
+            String date = DateUtil.format(
+                    DateUtil.toInstant(finalPayment.getLGD_CLOSEDATE(), "yyyyMMddHHmmss", DateUtil.ASIA_SEOUL_ZONE)
+                            .toEpochMilli(),
+                    DateUtil.ASIA_SEOUL_ZONE, "yyyy/MM/dd");
             return redirect(redirectUrl, requestInfo, finalPayment.getLGD_FINANCENAME(),
-                    finalPayment.getLGD_ACCOUNTNUM(), finalPayment.getLGD_CLOSEDATE(), null);
+                    finalPayment.getLGD_ACCOUNTNUM(), date, null);
         }
 
         String jspName = String.format("pg/%s/%s/authentication", pg, paymentType);

@@ -44,7 +44,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
 
     private static final Logger logger = LoggerFactory.getLogger(LguDepositExecutor.class);
 
-    public static final int CLOSE_PERIOD = 4; // 무통장 입금 마감시간.
+    public static final int CLOSE_PERIOD = 3; // 무통장 입금 마감시간. days.
 
     public LguDepositExecutor() {
         this.type = Type.LGUDEPOSIT;
@@ -509,9 +509,9 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
      */
     public static String getLGD_CLOSEDATE(String LGD_TIMESTAMP) {
         long timestamp = DateUtil.toInstant(LGD_TIMESTAMP, "yyyyMMddHHmmss", DateUtil.ASIA_SEOUL_ZONE).toEpochMilli();
-        //String dateStr = DateUtil.getDateString(timestamp + (1000 * 60 * 60 * 24) * CLOSE_PERIOD);
-        //return dateStr + "000000";
-        String dateStr = DateUtil.getDateTimeString(timestamp + (1000 * 60 * 60 * 1)); // For test. 1 hour
-        return dateStr;
+        String dateStr = DateUtil.getDateString(timestamp + (1000 * 60 * 60 * 24) * CLOSE_PERIOD);
+        return dateStr + "235959";
+        //String dateStr = DateUtil.getDateTimeString(timestamp + (1000 * 60 * 60 * 1)); // For test. 1 hour
+        //return dateStr;
     }
 }

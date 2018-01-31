@@ -41,7 +41,7 @@ public class LguplusPayment extends PGPayment {
     private String LGD_BUYERIP; // 구매자아이피(상품권결제시 필수) // TODO 필요 없음
     private String LGD_CUSTOM_PROCESSTYPE; // 상점정의 프로세스 타입   (기본값 : TWOTR)
     private String LGD_CASNOTEURL; // 무통장 입금 callbackUrl
-    private String LGD_CLOSEDATE; // 무통장 입금 마감시간
+    private String LGD_CLOSEDATE; // 무통장 입금 마감시간 yyyyMMddHHmmss
     private String LGD_USABLECASBANK; // 무통장 사용가능 은행
 
     // optional
