@@ -8,45 +8,38 @@ import com.lezhin.panther.PagePayService;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.config.PantherProperties;
-import com.lezhin.panther.exception.ExecutorException;
-import com.lezhin.panther.exception.FraudException;
-import com.lezhin.panther.exception.InternalPaymentException;
+import com.lezhin.panther.exception.LguDepositException;
 import com.lezhin.panther.exception.PantherException;
-import com.lezhin.panther.exception.ParameterException;
-import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.lguplus.LguDepositExecutor;
 import com.lezhin.panther.lguplus.LguplusPayment;
-import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.notification.SlackEvent;
 import com.lezhin.panther.notification.SlackMessage;
 import com.lezhin.panther.notification.SlackNotifier;
+import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -89,11 +82,23 @@ public class PageController {
         return modelAndView;
     }
 
+    @RequestMapping(value = "/{pg}/{paymentType}/sample", method = RequestMethod.GET)
+    public ModelAndView sample(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg,
+                               @PathVariable String paymentType) {
+
+        String jpsName = String.format("pg/%s/%s/sample", pg, paymentType);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("name", "there, This is panther");
+        modelAndView.setViewName(jpsName);
+
+        return modelAndView;
+    }
+
     @RequestMapping(value = "/{pg}/{paymentType}/reservation", method = {RequestMethod.GET, RequestMethod.POST})
     public ModelAndView reservation(HttpServletRequest request, HttpServletResponse response,
                                                           @PathVariable String pg, @PathVariable String paymentType) {
 
-        logger.info("PAGE reservation [{}-{}]", pg, paymentType);
+        logger.info("  >>  RESERVATION [{}-{}]", pg, paymentType);
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
         Payment payment = null;
         try {
@@ -107,10 +112,11 @@ public class PageController {
         Map<String, Object> map = JsonUtil.toMap(payment.getPgPayment());
 
         String jspName = String.format("pg/%s/%s/reservation", pg, paymentType);
-        logger.info("PAGE [{}] will show = {}", pg, jspName);
+        logger.info("[{}] will show = {}", pg, jspName);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("pantherUrl", pantherProperties.getPantherUrl());
-        modelAndView.addObject("failUrl", pantherProperties.getWebUrl() + "/ko/payment/");
+        modelAndView.addObject("failUrl",
+                getFailUrl(getPaymentUrl(requestInfo, payment.getPaymentId()), requestInfo));
         modelAndView.addAllObjects(map);
         modelAndView.setViewName(jspName);
 
@@ -125,36 +131,37 @@ public class PageController {
     public ModelAndView preAuthDone(HttpServletRequest request, HttpServletResponse response,
                                     @PathVariable String pg, @PathVariable String paymentType) {
 
-        logger.info("PAGE preauth_done. [{}-{}]", pg, paymentType);
+        logger.info("PREAUTH_DONE [{}-{}]", pg, paymentType);
         Payment payment = null;
 
         Map<String, Object> params = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
 
+        String failUrl = null;
         if (PGCompany.lguplus.name().equals(pg) &&
                 (PaymentType.deposit.name().equals(paymentType) || PaymentType.mdeposit.name().equals(paymentType))) {
 
             String resCode = request.getParameter("LGD_RESPCODE").toString();
             String resMsg = request.getParameter("LGD_RESPMSG").toString();
-            logger.info("pg.preauth RESCODE = {}, RESPMSG = {}", resCode, resMsg);
+            logger.info("LguReuslt: RESCODE = {}, RESPMSG = {}", resCode, resMsg);
 
-            if (!ErrorCode.LGUPLUS_OK.getCode().equals(resCode)) {
-                // encoding 깨짐. 내용 파악은 브라우저에서 직접. 대충의 내용만.
-                String newResMsg = LguDepositExecutor.extractResMsg(resMsg);
-                params.put("LGD_RESPMSG", newResMsg);
-            }
             RequestInfo requestInfo = null;
             String redirectUrl = null;
             try {
                 requestInfo = simpleCacheService.getRequestInfo(Long.valueOf(params.get("LGD_OID").toString().trim()));
                 redirectUrl = getPaymentUrl(requestInfo, Long.valueOf(params.get("LGD_OID").toString()));
+                failUrl = getFailUrl(redirectUrl, requestInfo);
+                if (!ErrorCode.LGUPLUS_OK.getCode().equals(resCode)) {
+                    // encoding 깨짐. 내용 파악은 브라우저에서 직접. 대충의 내용만.
+                    String newResMsg = LguDepositExecutor.extractResMsg(resMsg);
+                    params.put("LGD_RESPMSG", newResMsg);
+                    throw new LguDepositException(Executor.Type.LGUDEPOSIT, resCode, newResMsg);
+                }
 
                 LguplusPayment pgPayment = JsonUtil.fromMap(params, LguplusPayment.class);
                 Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
-                params.put("isMobile", requestInfo.getIsApp().booleanValue());
-
-                logger.info("PAGE preauth [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
+                params.put("isMobile", requestInfo.getIsMobile().booleanValue());
 
                 Context context = Context.builder()
                         .requestInfo(requestInfo)
@@ -164,26 +171,26 @@ public class PageController {
                         .build();
 
                 payment = pagePayService.doCommand(Command.Type.PREAUTHENTICATE, context);
-
             } catch (SessionException e) {
                 logger.warn("Failed to get RequestInfo. paymentId = {}",
                         Long.valueOf(params.get("LGD_OID").toString()));
                 redirectUrl = getPaymentUrl(requestInfo, Long.valueOf(params.get("LGD_OID").toString()));
-                return redirect(redirectUrl, requestInfo, null, null, null, e);
+                failUrl = getFailUrl(redirectUrl, requestInfo);
+                // jsp 내의 script에서 failUrl로 redirect 시킴.
+            } catch (PantherException e) {
+                logger.warn("Failed to PREAUTHENTICATE: {}", e.getMessage());
             } catch (Throwable e) {
-                logger.warn("Failed to PREAUTHENTICATE", e);
-                return redirect(redirectUrl, requestInfo, null, null, null, new PantherException(Executor.Type
-                        .LGUDEPOSIT, e));
+                logger.warn("Failed to PREAUTHENTICATE: {}", e.getMessage());
             }
 
         }
 
         String jspName = String.format("pg/%s/%s/preauth_done", pg, paymentType);
-        logger.info("PAGE [{}] will show = {}", pg, jspName);
+        logger.info("[{}] will show = {}", pg, jspName);
 
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("pantherUrl", pantherProperties.getPantherUrl());
-        modelAndView.addObject("failUrl", pantherProperties.getWebUrl() + "/ko/payment/");
+        modelAndView.addObject("failUrl", failUrl);
         modelAndView.addAllObjects(params);
         modelAndView.setViewName(jspName);
 
@@ -197,12 +204,12 @@ public class PageController {
     @RequestMapping(value = "/{pg}/{paymentType}/authentication", method = RequestMethod.POST)
     public ModelAndView authenticate(HttpServletRequest request, HttpServletResponse response,
                                      @PathVariable String pg, @PathVariable String paymentType) {
-        logger.info("PAGE authentication. [{}-{}]", pg, paymentType);
+        logger.info("Authentication. [{}-{}]", pg, paymentType);
         Payment payment = null;
 
         Map<String, Object> params = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
-        params.entrySet().stream().forEach(e -> logger.info("param. {} = {}", e.getKey(), e.getValue()));
+        params.entrySet().stream().forEach(e -> logger.debug("param. {} = {}", e.getKey(), e.getValue()));
         if (PGCompany.lguplus.name().equals(pg) &&
                 (PaymentType.deposit.name().equals(paymentType) || PaymentType.mdeposit.name().equals(paymentType))) {
 
@@ -216,8 +223,6 @@ public class PageController {
                 LguplusPayment pgPayment = JsonUtil.fromMap(params, LguplusPayment.class);
                 Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
-
-                logger.info("PAGE [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
 
                 Context context = Context.builder()
                         .requestInfo(requestInfo)
@@ -238,10 +243,18 @@ public class PageController {
                         .LGUDEPOSIT, e));
             }
 
-
+            requestInfo = requestInfo.withPayment(payment);
+            simpleCacheService.saveRequestInfo(requestInfo);
             LguplusPayment finalPayment = (LguplusPayment) payment.getPgPayment();
+            String date = DateUtil.format(
+                    DateUtil.toInstant(finalPayment.getLGD_CLOSEDATE(), "yyyyMMddHHmmss", DateUtil.ASIA_SEOUL_ZONE)
+                            .toEpochMilli(),
+                    DateUtil.ASIA_SEOUL_ZONE, "yyyy/MM/dd");
+            logger.info("  >>>  [LGUDEPOSIT] authentication done. payment={}, user={}, bank={}, account={}",
+                    finalPayment.getLGD_OID(), finalPayment.getLGD_BUYER(), finalPayment.getLGD_FINANCENAME(),
+                    finalPayment.getLGD_ACCOUNTNUM());
             return redirect(redirectUrl, requestInfo, finalPayment.getLGD_FINANCENAME(),
-                    finalPayment.getLGD_ACCOUNTNUM(), finalPayment.getLGD_CLOSEDATE(), null);
+                    finalPayment.getLGD_ACCOUNTNUM(), date, null);
         }
 
         String jspName = String.format("pg/%s/%s/authentication", pg, paymentType);
@@ -268,6 +281,25 @@ public class PageController {
         return paymentUrl;
     }
 
+    private String getFailUrl(String redirectTargetUrl, RequestInfo requestInfo) {
+        UriComponents target = UriComponentsBuilder.fromHttpUrl(redirectTargetUrl).build();
+        UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
+        builder.queryParam("__u",
+                Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getUserId()).orElse(-1L));
+        builder.queryParam("isMobile",
+                Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getIsMobile())
+                .orElse(Boolean.FALSE));
+        builder.queryParam("isApp", Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getIsApp())
+                .orElse(Boolean.FALSE));
+        if (!StringUtils.isEmpty(requestInfo) && !StringUtils.isEmpty(requestInfo.getReturnTo())) {
+            builder.queryParam("returnTo", requestInfo.getReturnTo());
+        }
+        builder.uriComponents(target);
+        UriComponents uriComponents = builder.build().encode();
+
+        return uriComponents.toUriString();
+    }
+
     private ModelAndView redirect(String redirectTargetUrl, RequestInfo requestInfo, String bank,
                                   String accountNumber, String date, Throwable e) {
         RedirectView redirectView = new RedirectView(redirectTargetUrl);
@@ -291,15 +323,22 @@ public class PageController {
             attrs.put("date", date);
         }
         if (!StringUtils.isEmpty(e)) {
-            String failReason = "Internal Error";
-            if (e instanceof SessionException) {
-                failReason = "Session expired";
-            } else if (e instanceof ParameterException || e instanceof PreconditionException ||
-                    e instanceof FraudException) {
-                failReason = e.getMessage();
-            } else {
-                failReason = "Internal Error";
+            String failReason = null;
+            switch (e.getClass().getSimpleName()) {
+                case "SessionException":
+                    failReason = "Session expired";
+                    break;
+                case "ParameterException":
+                case "PreconditionException":
+                case "FraudException":
+                case "LguDepositException":
+                    failReason = e.getMessage();
+                    break;
+                default:
+                    failReason = "Internal Error";
+                    break;
             }
+
             attrs.put("reason", failReason);
             Executor.Type executorType = Util.getType(e);
             slackNotifier.notify(SlackEvent.builder()

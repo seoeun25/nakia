@@ -58,6 +58,7 @@ panther:
   webUrl: https://www.lezhin.com
   apiUrl: https://api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://panther.lezhin.com
+  slackChannel: panther
   cloudWatch: https://ap-northeast-2.console.aws.amazon.com/cloudwatch/home?region=ap-northeast-2#logStream:group=panther
   happypoint:
     hpcUrl: http://outbound-proxy.lezhin.net/spc/processHpc

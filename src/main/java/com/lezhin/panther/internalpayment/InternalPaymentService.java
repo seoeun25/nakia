@@ -105,7 +105,7 @@ public class InternalPaymentService {
             logger.info("receipt length = {}", receipt.length());
         }
         if (executionSucceed) {
-            // do nothing
+            meta.setReceipt(receipt);
         } else {
             meta.setMeta(receipt);
         }
@@ -176,7 +176,7 @@ public class InternalPaymentService {
     public <T extends PGPayment> Payment<T> get(Context<T> context) {
 
         String url = pantherProperties.getApiUrl() + "/" + context.getPayment().getPaymentId();
-        logger.info("GET. to {}, token={}", url, context.getRequestInfo().getToken());
+        logger.debug("GET. to {}, token={}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -212,7 +212,7 @@ public class InternalPaymentService {
                 break;
             } catch (Throwable e) {
                 if (TRANSIENT_EXECPTIONS.contains(e.getClass()) && i <= RETRY_COUNT) {
-                    logger.info("Failed to reserve: " + e.getMessage());
+                    logger.info("Failed to exchange: " + e.getMessage());
                     logger.info("Retrying ...... [{}]", i);
                     try {
                         Thread.sleep(500 * i);
@@ -226,6 +226,11 @@ public class InternalPaymentService {
                     throw new InternalPaymentException(type, e);
                 }
             }
+        }
+        if (response.getBody() == null) {
+            ResponseEntity<Result> re = (ResponseEntity<Result>) response;
+            logger.warn("Response is null. Status = {}", re.getStatusCode());
+            throw new InternalPaymentException(type, "InternalPaymentService Error. Status:" + re.getStatusCode());
         }
         return response;
     }
@@ -257,7 +262,7 @@ public class InternalPaymentService {
         Payment<T> responsePayment = null;
         try {
             responsePayment = JsonUtil.fromJsonToPayment(jsonData, pgPaymentClass);
-            logger.info("Internal.RESPONSE. paymentId={}, state={}, userId={}, coinProductId={}, coinProductName={}, " +
+            logger.info("RESPONSE. paymentId={}, state={}, userId={}, coinProductId={}, coinProductName={}, " +
                             "amount={}", responsePayment.getPaymentId(), responsePayment.getState(),
                     responsePayment.getUserId(), responsePayment.getCoinProductId(),
                     responsePayment.getCoinProductName(), responsePayment.getAmount());

@@ -15,11 +15,13 @@ import com.lezhin.panther.model.RequestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
 
 /**
  * @author seoeun
@@ -34,8 +36,8 @@ public class PagePayService {
     private BeanFactory beanFactory;
 
     public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final RequestInfo requestInfo) {
-        logger.info("[{}, {}, u={}, p={}, token={}]", type, requestInfo.getExecutorType(), requestInfo.getUserId(),
-                "paymentId", requestInfo.getToken());
+        logger.info("[{}, {}, u={}, p={}]", type, requestInfo.getExecutorType(), requestInfo.getUserId(),
+                Optional.ofNullable(requestInfo.getPayment()).map(e -> e.getPaymentId()).orElse(-1l));
         Payment<T> resultPayment = null;
         Command<T> command = null;
 
@@ -63,8 +65,9 @@ public class PagePayService {
     }
 
     public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final Context<T> context) {
-        logger.info("[{}, {}, u={}, token={}]", type, context.getRequestInfo().getExecutorType(),
-                context.getRequestInfo().getUserId(), context.getRequestInfo().getToken());
+        logger.info("[{}, {}, u={}, p={}]", type, context.getRequestInfo().getExecutorType(),
+                context.getRequestInfo().getUserId(),
+                Optional.ofNullable(context.getRequestInfo().getPayment()).map(e -> e.getPaymentId()).orElse(-1l));
         Payment<T> resultPayment = null;
         Command<T> command = null;
 

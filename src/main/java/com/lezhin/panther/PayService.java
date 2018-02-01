@@ -1,6 +1,7 @@
 package com.lezhin.panther;
 
 import com.lezhin.panther.command.Authenticate;
+import com.lezhin.panther.command.Cancel;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.command.Complete;
 import com.lezhin.panther.command.Pay;
@@ -21,6 +22,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * @author seoeun
@@ -43,8 +46,8 @@ public class PayService {
     }
 
     public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final RequestInfo requestInfo) {
-        logger.info("doCommand = [{}, {}, u={}, p={}]", type, requestInfo.getExecutorType(), requestInfo.getUserId(),
-                requestInfo.getToken());
+        logger.info("[{}, {}, u={}, p={}]", type, requestInfo.getExecutorType(), requestInfo.getUserId(),
+                Optional.ofNullable(requestInfo.getPayment()).map(e -> e.getPaymentId()).orElse(-1l));
         Payment<T> resultPayment = null;
         Command<T> command = null;
         try {
@@ -61,6 +64,9 @@ public class PayService {
                     break;
                 case PAY:
                     command = beanFactory.getBean(Pay.class, requestInfo);
+                    break;
+                case CANCEL:
+                    command = beanFactory.getBean(Cancel.class, requestInfo);
                     break;
                 case COMPLETE:
                     command = beanFactory.getBean(Complete.class, requestInfo);

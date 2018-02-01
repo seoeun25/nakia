@@ -41,7 +41,7 @@ public class LguplusPayment extends PGPayment {
     private String LGD_BUYERIP; // 구매자아이피(상품권결제시 필수) // TODO 필요 없음
     private String LGD_CUSTOM_PROCESSTYPE; // 상점정의 프로세스 타입   (기본값 : TWOTR)
     private String LGD_CASNOTEURL; // 무통장 입금 callbackUrl
-    private String LGD_CLOSEDATE; // 무통장 입금 마감시간
+    private String LGD_CLOSEDATE; // 무통장 입금 마감시간 yyyyMMddHHmmss
     private String LGD_USABLECASBANK; // 무통장 사용가능 은행
 
     // optional
@@ -84,6 +84,7 @@ public class LguplusPayment extends PGPayment {
     private String LGD_CASHRECEIPTSELFYN;  // 현금영수증자진발급제유무 Y: 자진발급제 적용, 그외 : 미적용
     private String LGD_CASHRECEIPTKIND;    // 현금영수증 종류 0: 소득공제용 , 1: 지출증빙용
     private String LGD_CASHRECEIPTCODE;
+    private String LGD_METHOD;             //ASSIGN:할당, CHANGE:변경
     // 구매정보
     private String LGD_BUYERSSN;           // 구매자 주민번호
     private String LGD_RECEIVER;           // 수취인
@@ -182,6 +183,10 @@ public class LguplusPayment extends PGPayment {
     @JsonProperty("LGD_CLOSEDATE")
     public String getLGD_CLOSEDATE() {
         return LGD_CLOSEDATE;
+    }
+
+    public void setLGD_CLOSEDATE(String LGD_CLOSEDATE) {
+        this.LGD_CLOSEDATE = LGD_CLOSEDATE;
     }
 
     @JsonProperty("LGD_USABLECASBANK")
@@ -314,6 +319,11 @@ public class LguplusPayment extends PGPayment {
         return LGD_CASHRECEIPTCODE;
     }
 
+    @JsonProperty("LGD_METHOD")
+    public String getLGD_METHOD() {
+        return LGD_METHOD;
+    }
+
     @JsonProperty("LGD_PAYER")
     public String getLGD_PAYER() {
         return LGD_PAYER;
@@ -388,6 +398,8 @@ public class LguplusPayment extends PGPayment {
         receipt.put("CST_PLATFORM", CST_PLATFORM);
         receipt.put("CST_MID", CST_MID); // 상점아이디
         receipt.put("LGD_TID", LGD_TID);  // TransactionId
+        receipt.put("LGD_OID", LGD_OID);  // TransactionId
+        receipt.put("LGD_CLOSEDATE", LGD_CLOSEDATE); // 가상계좌 close
         return receipt;
     }
 

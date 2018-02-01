@@ -9,10 +9,8 @@
     String LGD_RESPMSG = request.getParameter("LGD_RESPMSG");
 
     Map payReqMap = request.getParameterMap();
-    System.out.println("-- page. LGD_RESPMSG = " + LGD_RESPMSG);
     boolean isMobile = request.getAttribute("isMobile")  == null ? false :
             Boolean.valueOf(request.getAttribute("isMobile").toString());
-    System.out.println("-- page. isMobile = " + isMobile);
 
 %>
 <!DOCTYPE html>
@@ -52,8 +50,9 @@
                 lgdReturnInfo.target = "_self";
                 lgdReturnInfo.action = "/page/v1/lguplus/deposit/authentication";
                 lgdReturnInfo.submit();
+
             } else {
-                window.parent.postMessage({ message: 'payment_return' }, window.origin);
+                parent.payment_return();
             }
         }
     </script>
@@ -88,7 +87,7 @@
         <div class="is-preloader is-preloader--big"></div>
         <div class="container">
             <h1> 인증결과 </h1>
-            <p class="msg">결재가 진행 중입니다. 잠시 기다려 주세요.</p>
+            <p class="msg">결제가 진행 중입니다. 잠시 기다려 주세요.</p>
         </div>
     </div>
 </div>

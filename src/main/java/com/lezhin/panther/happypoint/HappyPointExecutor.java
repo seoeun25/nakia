@@ -81,7 +81,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
             if (aggregator != null &&
                     aggregator.getPointSum().intValue() + context.getPayment().getPgPayment().getUseReqPt().intValue() >
                             POINT_LIMITATION.intValue()) {
-                throw new ExceedException(type, "Exceed 3000 point/ month");
+                throw new ExceedException(type, "Exceed 2000 point/ month");
             }
         }
     }
