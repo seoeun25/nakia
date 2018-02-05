@@ -34,4 +34,5 @@ public class HappyPointParamException extends PantherException {
     public String getCode() {
         return code;
     }
+
 }

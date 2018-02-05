@@ -17,4 +17,5 @@ public class CIException extends PantherException {
     public CIException(Executor.Type type, Throwable e) {
         super(type, e);
     }
+
 }

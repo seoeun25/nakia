@@ -2,11 +2,13 @@ package com.lezhin.panther.exception;
 
 import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.executor.Executor;
+import com.lezhin.panther.notification.NotificationLevel;
 
 /**
  * @author seoeun
  * @since 2018.01.08
  */
+@NotificationLevel(level = NotificationLevel.Level.ERROR)
 public class LguDepositException extends PantherException {
 
     private String code;

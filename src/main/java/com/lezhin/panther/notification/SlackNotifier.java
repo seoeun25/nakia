@@ -1,6 +1,8 @@
 package com.lezhin.panther.notification;
 
 import com.lezhin.panther.config.PantherProperties;
+import com.lezhin.panther.exception.PantherException;
+import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.util.DateUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -13,6 +15,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.annotation.Annotation;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -79,6 +82,54 @@ public class SlackNotifier {
             logger.warn("Failed to send to slack: channel={}, slackMessage={}",
                     channel, slackMessage);
         }
+    }
+
+    public void notify(Throwable e) {
+        Executor.Type type = Executor.Type.DUMMY;
+        SlackMessage.LEVEL slackLevel = levelOf(e);
+        String title = e.getMessage();
+        String message = "";
+        if (e instanceof PantherException) {
+            PantherException pantherException = (PantherException) e;
+            type = pantherException.getType();
+        } else {
+            title = "Unexpected error";
+            message = e.getMessage();
+        }
+
+        if (slackLevel != null) {
+            notify(SlackEvent.builder()
+                    .header(type.name())
+                    .level(slackLevel)
+                    .title(title)
+                    .message(message)
+                    .exception(e)
+                    .build());
+        }
+    }
+
+    public SlackMessage.LEVEL levelOf(Throwable e) {
+        SlackMessage.LEVEL level = null;
+        if (e instanceof PantherException) {
+            PantherException pantherException = (PantherException) e;
+            Class pantherExceptionClass = pantherException.getClass();
+            if (pantherExceptionClass.isAnnotationPresent(NotificationLevel.class)) {
+                Annotation annotation = pantherExceptionClass.getAnnotation(NotificationLevel.class);
+                NotificationLevel notificationLevel = (NotificationLevel) annotation;
+                if (notificationLevel.level() == NotificationLevel.Level.INFO) {
+                    level = SlackMessage.LEVEL.INFO;
+                } else if (notificationLevel.level() == NotificationLevel.Level.WARN) {
+                    level = SlackMessage.LEVEL.WARN;
+                } else if (notificationLevel.level() == NotificationLevel.Level.ERROR) {
+                    level = SlackMessage.LEVEL.ERROR;
+                } else { // NONE 포함.
+                    level = null;
+                }
+            }
+        } else {
+            level = SlackMessage.LEVEL.ERROR;
+        }
+        return level;
     }
 
     private SlackMessage create(SlackEvent event) {

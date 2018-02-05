@@ -17,4 +17,5 @@ public class PreconditionException extends PantherException {
     public PreconditionException(Executor.Type type, Throwable e) {
         super(type, e);
     }
+
 }

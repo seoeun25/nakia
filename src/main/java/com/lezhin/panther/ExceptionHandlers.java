@@ -9,9 +9,6 @@ import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PreconditionException;
-import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.notification.SlackEvent;
-import com.lezhin.panther.notification.SlackMessage;
 import com.lezhin.panther.notification.SlackNotifier;
 
 import org.slf4j.Logger;
@@ -21,8 +18,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import java.util.Optional;
 
 /**
  * @author seoeun
@@ -43,13 +38,7 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handleParameterException(final ParameterException e) {
         logger.error("ParameterException", e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(Optional.ofNullable(e.getType().name()).orElse("UnknownExecutor"))
-                .level(SlackMessage.LEVEL.WARN)
-                .title(e.getMessage())
-                .message("")
-                .exception(e)
-                .build());
+        slackNotifier.notify(e);
         return new ErrorInfo(ErrorCode.LEZHIN_PARAM.getCode(), e.getMessage());
     }
 
@@ -58,6 +47,7 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handleHappypointParamException(final HappyPointParamException e) {
         logger.error("HappyPointParamException", e);
+        slackNotifier.notify(e);
         return new ErrorInfo(e.getCode(), e.getMessage());
     }
 
@@ -74,13 +64,7 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handlePreconditionException(final PreconditionException e) {
         logger.error("PreconditionException", e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.DUMMY).name())
-                .level(SlackMessage.LEVEL.ERROR)
-                .title(e.getMessage())
-                .message("")
-                .exception(e)
-                .build());
+        slackNotifier.notify(e);
         return new ErrorInfo(ErrorCode.LEZHIN_PRECONDITION.getCode(), e.getMessage());
     }
 
@@ -97,13 +81,7 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handleCIException(final CIException e) {
         logger.error("CIException", e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.DUMMY).name())
-                .level(SlackMessage.LEVEL.ERROR)
-                .title(e.getMessage())
-                .message("")
-                .exception(e)
-                .build());
+        slackNotifier.notify(e);
         return new ErrorInfo(ErrorCode.LEZHIN_CI.getCode(), e.getMessage());
     }
 
@@ -112,13 +90,7 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handleExecutorException(final ExecutorException e) {
         logger.error("ExecutorException", e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.DUMMY).name())
-                .level(SlackMessage.LEVEL.ERROR)
-                .title(e.getMessage())
-                .message("")
-                .exception(e)
-                .build());
+        slackNotifier.notify(e);
         return new ErrorInfo(ErrorCode.LEZHIN_EXECUTION.getCode(), e.getMessage());
     }
 
@@ -127,13 +99,7 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handleInternalPaymentException(final InternalPaymentException e) {
         logger.error("InternalPaymentException", e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.DUMMY).name())
-                .level(SlackMessage.LEVEL.ERROR)
-                .title(e.getMessage())
-                .message("")
-                .exception(e)
-                .build());
+        slackNotifier.notify(e);
         // User에게 보여질 수 있는 메시지라 general 하게 변경
         return new ErrorInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), "Internal Server Error");
     }
@@ -143,13 +109,7 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handlePantherException(final PantherException e) {
         logger.error("PantherException", e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.DUMMY).name())
-                .level(SlackMessage.LEVEL.ERROR)
-                .title(e.getMessage())
-                .message("")
-                .exception(e)
-                .build());
+        slackNotifier.notify(e);
         return new ErrorInfo(ErrorCode.LEZHIN_PANTHER.getCode(), e.getMessage());
     }
 
@@ -158,13 +118,7 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handleThrowable(final Throwable e) {
         logger.error("Unexpected error", e);
-        slackNotifier.notify(SlackEvent.builder()
-                .header(Executor.Type.DUMMY.name())
-                .level(SlackMessage.LEVEL.ERROR)
-                .title("Unexpected error")
-                .message(e.getMessage())
-                .exception(e)
-                .build());
+        slackNotifier.notify(e);
         return new ErrorInfo(ErrorCode.LEZHIN_THROWABLE.getCode(), e.getMessage());
     }
 

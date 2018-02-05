@@ -1,7 +1,17 @@
 package com.lezhin.panther.notification;
 
+import com.lezhin.panther.exception.CIException;
+import com.lezhin.panther.exception.ExceedException;
+import com.lezhin.panther.exception.ExecutorException;
+import com.lezhin.panther.exception.FraudException;
+import com.lezhin.panther.exception.HappyPointParamException;
+import com.lezhin.panther.exception.HappyPointSystemException;
 import com.lezhin.panther.exception.InternalPaymentException;
+import com.lezhin.panther.exception.LguDepositException;
 import com.lezhin.panther.exception.PantherException;
+import com.lezhin.panther.exception.ParameterException;
+import com.lezhin.panther.exception.PreconditionException;
+import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.util.JsonUtil;
 
@@ -18,7 +28,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.Instant;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 
 /**
@@ -65,7 +77,7 @@ public class SlackNotifierTest {
     public void sendInfoTest() {
         assertNotNull(slackNotifier);
         slackNotifier.notify(SlackEvent.builder()
-                .header("<TEST> This is header. HappyPoint")
+                .header("<TEST> This is header")
                 .timestamp(Instant.now().toEpochMilli())
                 .level(SlackMessage.LEVEL.INFO)
                 .title("Point exchange succeed!!")
@@ -128,6 +140,37 @@ public class SlackNotifierTest {
                 .message(internalPaymentException.getMessage())
                 .exception(internalPaymentException)
                 .build());
+
+    }
+
+    /**
+     * PantherException 들에 정의된 NotificationLevel 테스트.
+     */
+    @Test
+    public void notificationLevelTest() {
+        assertEquals(null, slackNotifier.levelOf(new CIException(Executor.Type.DUMMY, "notificationl")));
+        assertEquals(null, slackNotifier.levelOf(new ExceedException(Executor.Type.DUMMY, "notification")));
+        assertEquals(SlackMessage.LEVEL.ERROR,
+                slackNotifier.levelOf(new ExecutorException(Executor.Type.DUMMY, "notification")));
+        assertEquals(SlackMessage.LEVEL.ERROR,
+                slackNotifier.levelOf(new FraudException(Executor.Type.DUMMY, "notification")));
+        assertEquals(null, slackNotifier.levelOf(new HappyPointParamException(Executor.Type.DUMMY, "notification")));
+        assertEquals(null, slackNotifier.levelOf(new HappyPointSystemException(Executor.Type.DUMMY, "notification")));
+        assertEquals(SlackMessage.LEVEL.ERROR,
+                slackNotifier.levelOf(new InternalPaymentException(Executor.Type.DUMMY, "notification")));
+        assertEquals(SlackMessage.LEVEL.ERROR,
+                slackNotifier.levelOf(new LguDepositException(Executor.Type.DUMMY, "notification")));
+        assertEquals(SlackMessage.LEVEL.ERROR,
+                slackNotifier.levelOf(new PantherException(Executor.Type.DUMMY, "notification")));
+        assertEquals(SlackMessage.LEVEL.WARN,
+                slackNotifier.levelOf(new ParameterException(Executor.Type.DUMMY, "notification")));
+        assertEquals(null,
+                slackNotifier.levelOf(new PreconditionException(Executor.Type.DUMMY, "notification")));
+        assertEquals(SlackMessage.LEVEL.ERROR,
+                slackNotifier.levelOf(new SessionException(Executor.Type.DUMMY, "notification")));
+
+        assertEquals(SlackMessage.LEVEL.ERROR, slackNotifier.levelOf(new RuntimeException("hello")));
+        assertEquals(SlackMessage.LEVEL.ERROR, slackNotifier.levelOf(new Throwable("hello")));
 
     }
 }

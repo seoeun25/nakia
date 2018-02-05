@@ -47,7 +47,8 @@ public class Cancel<T extends PGPayment> extends Command<T> {
     public void verifyPrecondition() throws PreconditionException {
         if (payment.getState() != PaymentState.PC) {
             throw new PreconditionException(requestInfo.getExecutorType(),
-                    String.format("Payment state should be %s but %s", PaymentState.PC, payment.getState()));
+                    String.format("Payment[%s] state should be %s but %s",
+                            payment.getPaymentId(), PaymentState.PC, payment.getState()));
         }
     }
 

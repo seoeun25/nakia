@@ -43,7 +43,8 @@ public class PreAuthenticate<T extends PGPayment> extends Command<T> {
     public void verifyPrecondition() throws PreconditionException {
         if (payment.getState() != PaymentState.R) {
             throw new PreconditionException(requestInfo.getExecutorType(),
-                    String.format("Payment state should be %s but %s", PaymentState.R, payment.getState()));
+                    String.format("Payment[%s] state should be %s but %s",
+                            payment.getPaymentId(), PaymentState.R, payment.getState()));
         }
     }
 

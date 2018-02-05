@@ -340,14 +340,7 @@ public class PageController {
             }
 
             attrs.put("reason", failReason);
-            Executor.Type executorType = Util.getType(e);
-            slackNotifier.notify(SlackEvent.builder()
-                    .header(executorType.name())
-                    .level(SlackMessage.LEVEL.ERROR)
-                    .title(e.getMessage())
-                    .message(e.getMessage())
-                    .exception(e)
-                    .build());
+            slackNotifier.notify(e);
             logger.error("Failed. will redirect. ", e);
         }
         redirectView.setAttributesMap(attrs);

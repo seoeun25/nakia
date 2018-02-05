@@ -8,7 +8,7 @@ import com.lezhin.panther.executor.Executor;
  * @author seoeun
  * @since 2017.10.24
  */
-public class ExceedException extends PantherException{
+public class ExceedException extends PantherException {
 
     public ExceedException(Executor.Type type, String message) {
         super(type, message);
@@ -17,4 +17,5 @@ public class ExceedException extends PantherException{
     public ExceedException(Executor.Type type, Throwable e) {
         super(type, e);
     }
+
 }
