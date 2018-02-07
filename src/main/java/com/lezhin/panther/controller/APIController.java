@@ -10,7 +10,7 @@ import com.lezhin.panther.command.Command;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;

@@ -1,7 +1,6 @@
 package com.lezhin.panther.util;
 
 import com.lezhin.beans.entity.common.LezhinLocale;
-import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.executor.Executor;
 
@@ -21,11 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author seoeun
@@ -127,7 +122,7 @@ public class Util {
 
     public static Executor.Type getType(Throwable e) {
         Executor.Type executorType = Optional.of(e).filter(ex -> (ex instanceof PantherException))
-                .map(ex -> ((PantherException)ex).getType()).orElse(Executor.Type.DUMMY);
+                .map(ex -> ((PantherException)ex).getType()).orElse(Executor.Type.UNKNOWN);
         return executorType;
     }
 

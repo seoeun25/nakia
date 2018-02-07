@@ -5,7 +5,7 @@ import com.lezhin.panther.PayService;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 

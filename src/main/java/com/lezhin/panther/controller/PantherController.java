@@ -4,7 +4,7 @@ import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;

@@ -73,7 +73,7 @@ public class SimpleCacheService {
 
     public void saveRequestInfo(RequestInfo requestInfo) {
         if (requestInfo.getPayment().getPaymentId() == null) {
-            throw new SessionException(Executor.Type.DUMMY, "Failed to save session. paymentId is null");
+            throw new SessionException(Executor.Type.UNKNOWN, "Failed to save session. paymentId is null");
         }
         String key = RedisService.generateKey("reservation", "requestinfo",
                 String.valueOf(requestInfo.getPayment().getPaymentId()));
@@ -84,7 +84,7 @@ public class SimpleCacheService {
         String key = RedisService.generateKey("reservation", "requestinfo", String.valueOf(paymentId));
         RequestInfo value = (RequestInfo) redisService.getValue(key);
         if (value == null) {
-            throw new SessionException(Executor.Type.DUMMY, "RequestInfo not found: paymentId=" + paymentId);
+            throw new SessionException(Executor.Type.UNKNOWN, "RequestInfo not found: paymentId=" + paymentId);
         }
         return value;
     }

@@ -85,7 +85,7 @@ public class SlackNotifier {
     }
 
     public void notify(Throwable e) {
-        Executor.Type type = Executor.Type.DUMMY;
+        Executor.Type type = Executor.Type.UNKNOWN;
         SlackMessage.LEVEL slackLevel = levelOf(e);
         String title = e.getMessage();
         String message = "";

@@ -1,4 +1,4 @@
-package com.lezhin.panther.happypoint;
+package com.lezhin.panther.pg.happypoint;
 
 import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.panther.Context;

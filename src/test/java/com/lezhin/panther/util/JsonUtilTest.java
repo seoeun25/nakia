@@ -1,6 +1,6 @@
 package com.lezhin.panther.util;
 
-import com.lezhin.panther.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.model.PGPayment;
 
 import org.junit.jupiter.api.Test;

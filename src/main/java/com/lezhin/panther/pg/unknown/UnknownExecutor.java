@@ -1,4 +1,4 @@
-package com.lezhin.panther.dummy;
+package com.lezhin.panther.pg.unknown;
 
 import com.lezhin.panther.Context;
 import com.lezhin.panther.executor.Executor;
@@ -15,26 +15,26 @@ import org.springframework.stereotype.Component;
  * @since 2017.10.24
  */
 @Component
-@Qualifier("dummy")
+@Qualifier("unknown")
 @Scope("prototype")
-public class DummyExecutor extends Executor<DummyPayment> {
+public class UnknownExecutor extends Executor<UnknownPayment> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DummyExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(UnknownExecutor.class);
 
-    DummyExecutor() {
-        this.type = Type.DUMMY;
+    UnknownExecutor() {
+        this.type = Type.UNKNOWN;
     }
 
-    public DummyExecutor(Context<DummyPayment> context) {
+    public UnknownExecutor(Context<UnknownPayment> context) {
         super(context);
-        this.type = Type.DUMMY;
+        this.type = Type.UNKNOWN;
     }
 
-    public Payment<DummyPayment> reserve() {
+    public Payment<UnknownPayment> reserve() {
         // do nothing
         try {
             for (int i = 0; i < 3; i++) {
-                logger.info("dummy reserve = {}, {}", i, context.getPayment().getPaymentId());
+                logger.info("unknown reserve = {}, {}", i, context.getPayment().getPaymentId());
                 Thread.sleep(500);
             }
         } catch (Exception e) {
@@ -43,18 +43,18 @@ public class DummyExecutor extends Executor<DummyPayment> {
         return context.getPayment();
     }
 
-    public Payment<DummyPayment> authenticate() {
+    public Payment<UnknownPayment> authenticate() {
         // do nothing
         return context.getPayment();
     }
 
     public Payment pay() {
 
-        return  context.getPayment();
+        return context.getPayment();
     }
 
     public Payment complete() {
-        return  context.getPayment();
+        return context.getPayment();
     }
 
 }

@@ -15,7 +15,6 @@ import com.lezhin.panther.model.RequestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,7 +54,7 @@ public class PagePayService {
                 command = beanFactory.getBean(Complete.class, requestInfo);
                 break;
             default:
-                throw new PantherException(Executor.Type.DUMMY, "Unsupported type = " + type);
+                throw new PantherException(Executor.Type.UNKNOWN, "Unsupported type = " + type);
         }
         command.loadState();
         resultPayment = command.execute();
@@ -85,7 +84,7 @@ public class PagePayService {
                 command = beanFactory.getBean(Complete.class, context);
                 break;
             default:
-                throw new PantherException(Executor.Type.DUMMY, "Unsupported type = " + type);
+                throw new PantherException(Executor.Type.UNKNOWN, "Unsupported type = " + type);
         }
         command.loadState();
         resultPayment = command.execute();

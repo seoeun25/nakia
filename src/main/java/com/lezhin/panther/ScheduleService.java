@@ -56,7 +56,7 @@ public class ScheduleService {
                         .forEach(file -> logger.info("delete {} = {} ", file.getName(), file.delete()));
             } catch (Exception e) {
                 logger.warn("Failed to delete logFile", e);
-                handlePantherException(new PantherException(Executor.Type.DUMMY, e));
+                handlePantherException(new PantherException(Executor.Type.UNKNOWN, e));
             }
         }
 
@@ -97,7 +97,7 @@ public class ScheduleService {
     public void handlePantherException(final PantherException e) {
         logger.error("ScheduleService. PantherException", e);
         slackNotifier.notify(SlackEvent.builder()
-                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.DUMMY).name())
+                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.UNKNOWN).name())
                 .level(SlackMessage.LEVEL.ERROR)
                 .title(e.getMessage())
                 .message("")

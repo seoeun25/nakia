@@ -32,9 +32,13 @@ config 항목은 spring profiles를 이용하여 설정한다
 * `test`: 유닛 테스트용. 로컬에서 실행. h2 메모리 사용. JPA DDL create-drop. (redis는 ?)
 
 ## How to deploy
+
+
 1. version.txt 를 수정하여 version을 업그레이드. 
 예를 들면, version이 1.0.98일 경우 v1.0.98
 2. docker image 빌드
+
+    docker image를 빌드 하는 방법으로는 1. tag 사용 2.local build 두가지가 있다. 상황에 맞게 선택한다. 
 
     2.1. tag를 push 하면 travis를 통해 자동으로 docker image 생성되고 docker repo에 push 된다.
     tag naming은 버전 앞에 v를 붙인다. 예를 들면 v1.0.98 
@@ -51,6 +55,11 @@ config 항목은 spring profiles를 이용하여 설정한다
     ```
     /ecs deploy panther 1.0.98
     원하는 infra 선택: 예를 들면 qa
+    ```
+    
+    docker image tags 확인: browser에서 다음과 같이
+    ```
+    https://docker.lezhin.com/v2/panther/tags/list
     ```
 4. aws ecs 에서 instance 확인.
 5. 배포 버전 확인

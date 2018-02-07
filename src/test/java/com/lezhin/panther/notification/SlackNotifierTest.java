@@ -134,7 +134,7 @@ public class SlackNotifierTest {
         InternalPaymentException internalPaymentException = new InternalPaymentException(null, "Failed to send");
         slackNotifier.notify(SlackEvent.builder()
                 .header("<TEST> " + Optional.ofNullable(internalPaymentException.getType())
-                        .orElse(Executor.Type.DUMMY).name())
+                        .orElse(Executor.Type.UNKNOWN).name())
                 .level(SlackMessage.LEVEL.ERROR)
                 .title(internalPaymentException.getMessage())
                 .message(internalPaymentException.getMessage())
@@ -148,26 +148,26 @@ public class SlackNotifierTest {
      */
     @Test
     public void notificationLevelTest() {
-        assertEquals(null, slackNotifier.levelOf(new CIException(Executor.Type.DUMMY, "notificationl")));
-        assertEquals(null, slackNotifier.levelOf(new ExceedException(Executor.Type.DUMMY, "notification")));
+        assertEquals(null, slackNotifier.levelOf(new CIException(Executor.Type.UNKNOWN, "notificationl")));
+        assertEquals(null, slackNotifier.levelOf(new ExceedException(Executor.Type.UNKNOWN, "notification")));
         assertEquals(SlackMessage.LEVEL.ERROR,
-                slackNotifier.levelOf(new ExecutorException(Executor.Type.DUMMY, "notification")));
+                slackNotifier.levelOf(new ExecutorException(Executor.Type.UNKNOWN, "notification")));
         assertEquals(SlackMessage.LEVEL.ERROR,
-                slackNotifier.levelOf(new FraudException(Executor.Type.DUMMY, "notification")));
-        assertEquals(null, slackNotifier.levelOf(new HappyPointParamException(Executor.Type.DUMMY, "notification")));
-        assertEquals(null, slackNotifier.levelOf(new HappyPointSystemException(Executor.Type.DUMMY, "notification")));
+                slackNotifier.levelOf(new FraudException(Executor.Type.UNKNOWN, "notification")));
+        assertEquals(null, slackNotifier.levelOf(new HappyPointParamException(Executor.Type.UNKNOWN, "notification")));
+        assertEquals(null, slackNotifier.levelOf(new HappyPointSystemException(Executor.Type.UNKNOWN, "notification")));
         assertEquals(SlackMessage.LEVEL.ERROR,
-                slackNotifier.levelOf(new InternalPaymentException(Executor.Type.DUMMY, "notification")));
+                slackNotifier.levelOf(new InternalPaymentException(Executor.Type.UNKNOWN, "notification")));
         assertEquals(SlackMessage.LEVEL.ERROR,
-                slackNotifier.levelOf(new LguDepositException(Executor.Type.DUMMY, "notification")));
+                slackNotifier.levelOf(new LguDepositException(Executor.Type.UNKNOWN, "notification")));
         assertEquals(SlackMessage.LEVEL.ERROR,
-                slackNotifier.levelOf(new PantherException(Executor.Type.DUMMY, "notification")));
+                slackNotifier.levelOf(new PantherException(Executor.Type.UNKNOWN, "notification")));
         assertEquals(SlackMessage.LEVEL.WARN,
-                slackNotifier.levelOf(new ParameterException(Executor.Type.DUMMY, "notification")));
+                slackNotifier.levelOf(new ParameterException(Executor.Type.UNKNOWN, "notification")));
         assertEquals(null,
-                slackNotifier.levelOf(new PreconditionException(Executor.Type.DUMMY, "notification")));
+                slackNotifier.levelOf(new PreconditionException(Executor.Type.UNKNOWN, "notification")));
         assertEquals(SlackMessage.LEVEL.ERROR,
-                slackNotifier.levelOf(new SessionException(Executor.Type.DUMMY, "notification")));
+                slackNotifier.levelOf(new SessionException(Executor.Type.UNKNOWN, "notification")));
 
         assertEquals(SlackMessage.LEVEL.ERROR, slackNotifier.levelOf(new RuntimeException("hello")));
         assertEquals(SlackMessage.LEVEL.ERROR, slackNotifier.levelOf(new Throwable("hello")));

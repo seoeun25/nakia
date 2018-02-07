@@ -6,12 +6,10 @@ import com.lezhin.panther.exception.ExceedException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.internalpayment.Result;
 import com.lezhin.panther.model.PayLetterLog;
-import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.util.DateUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.http.HTTPException;
 import java.time.Instant;
 import java.util.List;
 
@@ -54,7 +51,7 @@ public class PayLetterController {
         Long period = endDateTime.getEpochSecond() - startDateTime.getEpochSecond();
         Long days = period > 0 ? period / 86400 : 0;
         if (days > 3) {
-            throw new ExceedException(Executor.Type.DUMMY, "Search range can not be over 3 days");
+            throw new ExceedException(Executor.Type.UNKNOWN, "Search range can not be over 3 days");
         } else {
 
             List<PayLetterLog> logs = this.payLetterService.getLogs(startDateTime, endDateTime, locale);

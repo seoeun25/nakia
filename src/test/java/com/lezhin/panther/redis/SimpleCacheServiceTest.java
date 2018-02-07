@@ -6,7 +6,7 @@ import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
@@ -160,7 +160,7 @@ public class SimpleCacheServiceTest {
         assertEquals(20F, resultRequest.getPayment().getAmount().floatValue());
         assertEquals(3L, resultRequest.getPayment().getCoinProductId().longValue());
         assertEquals(paymentId, resultRequest.getPayment().getPaymentId().longValue());
-        com.lezhin.panther.lguplus.LguplusPayment resultPgPayment = (com.lezhin.panther.lguplus.LguplusPayment) resultRequest.getPayment().getPgPayment();
+        com.lezhin.panther.pg.lguplus.LguplusPayment resultPgPayment = (com.lezhin.panther.pg.lguplus.LguplusPayment) resultRequest.getPayment().getPgPayment();
         assertEquals("9876", resultPgPayment.getCST_MID());
         assertEquals("123", resultPgPayment.getLGD_OID());
         assertEquals("100", resultPgPayment.getLGD_AMOUNT());

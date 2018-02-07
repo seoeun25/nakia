@@ -1,4 +1,4 @@
-package com.lezhin.panther.lguplus;
+package com.lezhin.panther.pg.lguplus;
 
 
 import com.lezhin.panther.ErrorCode;

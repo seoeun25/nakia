@@ -127,7 +127,7 @@ public class PaymentUtil extends Payment {
             this.pointAmount = Integer.valueOf(request.getParameter("_lz_point_amount"));
             onParse(request);
         } catch (Exception e) {
-            throw new ParameterException(Executor.Type.DUMMY, e);
+            throw new ParameterException(Executor.Type.UNKNOWN, e);
         }
 
         onParse(request);
@@ -252,7 +252,7 @@ public class PaymentUtil extends Payment {
         try {
             return URLDecoder.decode(url, StandardCharsets.UTF_8.toString());
         } catch (Exception e) {
-            throw new ParameterException(Executor.Type.DUMMY, String.format("Failed to urlDecode [%s]", url));
+            throw new ParameterException(Executor.Type.UNKNOWN, String.format("Failed to urlDecode [%s]", url));
         }
     }
 

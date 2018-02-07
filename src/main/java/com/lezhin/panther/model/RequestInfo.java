@@ -5,8 +5,8 @@ import com.lezhin.constant.LezhinStore;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.happypoint.HappyPointPayment;
-import com.lezhin.panther.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.happypoint.HappyPointPayment;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.util.JsonUtil;
 
 import com.google.common.base.Charsets;
@@ -304,14 +304,14 @@ public class RequestInfo implements Serializable {
                 if (pType == PaymentType.deposit || pType == PaymentType.mdeposit) {
                     withExecutor(Executor.Type.LGUDEPOSIT);
                 } else {
-                    throw new ParameterException(Executor.Type.DUMMY, "Not support. PG = " + pg + ", paymentType = " +
+                    throw new ParameterException(Executor.Type.UNKNOWN, "Not support. PG = " + pg + ", paymentType = " +
                             paymentType);
                 }
-            } else if ("dummy".equals(pg)) {
+            } else if ("unknown".equals(pg)) {
                 withPaymentType(PaymentType.unknown);
-                withExecutor(Executor.Type.DUMMY);
+                withExecutor(Executor.Type.UNKNOWN);
             } else {
-                throw new ParameterException(Executor.Type.DUMMY, "Not support. PG = " + pg + ", paymentType = " +
+                throw new ParameterException(Executor.Type.UNKNOWN, "Not support. PG = " + pg + ", paymentType = " +
                         paymentType);
             }
         }

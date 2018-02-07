@@ -5,17 +5,17 @@ import com.lezhin.panther.Context;
 import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.config.PantherProperties;
-import com.lezhin.panther.dummy.DummyExecutor;
-import com.lezhin.panther.dummy.DummyPayment;
 import com.lezhin.panther.exception.PreconditionException;
-import com.lezhin.panther.happypoint.HappyPointExecutor;
-import com.lezhin.panther.happypoint.HappyPointPayment;
-import com.lezhin.panther.lguplus.LguDepositExecutor;
-import com.lezhin.panther.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Meta;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.pg.happypoint.HappyPointExecutor;
+import com.lezhin.panther.pg.happypoint.HappyPointPayment;
+import com.lezhin.panther.pg.lguplus.LguDepositExecutor;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.unknown.UnknownExecutor;
+import com.lezhin.panther.pg.unknown.UnknownPayment;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,10 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class Executor<T extends PGPayment> {
 
     public enum Type {
-        DUMMY("dummy") {
+        UNKNOWN("unknown") {
             @Override
             public Payment createPayment(Context context) {
-                return new Payment<DummyPayment>(System.currentTimeMillis());
+                return new Payment<UnknownPayment>(System.currentTimeMillis());
             }
 
             @Override
@@ -44,7 +44,7 @@ public abstract class Executor<T extends PGPayment> {
 
             @Override
             public Class getExecutorClass() {
-                return DummyExecutor.class;
+                return UnknownExecutor.class;
             }
         },
         HAPPYPOINT("happypoint") {
@@ -80,7 +80,7 @@ public abstract class Executor<T extends PGPayment> {
 
             @Override
             public Payment createPayment(Context context) {
-                return new Payment<com.lezhin.panther.lguplus.LguplusPayment>(System.currentTimeMillis());
+                return new Payment<com.lezhin.panther.pg.lguplus.LguplusPayment>(System.currentTimeMillis());
             }
 
             @Override
