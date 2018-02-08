@@ -1,7 +1,7 @@
 package com.lezhin.panther.command;
 
+import com.lezhin.constant.PaymentState;
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.PreconditionException;
@@ -9,8 +9,8 @@ import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.util.JsonUtil;
-import com.lezhin.constant.PaymentState;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +87,7 @@ public class Pay<T extends PGPayment> extends Command<T> {
 
                 // response는 panther.
                 context = context.response(
-                        new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
+                        new ResponseInfo(ResponseCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
                 throw new InternalPaymentException(requestInfo.getExecutorType(), e);
             } else {
                 // execution이 fail되었다면 internalPayment의 update가 fail 되어도 그냥 둔다.

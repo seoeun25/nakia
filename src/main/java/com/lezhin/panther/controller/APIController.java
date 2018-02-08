@@ -3,7 +3,6 @@ package com.lezhin.panther.controller;
 import com.lezhin.constant.PGCompany;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.PayService;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.command.Command;
@@ -15,6 +14,7 @@ import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.util.JsonUtil;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,8 +136,8 @@ public class APIController {
                 context = Context.builder()
                         .requestInfo(requestInfo)
                         .payment(requestPayment)
-                        .responseInfo(ResponseInfo.builder().code(pgPayment
-                                .getLGD_RESPCODE()).description(pgPayment.getLGD_RESPMSG()).build()).build();
+                        .responseInfo(new ResponseInfo(pgPayment.getLGD_RESPCODE(), pgPayment.getLGD_RESPMSG()))
+                        .build();
             } catch (SessionException e) {
                 // TODO 만약에 redis가 죽었다가 살아나서 requestInfo가 모두 reset 될 수도 있다면.
                 // 그런데 입금했다면, purchase는 안되어서 결국은 CR로.
@@ -176,7 +176,7 @@ public class APIController {
             return new ResponseEntity("Fraud", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (paymentId == null) {
-            return new ResponseEntity(ErrorCode.LEZHIN_PARAM.getCode(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity(ResponseCode.LEZHIN_PARAM.getCode(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Payment payment = null;
         if (PGCompany.lguplus.name().equals(pg) &&
@@ -192,8 +192,8 @@ public class APIController {
                 context = Context.builder()
                         .requestInfo(requestInfo)
                         .payment(requestPayment)
-                        .responseInfo(ResponseInfo.builder().code(ErrorCode.LEZHIN_UNKNOWN.getCode()
-                                ).description(ErrorCode.LEZHIN_UNKNOWN.getMessage()).build()).build();
+                        .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN))
+                        .build();
             } catch (SessionException e) {
                 // TODO 만약에 redis가 죽었다가 살아나서 requestInfo가 모두 reset 될 수도 있다면.
                 // 그런데 입금했다면, purchase는 안되어서 결국은 CR로.

@@ -1,7 +1,7 @@
 package com.lezhin.panther.exception;
 
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.executor.Executor;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 /**
  * @author seoeun
@@ -21,7 +21,7 @@ public class HappyPointSystemException extends PantherException {
         this.code = code;
     }
 
-    public HappyPointSystemException(Executor.Type type, ErrorCode errorCode) {
+    public HappyPointSystemException(Executor.Type type, ResponseCode errorCode) {
         super(type, errorCode.getMessage());
         this.code = errorCode.getCode();
     }

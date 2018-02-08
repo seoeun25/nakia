@@ -1,6 +1,5 @@
 package com.lezhin.panther;
 
-import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
@@ -55,13 +54,7 @@ public class Context<T extends PGPayment> {
     }
 
     public boolean executionSucceed() {
-        boolean executionSucceed = true;
-        if (getRequestInfo().getExecutorType() == Executor.Type.HAPPYPOINT) {
-            executionSucceed = getResponseInfo().getCode().equals(ErrorCode.SPC_OK.getCode());
-        } else if (getRequestInfo().getExecutorType() == Executor.Type.LGUDEPOSIT) {
-            executionSucceed = getResponseInfo().getCode().equals(ErrorCode.LGUPLUS_OK.getCode());
-        }
-        return executionSucceed;
+        return getRequestInfo().getExecutorType().succeeded(getResponseInfo());
     }
 
     public Context<T> request(RequestInfo request) {

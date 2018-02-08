@@ -2,7 +2,6 @@ package com.lezhin.panther.pg.happypoint;
 
 import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.exception.CIException;
@@ -14,6 +13,7 @@ import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
@@ -186,7 +186,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         // do nothing
         Payment<HappyPointPayment> payment = context.getPayment();
-        context = context.response(new ResponseInfo(ErrorCode.SPC_OK));
+        context = context.response(new ResponseInfo(ResponseCode.SPC_OK));
         return payment;
     }
 
@@ -197,7 +197,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         // do nothing. response ok
         Payment<HappyPointPayment> payment = context.getPayment();
-        context = context.response(new ResponseInfo(ErrorCode.SPC_OK));
+        context = context.response(new ResponseInfo(ResponseCode.SPC_OK));
         return payment;
     }
 
@@ -241,7 +241,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     }
 
     public Payment<HappyPointPayment> complete() {
-        if (context.getResponseInfo().getCode().equals(ErrorCode.SPC_OK.getCode())) {
+        if (context.getResponseInfo().getCode().equals(ResponseCode.SPC_OK.getCode())) {
             // on Success
             HappyPointPayment happyPointPayment = context.getPayment().getPgPayment();
             String trxDt = happyPointPayment.getTrxDt();
@@ -335,21 +335,21 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
      * @throws HappyPointSystemException
      */
     public void handleResponseCode(String responseCode) throws HappyPointParamException, HappyPointSystemException {
-        if (ErrorCode.SPC_DENY_44.getCode().equals(responseCode)
-                || ErrorCode.SPC_DENY_77.getCode().equals(responseCode)
-                || ErrorCode.SPC_DENY_88.getCode().equals(responseCode)) {
+        if (ResponseCode.SPC_DENY_44.getCode().equals(responseCode)
+                || ResponseCode.SPC_DENY_77.getCode().equals(responseCode)
+                || ResponseCode.SPC_DENY_88.getCode().equals(responseCode)) {
             throw new HappyPointParamException(type, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
-        if (ErrorCode.SPC_ERROR_22.getCode().equals(responseCode)
-                || ErrorCode.SPC_ERROR_80.getCode().equals(responseCode)
-                || ErrorCode.SPC_ERROR_92.getCode().equals(responseCode)
-                || ErrorCode.SPC_ERROR_99.getCode().equals(responseCode)) {
+        if (ResponseCode.SPC_ERROR_22.getCode().equals(responseCode)
+                || ResponseCode.SPC_ERROR_80.getCode().equals(responseCode)
+                || ResponseCode.SPC_ERROR_92.getCode().equals(responseCode)
+                || ResponseCode.SPC_ERROR_99.getCode().equals(responseCode)) {
             throw new HappyPointSystemException(type, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
         // 문서에 정의 되지 않은 response code가 올 수도 있음.
-        if (!responseCode.equals(ErrorCode.SPC_OK.getCode())) {
+        if (!responseCode.equals(ResponseCode.SPC_OK.getCode())) {
             throw new HappyPointSystemException(type, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }

@@ -1,8 +1,6 @@
 package com.lezhin.panther.command;
 
-import com.lezhin.constant.LezhinError;
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.ExecutorException;
@@ -15,6 +13,7 @@ import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,6 +110,7 @@ public abstract class Command<T extends PGPayment> {
 
     /**
      * Load the payment from persistence and verify precondition.
+     *
      * @throws PreconditionException
      * @throws FraudException
      */
@@ -135,11 +135,12 @@ public abstract class Command<T extends PGPayment> {
 
     /**
      * Request로 온 Payment와 DB에 저장된 Payment의 amount를 비교하여 fraud check.
+     *
      * @param requestPayment
      * @param persistedPayment
      * @throws FraudException
      */
-    private void checkFraud(Payment requestPayment, Payment persistedPayment) throws FraudException{
+    private void checkFraud(Payment requestPayment, Payment persistedPayment) throws FraudException {
         if (requestPayment.getUserId().longValue() != persistedPayment.getUserId().longValue()) {
             throw new FraudException(requestInfo.getExecutorType(),
                     String.format("request.user[%s] is diff with expected[%s]", requestPayment.getUserId(),
@@ -165,7 +166,7 @@ public abstract class Command<T extends PGPayment> {
 
     protected void initContext() {
         context = Context.builder().requestInfo(requestInfo).payment(payment)
-                .responseInfo(new ResponseInfo(ErrorCode.LEZHIN_UNKNOWN)).build();
+                .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN)).build();
     }
 
     /**
@@ -206,6 +207,7 @@ public abstract class Command<T extends PGPayment> {
 
     /**
      * Process next step. If next step is DONE, this command return payment.
+     *
      * @return
      */
     public Payment<T> processNextStep() {

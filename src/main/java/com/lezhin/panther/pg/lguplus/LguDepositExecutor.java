@@ -1,7 +1,6 @@
 package com.lezhin.panther.pg.lguplus;
 
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.HappyPointParamException;
 import com.lezhin.panther.exception.HappyPointSystemException;
@@ -9,6 +8,7 @@ import com.lezhin.panther.exception.LguDepositException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.JsonUtil;
 
@@ -28,8 +28,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.lezhin.panther.ErrorCode.LEZHIN_EXECUTION;
-import static com.lezhin.panther.ErrorCode.LGUPLUS_OK;
+import static com.lezhin.panther.model.ResponseInfo.ResponseCode.LEZHIN_EXECUTION;
+import static com.lezhin.panther.model.ResponseInfo.ResponseCode.LGUPLUS_OK;
 
 /**
  * LguPlus의 무통장입금을 처리
@@ -302,7 +302,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
                 throw new LguDepositException(type, "LGU deposit payment failed:" + LGD_RESPMSG);
             }
         } else { //해쉬값이 검증이 실패이면
-            responseInfo = responseInfo.toBuilder().code(ErrorCode.LGUPLUS_ERROR.getCode())
+            responseInfo = responseInfo.toBuilder().code(ResponseCode.LGUPLUS_ERROR.getCode())
                     .description("LGD_HASHDATA is not valid").build();
             context = context.response(responseInfo);
             throw new LguDepositException(type, "LGD_HASHDATA is not valid");
@@ -402,8 +402,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
 
             } else {        //가상계좌 변경의 경우
 
-                ResponseInfo responseInfo = ResponseInfo.builder()
-                        .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
+                ResponseInfo responseInfo = new ResponseInfo(xpay.m_szResCode, xpay.m_szResMsg);
                 context = context.response(responseInfo);
                 if (!succeeded(responseInfo)) {
                     logger.info("[TX] done. failed. CyberAccount= {}", responseInfo.toString());
@@ -425,8 +424,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             }
 
         } else {
-            ResponseInfo responseInfo = ResponseInfo.builder()
-                    .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
+            ResponseInfo responseInfo = new ResponseInfo(xpay.m_szResCode, xpay.m_szResMsg);
             logger.info("[TX CyberAccount] result is false !!!!. FAILED. response = {}", responseInfo.toString());
             context.response(responseInfo);
             throw new LguDepositException(type, "Tx result is false. TX(CyberAccount): " + xpay.m_szResCode +
@@ -460,7 +458,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
      * @throws LguDepositException
      */
     public void handleResponseCode(String responseCode) throws HappyPointParamException, HappyPointSystemException {
-        if (!responseCode.equals(ErrorCode.LGUPLUS_OK.getCode())) {
+        if (!responseCode.equals(ResponseCode.LGUPLUS_OK.getCode())) {
             throw new LguDepositException(type, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }

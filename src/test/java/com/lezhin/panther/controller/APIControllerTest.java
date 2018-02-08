@@ -1,9 +1,9 @@
 package com.lezhin.panther.controller;
 
 import com.lezhin.panther.PayService;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -120,7 +120,7 @@ public class APIControllerTest {
                 .perform(post("/v1/api/hello/reservation").content("{\"_lz_userId\":\"10101\"}"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("code").value(ErrorCode.LEZHIN_PARAM.getCode()));
+                .andExpect(jsonPath("code").value(ResponseCode.LEZHIN_PARAM.getCode()));
 
     }
 
@@ -138,7 +138,7 @@ public class APIControllerTest {
                 )
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(jsonPath("code").value(Integer.parseInt(ErrorCode.LEZHIN_OK.getCode())));
+                .andExpect(jsonPath("code").value(Integer.parseInt(ResponseCode.LEZHIN_OK.getCode())));
     }
 
 }

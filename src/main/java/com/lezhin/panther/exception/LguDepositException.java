@@ -1,7 +1,7 @@
 package com.lezhin.panther.exception;
 
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.executor.Executor;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.notification.NotificationLevel;
 
 /**
@@ -23,7 +23,7 @@ public class LguDepositException extends PantherException {
         this.code = code;
     }
 
-    public LguDepositException(Executor.Type type, ErrorCode errorCode) {
+    public LguDepositException(Executor.Type type, ResponseCode errorCode) {
         super(type, errorCode.getMessage());
         this.code = errorCode.getCode();
     }

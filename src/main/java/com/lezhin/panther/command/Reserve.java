@@ -1,7 +1,6 @@
 package com.lezhin.panther.command;
 
 import com.lezhin.constant.PaymentState;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.exception.ParameterException;
@@ -10,6 +9,8 @@ import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,7 @@ public class Reserve<T extends PGPayment> extends Command<T> {
             context = context.payment(payment);
         } catch (Throwable e) {
             context = context.response(
-                    new ResponseInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
+                    new ResponseInfo(ResponseCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
             logger.warn("Failed to InternalPayment.reserve");
             throw new InternalPaymentException(requestInfo.getExecutorType(), e);
         }

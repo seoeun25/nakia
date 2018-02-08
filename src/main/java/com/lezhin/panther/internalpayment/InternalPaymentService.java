@@ -1,13 +1,13 @@
 package com.lezhin.panther.internalpayment;
 
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Meta;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.util.JsonUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -248,7 +248,7 @@ public class InternalPaymentService {
             throw new InternalPaymentException(type, "Internal. result is null");
         }
 
-        if (!ErrorCode.INTERNAL_OK.getCode().equals(String.valueOf(result.getCode()))) {
+        if (!ResponseCode.INTERNAL_OK.getCode().equals(String.valueOf(result.getCode()))) {
             throw new InternalPaymentException(type, "InternalFailed: " + result.getCode() + ":" +
                     result.getDescription());
         }

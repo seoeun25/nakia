@@ -1,12 +1,12 @@
 package com.lezhin.panther.controller;
 
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.PayLetterService;
 import com.lezhin.panther.exception.ExceedException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.internalpayment.Result;
 import com.lezhin.panther.model.PayLetterLog;
 import com.lezhin.panther.util.DateUtil;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ public class PayLetterController {
 
             List<PayLetterLog> logs = this.payLetterService.getLogs(startDateTime, endDateTime, locale);
             Result<List<PayLetterLog>> result = new Result<>();
-            result.setCode(Integer.parseInt(ErrorCode.LEZHIN_OK.getCode()));
+            result.setCode(Integer.parseInt(ResponseCode.LEZHIN_OK.getCode()));
             result.setData(logs);
             return result;
         }

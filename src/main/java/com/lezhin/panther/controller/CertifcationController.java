@@ -1,9 +1,9 @@
 package com.lezhin.panther.controller;
 
 import com.lezhin.panther.SimpleCacheService;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +59,7 @@ public class CertifcationController {
             logger.warn("Failed to retrieve ", e);
         }
 
-        return new ResponseInfo(ErrorCode.LEZHIN_OK.getCode(), ErrorCode.LEZHIN_OK.getMessage());
+        return new ResponseInfo(ResponseCode.LEZHIN_OK);
 
     }
 

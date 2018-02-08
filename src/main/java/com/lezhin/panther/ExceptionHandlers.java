@@ -10,6 +10,7 @@ import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.notification.SlackNotifier;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class ExceptionHandlers {
     public ErrorInfo handleParameterException(final ParameterException e) {
         logger.error("ParameterException", e);
         slackNotifier.notify(e);
-        return new ErrorInfo(ErrorCode.LEZHIN_PARAM.getCode(), e.getMessage());
+        return new ErrorInfo(ResponseCode.LEZHIN_PARAM.getCode(), e.getMessage());
     }
 
     @ExceptionHandler(HappyPointParamException.class)
@@ -65,7 +66,7 @@ public class ExceptionHandlers {
     public ErrorInfo handlePreconditionException(final PreconditionException e) {
         logger.error("PreconditionException", e);
         slackNotifier.notify(e);
-        return new ErrorInfo(ErrorCode.LEZHIN_PRECONDITION.getCode(), e.getMessage());
+        return new ErrorInfo(ResponseCode.LEZHIN_PRECONDITION.getCode(), e.getMessage());
     }
 
     @ExceptionHandler(ExceedException.class)
@@ -73,7 +74,7 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handleExceedException(final ExceedException e) {
         logger.error("ExceedException", e);
-        return new ErrorInfo(ErrorCode.LEZHIN_EXCEED.getCode(), e.getMessage());
+        return new ErrorInfo(ResponseCode.LEZHIN_EXCEED.getCode(), e.getMessage());
     }
 
     @ExceptionHandler(CIException.class)
@@ -82,7 +83,7 @@ public class ExceptionHandlers {
     public ErrorInfo handleCIException(final CIException e) {
         logger.error("CIException", e);
         slackNotifier.notify(e);
-        return new ErrorInfo(ErrorCode.LEZHIN_CI.getCode(), e.getMessage());
+        return new ErrorInfo(ResponseCode.LEZHIN_CI.getCode(), e.getMessage());
     }
 
     @ExceptionHandler(ExecutorException.class)
@@ -91,7 +92,7 @@ public class ExceptionHandlers {
     public ErrorInfo handleExecutorException(final ExecutorException e) {
         logger.error("ExecutorException", e);
         slackNotifier.notify(e);
-        return new ErrorInfo(ErrorCode.LEZHIN_EXECUTION.getCode(), e.getMessage());
+        return new ErrorInfo(ResponseCode.LEZHIN_EXECUTION.getCode(), e.getMessage());
     }
 
     @ExceptionHandler(InternalPaymentException.class)
@@ -101,7 +102,7 @@ public class ExceptionHandlers {
         logger.error("InternalPaymentException", e);
         slackNotifier.notify(e);
         // User에게 보여질 수 있는 메시지라 general 하게 변경
-        return new ErrorInfo(ErrorCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), "Internal Server Error");
+        return new ErrorInfo(ResponseCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), "Internal Server Error");
     }
 
     @ExceptionHandler(PantherException.class)
@@ -110,7 +111,7 @@ public class ExceptionHandlers {
     public ErrorInfo handlePantherException(final PantherException e) {
         logger.error("PantherException", e);
         slackNotifier.notify(e);
-        return new ErrorInfo(ErrorCode.LEZHIN_PANTHER.getCode(), e.getMessage());
+        return new ErrorInfo(ResponseCode.LEZHIN_PANTHER.getCode(), e.getMessage());
     }
 
     @ExceptionHandler(Throwable.class)
@@ -119,7 +120,7 @@ public class ExceptionHandlers {
     public ErrorInfo handleThrowable(final Throwable e) {
         logger.error("Unexpected error", e);
         slackNotifier.notify(e);
-        return new ErrorInfo(ErrorCode.LEZHIN_THROWABLE.getCode(), e.getMessage());
+        return new ErrorInfo(ResponseCode.LEZHIN_THROWABLE.getCode(), e.getMessage());
     }
 
     public static class ErrorInfo {

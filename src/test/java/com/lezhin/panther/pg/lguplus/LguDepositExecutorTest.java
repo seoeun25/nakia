@@ -1,9 +1,8 @@
 package com.lezhin.panther.pg.lguplus;
 
-
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,19 +33,19 @@ public class LguDepositExecutorTest {
     public void testExcecutorResult() {
 
         assertEquals(false, Executor.Type.LGUDEPOSIT.succeeded(ResponseInfo.builder()
-                .code(ErrorCode.LGUPLUS_ERROR.getCode())
-                .description(ErrorCode.LGUPLUS_ERROR.getMessage()).build()));
+                .code(ResponseCode.LGUPLUS_ERROR.getCode())
+                .description(ResponseCode.LGUPLUS_ERROR.getMessage()).build()));
         assertEquals(false, Executor.Type.LGUDEPOSIT.succeeded(ResponseInfo.builder()
                 .code("XZXZ")
                 .description("hello").build()));
         assertEquals(true, Executor.Type.LGUDEPOSIT.succeeded(ResponseInfo.builder()
-                .code(ErrorCode.LGUPLUS_OK.getCode())
-                .description(ErrorCode.LGUPLUS_OK.getMessage()).build()));
+                .code(ResponseCode.LGUPLUS_OK.getCode())
+                .description(ResponseCode.LGUPLUS_OK.getMessage()).build()));
 
         // executor는 lgudeposit. SPC_OK는 failed
         assertEquals(false, Executor.Type.LGUDEPOSIT.succeeded(ResponseInfo.builder()
-                .code(ErrorCode.SPC_OK.getCode())
-                .description(ErrorCode.SPC_OK.getMessage()).build()));
+                .code(ResponseCode.SPC_OK.getCode())
+                .description(ResponseCode.SPC_OK.getMessage()).build()));
 
     }
 

@@ -1,11 +1,11 @@
 package com.lezhin.panther.pg.happypoint;
 
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.util.JsonUtil;
 
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,7 @@ public class HappyPointExecutorTest {
         RequestInfo requestInfo = new RequestInfo.Builder(request1, "happypoint").build();
 
         Context context = Context.builder().requestInfo(requestInfo).payment(requestInfo.getPayment())
-                .responseInfo(new ResponseInfo(ErrorCode.LEZHIN_UNKNOWN)).build();
+                .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN)).build();
 
         Long paymentId = context.getPaymentId();
         Long userId = context.getUserId();
@@ -75,7 +75,7 @@ public class HappyPointExecutorTest {
 
         assertEquals(-1L, paymentId.longValue());
         assertEquals(10101L, userId.longValue());
-        assertEquals(ErrorCode.LEZHIN_UNKNOWN.getCode(), context.getResponseInfo().getCode());
+        assertEquals(ResponseCode.LEZHIN_UNKNOWN.getCode(), context.getResponseInfo().getCode());
 
     }
 
@@ -146,14 +146,14 @@ public class HappyPointExecutorTest {
     public void testExcecutorResult() {
 
         assertEquals(false, Executor.Type.HAPPYPOINT.succeeded(ResponseInfo.builder()
-                .code(ErrorCode.SPC_DENY_44.getCode())
-                .description(ErrorCode.SPC_DENY_44.getMessage()).build()));
+                .code(ResponseCode.SPC_DENY_44.getCode())
+                .description(ResponseCode.SPC_DENY_44.getMessage()).build()));
         assertEquals(false, Executor.Type.HAPPYPOINT.succeeded(ResponseInfo.builder()
                 .code("XZXZ")
                 .description("hello").build()));
         assertEquals(true, Executor.Type.HAPPYPOINT.succeeded(ResponseInfo.builder()
-                .code(ErrorCode.SPC_OK.getCode())
-                .description(ErrorCode.SPC_OK.getMessage()).build()));
+                .code(ResponseCode.SPC_OK.getCode())
+                .description(ResponseCode.SPC_OK.getMessage()).build()));
 
     }
 

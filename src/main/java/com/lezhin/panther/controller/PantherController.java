@@ -2,12 +2,12 @@ package com.lezhin.panther.controller;
 
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.SimpleCacheService;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.Util;
 
@@ -95,7 +95,7 @@ public class PantherController {
             }
         }
 
-        return new ResponseInfo(ErrorCode.LEZHIN_OK.getCode(), ErrorCode.LEZHIN_OK.getMessage());
+        return new ResponseInfo(ResponseCode.LEZHIN_OK);
     }
 
     @RequestMapping(value = "/info", method = RequestMethod.POST)
@@ -117,7 +117,7 @@ public class PantherController {
 
 
 
-        return new ResponseInfo(ErrorCode.LEZHIN_OK.getCode(), ErrorCode.LEZHIN_OK.getMessage());
+        return new ResponseInfo(ResponseCode.LEZHIN_OK);
     }
 
 

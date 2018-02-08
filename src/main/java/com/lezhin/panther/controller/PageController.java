@@ -3,7 +3,6 @@ package com.lezhin.panther.controller;
 import com.lezhin.constant.PGCompany;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.PagePayService;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.command.Command;
@@ -23,6 +22,7 @@ import com.lezhin.panther.notification.SlackNotifier;
 import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +151,7 @@ public class PageController {
                 requestInfo = simpleCacheService.getRequestInfo(Long.valueOf(params.get("LGD_OID").toString().trim()));
                 redirectUrl = getPaymentUrl(requestInfo, Long.valueOf(params.get("LGD_OID").toString()));
                 failUrl = getFailUrl(redirectUrl, requestInfo);
-                if (!ErrorCode.LGUPLUS_OK.getCode().equals(resCode)) {
+                if (!ResponseCode.LGUPLUS_OK.getCode().equals(resCode)) {
                     // encoding 깨짐. 내용 파악은 브라우저에서 직접. 대충의 내용만.
                     String newResMsg = LguDepositExecutor.extractResMsg(resMsg);
                     params.put("LGD_RESPMSG", newResMsg);
@@ -166,8 +166,7 @@ public class PageController {
                 Context context = Context.builder()
                         .requestInfo(requestInfo)
                         .payment(requestPayment)
-                        .responseInfo(ResponseInfo.builder().code(pgPayment
-                                .getLGD_RESPCODE()).description(pgPayment.getLGD_RESPMSG()).build())
+                        .responseInfo(new ResponseInfo(pgPayment.getLGD_RESPCODE(), pgPayment.getLGD_RESPMSG()))
                         .build();
 
                 payment = pagePayService.doCommand(Command.Type.PREAUTHENTICATE, context);
@@ -227,8 +226,8 @@ public class PageController {
                 Context context = Context.builder()
                         .requestInfo(requestInfo)
                         .payment(requestPayment)
-                        .responseInfo(ResponseInfo.builder().code(pgPayment
-                                .getLGD_RESPCODE()).description(pgPayment.getLGD_RESPMSG()).build()).build();
+                        .responseInfo(new ResponseInfo(pgPayment.getLGD_RESPCODE(), pgPayment.getLGD_RESPMSG()))
+                        .build();
 
                 payment = pagePayService.doCommand(Command.Type.AUTHENTICATE, context);
 

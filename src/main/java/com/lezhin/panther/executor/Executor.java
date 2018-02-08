@@ -2,7 +2,6 @@ package com.lezhin.panther.executor;
 
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
-import com.lezhin.panther.ErrorCode;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.PreconditionException;
@@ -10,6 +9,7 @@ import com.lezhin.panther.model.Meta;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.pg.happypoint.HappyPointExecutor;
 import com.lezhin.panther.pg.happypoint.HappyPointPayment;
 import com.lezhin.panther.pg.lguplus.LguDepositExecutor;
@@ -68,7 +68,7 @@ public abstract class Executor<T extends PGPayment> {
             }
 
             public boolean succeeded(ResponseInfo responseInfo) {
-                return responseInfo.getCode().equals(ErrorCode.SPC_OK.getCode());
+                return responseInfo.getCode().equals(ResponseCode.SPC_OK.getCode());
             }
 
             @Override
@@ -107,7 +107,7 @@ public abstract class Executor<T extends PGPayment> {
             }
 
             public boolean succeeded(ResponseInfo responseInfo) {
-                return responseInfo.getCode().equals(ErrorCode.LGUPLUS_OK.getCode());
+                return responseInfo.getCode().equals(ResponseCode.LGUPLUS_OK.getCode());
             }
 
             @Override
