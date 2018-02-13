@@ -1,11 +1,15 @@
 package com.lezhin.panther;
 
 import com.lezhin.avengers.panther.model.HappypointAggregator;
+import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Certification;
+import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.redis.RedisService;
+import com.lezhin.panther.util.JsonUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +89,22 @@ public class SimpleCacheService {
         RequestInfo value = (RequestInfo) redisService.getValue(key);
         if (value == null) {
             throw new SessionException(Executor.Type.UNKNOWN, "RequestInfo not found: paymentId=" + paymentId);
+        }
+        try {
+            if (value.getPayment().getPgPayment() instanceof com.lezhin.panther.lguplus.LguplusPayment) {
+                com.lezhin.panther.lguplus.LguplusPayment oldPgPayment = (com.lezhin.panther.lguplus.LguplusPayment) value.getPayment().getPgPayment();
+                String json = JsonUtil.toJson(oldPgPayment);
+                LguplusPayment newPgPayment = JsonUtil.fromJson(json, LguplusPayment.class);
+
+                Payment payment = value.getPayment();
+                payment.setPgPayment(newPgPayment);
+                value = value.withPayment(payment);
+
+                logger.info("Succeed to convert from oldPagPayment to newPgPayment");
+            }
+        } catch (Exception e) {
+            throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert from oldPgPayment to " +
+                    "newPgPayment", e);
         }
         return value;
     }
