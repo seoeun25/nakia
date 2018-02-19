@@ -20,4 +20,8 @@ public class SessionException extends PantherException {
         super(type, e);
     }
 
+    public SessionException(Executor.Type type, String message, Throwable e) {
+        super(type, message, e);
+    }
+
 }

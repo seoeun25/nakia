@@ -236,6 +236,9 @@ public class PageController {
                         Long.valueOf(params.get("LGD_OID").toString()));
                 redirectUrl = getPaymentUrl(requestInfo, Long.valueOf(params.get("LGD_OID").toString()));
                 return redirect(redirectUrl, requestInfo, null, null, null, e);
+            } catch (PantherException e) {
+                logger.warn("Failed to AUTHENTICATE: {}. need to redirect ==> {}", e.getMessage(), redirectUrl);
+                return redirect(redirectUrl, requestInfo, null, null, null, e);
             } catch (Throwable e) {
                 logger.warn("Failed to AUTHENTICATE: {}. need to redirect ==> {}", e.getMessage(), redirectUrl);
                 return redirect(redirectUrl, requestInfo, null, null, null, new PantherException(Executor.Type

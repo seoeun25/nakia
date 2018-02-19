@@ -47,13 +47,24 @@ public class DefaultPaymentTest {
         Map<String, Object> map = new HashMap<>();
         map.put("happy", null);
         map.put("point", "100");
+        map.put("LGD_OID", "123456");
         assertNull(map.get("happy"));
+        assertNotNull(map.get("LGD_OID"));
 
         String aa = Optional.ofNullable(map.get("happy")).map(Object::toString).orElse(null);
         logger.info("a = {}", aa);
         assertNull(aa);
 
         assertEquals("100", Optional.ofNullable(map.get("point")).map(Object::toString).orElse(null));
+
+        // LGD_OID가 null 이 아닌 경우
+        Long pId = Optional.ofNullable(map.get("LGD_OID")).map(o -> Long.valueOf(o.toString())).orElse(-1L);
+        assertEquals(123456L, pId.longValue());
+        // LGD_OID가 null인 경우, -1L 리턴.
+        map.put("LGD_OID", null);
+        assertNull(map.get("LGD_OID"));
+        pId = Optional.ofNullable(map.get("LGD_OID")).map(o -> Long.valueOf(o.toString())).orElse(-1L);
+        assertEquals(-1L, pId.longValue());
 
     }
 }
