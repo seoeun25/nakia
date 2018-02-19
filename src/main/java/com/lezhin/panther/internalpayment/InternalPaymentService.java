@@ -59,6 +59,7 @@ public class InternalPaymentService {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("Authorization", "Bearer " + context.getRequestInfo().getToken());
+        headers.add("Cookie", "JSESSIONID=");
 
         Payment payment = context.getPayment();
         T pgPayment = (T) payment.getPgPayment();
@@ -92,6 +93,7 @@ public class InternalPaymentService {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("Authorization", "Bearer " + context.getRequestInfo().getToken());
+        headers.add("Cookie", "JSESSIONID=");
 
         Payment payment = context.getPayment();
         T pgPayment = (T) payment.getPgPayment();
@@ -142,6 +144,7 @@ public class InternalPaymentService {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("Authorization", "Bearer " + context.getRequestInfo().getToken());
+        headers.add("Cookie", "JSESSIONID=");
 
         Payment<T> payment = context.getPayment();
         T pgPayment = payment.getPgPayment();
@@ -183,6 +186,7 @@ public class InternalPaymentService {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("Authorization", "Bearer " + context.getRequestInfo().getToken());    // FIXME TOKEN
+        headers.add("Cookie", "JSESSIONID=");
 
         Payment<T> payment = context.getPayment();
         T pgPayment = payment.getPgPayment();
