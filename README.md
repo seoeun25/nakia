@@ -53,8 +53,9 @@ config 항목은 spring profiles를 이용하여 설정한다
     slack의 panther_beta 채널에서 다음과 같이 입력하고 묻는 대로 하면 된다
     버전은 alpha, beta, qa, production에서 global로 사용한다. (어떤 docker image로 deploy하겠다)
     ```
-    /ecs deploy panther 1.0.98
+    /ecs deploy panther
     원하는 infra 선택: 예를 들면 qa
+    원하는 version 선택: 예를 들면 1.0.98
     ```
     
     docker image tags 확인: browser에서 다음과 같이
