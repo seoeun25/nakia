@@ -83,7 +83,7 @@ panther:
       apiUrl: https://cms-dot-lezhincomix-api.appspot.com/v2/wallets
       companyEventIdPinCrux: 199
       usageRestrictionIdPinCrux: 12
-      cmsToken: 9fa16487-1716-4809-adb5-b3560a6ecf1b
+      cmsToken: 81ad2d4b-3963-409d-b9f1-aeba8665b873
 ---
 spring:
   profiles: staging
