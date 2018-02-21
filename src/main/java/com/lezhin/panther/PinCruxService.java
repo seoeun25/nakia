@@ -31,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -82,12 +83,14 @@ public class PinCruxService {
         /*젠장 핀크럭스 리턴이 text/html 로 json을 준다*/
         logger.info("REQ getAds = {}", uriComponents.toUri());
         String responseText = restTemplate.getForObject(uriComponents.toUri(), String.class);
-        //logger.info("List<PinCruxData> getAds(PinCruxRequest reqData) = {}", responseText);
+        logger.info("RES getAds = {}", responseText);
         PinCruxData  res = JsonUtil.fromJson(responseText, PinCruxData.class);
         //filter By os_flag
-        if(os_flag != 0){
+        if(os_flag != 0 && res.getItem_cnt() > 0){
             List<PinCruxDataItem> itemsFiltered = res.getItem_list().stream().filter(x->(x.getOs_flag() == 0 || x.getOs_flag() == os_flag) && !StringUtil.isNullOrEmpty(x.getView_title())).collect(Collectors.toList());
             res.setItem_list(itemsFiltered);
+        }else{
+            res.setItem_list(new ArrayList<>());
         }
         Integer totalCoin = 0;
         for(PinCruxDataItem item : res.getItem_list()){
@@ -231,7 +234,7 @@ public class PinCruxService {
         //DateTime dtExpire = dtOrg.plusMonths(walletExpireMonth);
         //String dtExpireString = DateUtil.format(dtExpire.getMillis(), DateUtil.ASIA_SEOUL_ZONE, DateUtil.DATE_TIME_FORMATTER);
         String presentDescription = String.format("무료코인존: <%s>이벤트에 참여해주셔서 감사합니다."
-                ,appItem.getViewTitle());
+                ,appItem.getAppName());
         String purchaseTitle = String.format("무료코인존: [%s]"
                 , appItem.getAppName());//appItem.getViewTitle().length() > 50 ? appItem.getViewTitle().substring(0,50) : appItem.getViewTitle());
         String presentTitle  = String.format("%s 보너스코인", coin);
