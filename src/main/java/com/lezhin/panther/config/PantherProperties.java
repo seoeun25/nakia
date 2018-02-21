@@ -20,6 +20,9 @@ public class PantherProperties {
     private String cloudWatch;
     private Happypoint happypoint;
     private Lguplus lguplus;
+    private String pushUrl;
+    private Pincrux pincrux;
+    private Wallets wallets;
 
     @Data
     public static class Happypoint {
@@ -34,5 +37,18 @@ public class PantherProperties {
         private String cstPlatform;
         private String cstMid;
         private String txName;
+    }
+
+    @Data
+    public static class Pincrux {
+        private Boolean testFlag = true;
+    }
+
+    @Data
+    public static class Wallets {
+        private String apiUrl;
+        private Integer companyEventIdPinCrux;
+        private Integer usageRestrictionIdPinCrux;
+        private String cmsToken;
     }
 }
