@@ -233,7 +233,7 @@ public class PinCruxService {
         String presentDescription = String.format("무료코인존: <%s>이벤트에 참여해주셔서 감사합니다."
                 ,appItem.getViewTitle());
         String purchaseTitle = String.format("무료코인존: [%s]"
-                , appItem.getViewTitle().length() > 50 ? appItem.getViewTitle().substring(0,50) : appItem.getViewTitle());
+                , appItem.getAppName());//appItem.getViewTitle().length() > 50 ? appItem.getViewTitle().substring(0,50) : appItem.getViewTitle());
         String presentTitle  = String.format("%s 보너스코인", coin);
         Wallets wallets = new Wallets();
         wallets.setUserId(reqData.getUsrkey());
@@ -265,7 +265,7 @@ public class PinCruxService {
     private void setSendPushMessage(PinCruxRequest reqData, Integer coin, PinCruxUser pcu, PinCruxDataItem appItem){
         if(!StringUtil.isNullOrEmpty(pantherProperties.getPushUrl())){
             String msg = String.format("%s 보너스코인 지급 완료!  무료코인존: <%s>이벤트에 참여해주셔서 감사합니다. (지급일로부터 %s개월간 사용 가능)"
-                    ,coin , appItem.getViewTitle(), walletExpireMonth);
+                    ,coin , appItem.getAppName(), walletExpireMonth);
             PinCruxPushRequest pcr  = new PinCruxPushRequest(reqData.getUsrkey(),
                     "lezhin://present", "레진코믹스", msg);
 
