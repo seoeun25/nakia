@@ -265,7 +265,7 @@ public class PinCruxService {
     private void setSendPushMessage(PinCruxRequest reqData, Integer coin, PinCruxUser pcu, PinCruxDataItem appItem){
         if(!StringUtil.isNullOrEmpty(pantherProperties.getPushUrl())){
             String msg = String.format("%s 보너스코인 지급 완료!  무료코인존: <%s>이벤트에 참여해주셔서 감사합니다. (지급일로부터 %s개월간 사용 가능)"
-                    ,coin , appItem.getView_title(), walletExpireMonth);
+                    ,coin , appItem.getViewTitle(), walletExpireMonth);
             PinCruxPushRequest pcr  = new PinCruxPushRequest(reqData.getUsrkey(),
                     "lezhin://present", "레진코믹스", msg);
 
