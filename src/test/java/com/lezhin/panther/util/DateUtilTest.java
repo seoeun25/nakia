@@ -76,11 +76,11 @@ public class DateUtilTest {
     @Test
     public void testConvert() {
 
-        String dtStr = "2018-02-24 22:50:00";
+        String dtStr = "2018-02-19 23:03:37";
         Instant instant = DateUtil.toInstant(dtStr, "yyyy-MM-dd HH:mm:ss", DateUtil.ASIA_SEOUL_ZONE);
         System.out.println(dtStr + " => " + instant.toEpochMilli());
 
-        long timestamp =  1519479831396L;
+        long timestamp =  1519049046543L;
         String convertedStr =
                 DateUtil.format(timestamp, DateUtil.ASIA_SEOUL_ZONE, "yyyy-MM-dd HH:mm:ss");
         System.out.println(convertedStr + " <= " + timestamp);

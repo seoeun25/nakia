@@ -48,8 +48,17 @@ public class LezhinDataStore {
         }
     }
 
+    // TODO rename. use lowercase
     public QueryResults<Entity> Query(Query<Entity> query) {
         return datastore.run(query);
+    }
+
+    public void update(Entity entity) {
+        datastore.update(entity);
+    }
+
+    public Datastore getDatastore() {
+        return datastore;
     }
 
 
