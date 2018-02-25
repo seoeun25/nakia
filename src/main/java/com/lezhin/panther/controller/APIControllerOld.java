@@ -4,6 +4,7 @@ import com.lezhin.panther.PayService;
 import com.lezhin.panther.command.Command;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
+import com.lezhin.panther.util.Util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +20,12 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * API controller. Json을 return.
- *
+ * <p>
  * TODO requestMapping 이 잘못되었음. api/v1 으로 해서 api 관련 controller 에 대해서 versioning 해야 함.
- * @deprecated
- * APIController로 이전 중.
  *
  * @author seoeun
  * @since 2017.10.24
+ * @deprecated APIController로 이전 중.
  */
 @RestController
 @RequestMapping("/v1/api")
@@ -54,6 +54,8 @@ public class APIControllerOld {
     @RequestMapping(value = "/{pg}/reservation", method = RequestMethod.POST)
     @ResponseBody
     public Payment reservation(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
+
+        Util.printAccessLog(request);
 
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 

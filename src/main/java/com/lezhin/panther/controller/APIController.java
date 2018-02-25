@@ -15,6 +15,7 @@ import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
+import com.lezhin.panther.util.Util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,8 @@ public class APIController {
     @RequestMapping(value = "/{pg}/reservation", method = RequestMethod.POST)
     @ResponseBody
     public Payment reservation(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
+
+        Util.printAccessLog(request);
 
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
 
@@ -168,9 +171,9 @@ public class APIController {
     @RequestMapping(value = "/{pg}/{paymentType}/{paymentId}/cancel", method = RequestMethod.PUT)
     @ResponseBody
     public <T> ResponseEntity<T> paymentCancel(HttpServletRequest request, HttpServletResponse response,
-                                              @PathVariable String pg,
-                                              @PathVariable String paymentType,
-                                              @PathVariable Long paymentId) {
+                                               @PathVariable String pg,
+                                               @PathVariable String paymentType,
+                                               @PathVariable Long paymentId) {
 
         logger.info("CANCEL. [{}-{}], paymentId = {}", pg, paymentType, paymentId);
         if (request.getHeader("__x") == null || !request.getHeader("__x").toString().equals("nakia")) {
@@ -200,7 +203,7 @@ public class APIController {
             } catch (SessionException e) {
                 // TODO 만약에 redis가 죽었다가 살아나서 requestInfo가 모두 reset 될 수도 있다면.
                 // 그런데 입금했다면, purchase는 안되어서 결국은 CR로.
-                throw new SessionException(Executor.Type.LGUDEPOSIT, "Failed to get session: " + paymentId,  e);
+                throw new SessionException(Executor.Type.LGUDEPOSIT, "Failed to get session: " + paymentId, e);
             } catch (Throwable e) {
                 throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert to pgPayment: " + paymentId, e);
             }

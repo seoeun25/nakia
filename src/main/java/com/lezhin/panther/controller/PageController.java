@@ -11,18 +11,18 @@ import com.lezhin.panther.exception.LguDepositException;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.pg.lguplus.LguDepositExecutor;
-import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
+import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.notification.SlackEvent;
 import com.lezhin.panther.notification.SlackMessage;
 import com.lezhin.panther.notification.SlackNotifier;
+import com.lezhin.panther.pg.lguplus.LguDepositExecutor;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
-import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,9 +96,10 @@ public class PageController {
 
     @RequestMapping(value = "/{pg}/{paymentType}/reservation", method = {RequestMethod.GET, RequestMethod.POST})
     public ModelAndView reservation(HttpServletRequest request, HttpServletResponse response,
-                                                          @PathVariable String pg, @PathVariable String paymentType) {
+                                    @PathVariable String pg, @PathVariable String paymentType) {
 
         logger.info("  >>  RESERVATION [{}-{}]", pg, paymentType);
+        Util.printAccessLog(request);
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
         Payment payment = null;
         try {
@@ -290,7 +291,7 @@ public class PageController {
                 Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getUserId()).orElse(-1L));
         builder.queryParam("isMobile",
                 Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getIsMobile())
-                .orElse(Boolean.FALSE));
+                        .orElse(Boolean.FALSE));
         builder.queryParam("isApp", Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getIsApp())
                 .orElse(Boolean.FALSE));
         if (!StringUtils.isEmpty(requestInfo) && !StringUtils.isEmpty(requestInfo.getReturnTo())) {

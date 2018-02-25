@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -20,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
+import java.util.Enumeration;
 import java.util.Optional;
 
 /**
@@ -87,7 +90,7 @@ public class Util {
     }
 
     public static String getLang(String locale) {
-        String lang = Optional.ofNullable(locale).filter(e -> e.length() > 2).map(e -> e.substring(0,2)).orElse("ko");
+        String lang = Optional.ofNullable(locale).filter(e -> e.length() > 2).map(e -> e.substring(0, 2)).orElse("ko");
         return lang;
     }
 
@@ -109,7 +112,7 @@ public class Util {
         if (source == null) {
             return null;
         }
-        byte[] euckrStringBuffer  = source.getBytes(Charset.forName(sourceEncoding));
+        byte[] euckrStringBuffer = source.getBytes(Charset.forName(sourceEncoding));
         String decodedHelloString = null;
         try {
             decodedHelloString = new String(euckrStringBuffer, targetEncoding);
@@ -120,9 +123,41 @@ public class Util {
         return decodedHelloString;
     }
 
+    public static void printAccessLog(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        logger.info("start printAccessLog");
+        StringBuilder builder = new StringBuilder("accesslog. referer = " + request.getHeader("referer")
+                + ", " + request.getRemoteAddr() + "\n");
+        try {
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (cookie != null) {
+                        builder.append(String.format("cookie: %s = %s. domain = %s, path = %s", cookie.getName(), cookie.getValue(),
+                                cookie.getDomain(), cookie.getPath()) + "\n");
+                    } else {
+                        builder.append("cookie is null");
+                    }
+                }
+            }
+
+            Enumeration enumeration = request.getHeaderNames();
+            if (enumeration != null) {
+                while (enumeration.hasMoreElements()) {
+                    Object key = enumeration.nextElement();
+                    if (key != null) {
+                        builder.append(String.format("header: %s = %s", key, request.getHeader(key.toString())) + "\n");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.info("failed to printAccessLog", e);
+        }
+        logger.info(builder.toString());
+    }
+
     public static Executor.Type getType(Throwable e) {
         Executor.Type executorType = Optional.of(e).filter(ex -> (ex instanceof PantherException))
-                .map(ex -> ((PantherException)ex).getType()).orElse(Executor.Type.UNKNOWN);
+                .map(ex -> ((PantherException) ex).getType()).orElse(Executor.Type.UNKNOWN);
         return executorType;
     }
 

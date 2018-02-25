@@ -173,7 +173,6 @@ spring:
 panther:
   webUrl: https://a-www.lezhin.com
   apiUrl: https://a-api.lezhin.com/api/v2/internal/payments
-  apiUrl: https://lezhincomix-alpha.appspot.com/api/v2/internal/payments
   pantherUrl: https://alpha-panther.lezhin.com
   wallets:
       apiUrl: https://cms-dot-lezhincomix-alpha.appspot.com/v2/wallets
@@ -210,8 +209,6 @@ server:
 panther:
   webUrl: https://a-www.lezhin.com
   apiUrl: https://a-api.lezhin.com/api/v2/internal/payments
-  webUrl: https://b-www.lezhin.com
-  apiUrl: https://lezhincomix-beta.appspot.com/api/v2/internal/payments
   pantherUrl: https://localhost:9443
   lguplus:
     confDir: conf/local/lgdacom

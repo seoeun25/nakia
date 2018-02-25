@@ -12,6 +12,12 @@
         <appender-ref ref="STDOUT" />
     </logger>
 
+    <!--
+    <logger name="org.apache.http.wire"  level="debug" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+    -->
+
     <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
