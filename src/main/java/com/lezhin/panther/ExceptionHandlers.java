@@ -6,6 +6,7 @@ import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.HappyPointParamException;
 import com.lezhin.panther.exception.HappyPointSystemException;
 import com.lezhin.panther.exception.InternalPaymentException;
+import com.lezhin.panther.exception.OwnerException;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PreconditionException;
@@ -93,6 +94,16 @@ public class ExceptionHandlers {
         logger.error("ExecutorException", e);
         slackNotifier.notify(e);
         return new ErrorInfo(ResponseCode.LEZHIN_EXECUTION.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler(OwnerException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public ErrorInfo handleOwnerException(final OwnerException e) {
+        logger.error("OwnerException", e);
+        slackNotifier.notify(e);
+        // User에게 보여질 수 있는 메시지라 general 하게 변경
+        return new ErrorInfo(ResponseCode.LEZHIN_OWNER.getCode(), "Payment Owner Error");
     }
 
     @ExceptionHandler(InternalPaymentException.class)

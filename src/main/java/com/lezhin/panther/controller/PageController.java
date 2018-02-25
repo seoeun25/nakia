@@ -333,6 +333,7 @@ public class PageController {
                 case "ParameterException":
                 case "PreconditionException":
                 case "FraudException":
+                case "OwnerException":
                 case "LguDepositException":
                     failReason = e.getMessage();
                     break;

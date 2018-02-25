@@ -67,6 +67,7 @@ public class ResponseInfo implements Serializable {
         LEZHIN_EXCEED("1007", "Exceed throttle"),
         LEZHIN_CI("1008", "No ConnectionInfo"),
         LEZHIN_SESSION("1009", "No Session"),
+        LEZHIN_OWNER("1010", "Payment Owner Error"),
         LEZHIN_THROWABLE("9001", "Unexpected Error");
 
         private String code;

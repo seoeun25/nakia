@@ -5,6 +5,7 @@ import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PreconditionException;
+import com.lezhin.panther.exception.OwnerException;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
@@ -17,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.util.Objects;
 
 /**
  * PG에 결제요청하기. 결제 요청을 한 후 {@linkplain PaymentState#R}로 셋팅.
@@ -75,6 +78,12 @@ public class Reserve<T extends PGPayment> extends Command<T> {
                     new ResponseInfo(ResponseCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
             logger.warn("Failed to InternalPayment.reserve");
             throw new InternalPaymentException(requestInfo.getExecutorType(), e);
+        }
+
+        if (!Objects.equals(requestInfo.getUserId(), payment.getUserId())) {
+            throw new OwnerException(requestInfo.getExecutorType(),
+                    String.format(" !!! ERROR !!! request.user=%s but payment.user=%s. payment.id=%s. Check manually.",
+                            requestInfo.getUserId(), payment.getUserId(), payment.getPaymentId()));
         }
 
         initExecutor(context);
