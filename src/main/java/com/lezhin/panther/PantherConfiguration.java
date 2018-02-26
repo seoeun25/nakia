@@ -3,6 +3,8 @@ package com.lezhin.panther;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -66,6 +68,14 @@ public class PantherConfiguration {
         HttpComponentsClientHttpRequestFactory clientHttpRequestFactory
                 = new HttpComponentsClientHttpRequestFactory();
         clientHttpRequestFactory.setConnectTimeout(timeout);
+
+        HttpClient httpClient = HttpClientBuilder.create()
+                .disableCookieManagement()
+                .useSystemProperties()
+                .build();
+
+        clientHttpRequestFactory.setHttpClient(httpClient);
+
         return clientHttpRequestFactory;
 
     }
