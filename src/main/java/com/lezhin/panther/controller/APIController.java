@@ -9,14 +9,17 @@ import com.lezhin.panther.command.Command;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
-import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
+import com.lezhin.panther.pg.happypoint.HappyPointPayment;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
+import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +33,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -46,9 +50,9 @@ import java.util.stream.Collectors;
 public class APIController {
 
     private static final Logger logger = LoggerFactory.getLogger(APIController.class);
-
     private PayService payService;
     private SimpleCacheService simpleCacheService;
+
 
     @Autowired
     public APIController(final PayService commandService, final SimpleCacheService simpleCacheService) {
@@ -221,5 +225,66 @@ public class APIController {
         return new ResponseEntity("Error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     }
+
+    @RequestMapping(value = "/{pg}/refund", method = RequestMethod.POST)
+    @ResponseBody
+    public <T> ResponseEntity<T> paymentRefund(HttpServletRequest request, HttpServletResponse response,
+                                               @PathVariable String pg) {
+
+        logger.info("REFUND. [{}]", pg);
+        if (request.getHeader("__x") == null || !request.getHeader("__x").toString().equals("nakia")) {
+            return new ResponseEntity("Fraud", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        Map<String, Object> requestMap = new HashMap<>();
+
+        try {
+            String result = CharStreams.toString(new InputStreamReader(request.getInputStream(), Charsets.UTF_8));
+            requestMap = JsonUtil.fromJson(result, Map.class);
+        } catch (Exception e) {
+            logger.warn("Failed to parse body", e);
+            return new ResponseEntity("Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        Payment payment = null;
+        if (PGCompany.happypoint.name().equals(pg)) {
+
+            RequestInfo requestInfo;
+            String result; // TODO context의 ResponseInfo.
+            try {
+                HappyPointPayment happyPointPayment = new HappyPointPayment();
+                happyPointPayment.setMbrNo(requestMap.get("mbrNo").toString());
+                happyPointPayment.setAprvNo(requestMap.get("aprvNo").toString());
+                happyPointPayment.setAprvDt(requestMap.get("aprvDt").toString());
+                happyPointPayment.setTrxAmt(Long.valueOf(requestMap.get("trxAmt").toString()));
+                Payment<HappyPointPayment> requestPayment = Executor.Type.HAPPYPOINT.createPayment(happyPointPayment);
+                requestPayment.setPaymentId(Optional.ofNullable(requestMap.get("paymentId"))
+                        .map(o -> Long.valueOf(o.toString())).orElse(-1L));
+                requestPayment.setPaymentId(Optional.ofNullable(requestMap.get("userId"))
+                        .map(o -> Long.valueOf(o.toString())).orElse(-1L));
+                requestPayment.setPaymentType(PaymentType.happypoint); // refund용은 정확한 값대신 null을 피하기 위해 임시 세팅.
+
+                requestInfo = new RequestInfo.Builder(requestPayment, "happypoint").build();
+
+                payment = payService.doCommand(Command.Type.REFUND, requestInfo);
+                HappyPointPayment resultHappyPoint = (HappyPointPayment) payment.getPgPayment();
+                result = String.format("REFUND OK. paymentId=%s, userId=%s, mbrNo=%s, orgAprvNo=%s, orgAprvDt=%s",
+                        payment.getPaymentId(), payment.getUserId(), happyPointPayment.getMbrNo(),
+                        happyPointPayment.getAprvNo(), happyPointPayment.getAprvDt());
+                logger.info(result);
+
+            } catch (Throwable e) {
+                throw new PantherException(Executor.Type.HAPPYPOINT, "Failed to refund:" + e.getMessage(), e);
+            }
+
+            return new ResponseEntity(result, HttpStatus.OK);
+
+        } else {
+            logger.warn("Unsupported executor. pg = " + pg);
+        }
+
+        // reached here. error.
+        return new ResponseEntity("Error", HttpStatus.INTERNAL_SERVER_ERROR);
+
+    }
+
 
 }

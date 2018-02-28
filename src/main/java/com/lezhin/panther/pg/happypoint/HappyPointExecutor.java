@@ -66,6 +66,17 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         this.type = Type.HAPPYPOINT;
     }
 
+    /**
+     * TraceNo = 기관코드 + 전송일자 + 추적번호는 Unique 해야 함. 20 byte
+     *
+     * @param instCd 기관코드
+     * @return
+     */
+    public static String createTraceNo(String instCd, String date, String time, Long userId, Long paymentId) {
+        String traceNo = String.format("%s%s%s", instCd, date, time);
+        return traceNo;
+    }
+
     public void verifyPrecondition(Command.Type commandType) throws PreconditionException {
         if (commandType == Command.Type.RESERVE) {
             if (context.getPayment().getPgPayment().getMbrNo() == null ||
@@ -259,8 +270,10 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     public Payment refund() {
 
         Payment<HappyPointPayment> payment = context.getPayment();
-        String orglTrxAprvDt = payment.getPgPayment().getTrxDt();
+        String mbrNo = payment.getPgPayment().getMbrNo();
+        String orglTrxAprvDt = payment.getPgPayment().getAprvDt();
         String orglTrxAprvNo = payment.getPgPayment().getAprvNo();
+        Long amount = payment.getPgPayment().getTrxAmt();
         logger.info("REFUND. orglTrxAprvNo = {}, orglTrxAprvDt = {}", orglTrxAprvNo, orglTrxAprvDt);
         HappyPointPayment requestPayment = Util.merge(payment.getPgPayment(),
                 HappyPointPayment.API.pointrefund.createRequest(), HappyPointPayment.class);
@@ -270,7 +283,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         requestPayment.setMchtNo(pantherProperties.getHappypoint().getMchtNo());
         requestPayment.setTrxDt(requestPayment.getTrsDt()); // 전송일자를 거래일자로 셋팅
         requestPayment.setTrxTm(requestPayment.getTrsTm()); // 전송시간을 거래시간으로 셋팅
-        requestPayment.setTrxAmt(Long.valueOf(String.valueOf(payment.getAmount().intValue())));
+        requestPayment.setTrxAmt(amount);
         requestPayment.setOrglTrxAprvDt(orglTrxAprvDt);
         requestPayment.setOrglTrxAprvNo(orglTrxAprvNo);
         requestPayment = clearResponseField(requestPayment);
@@ -289,6 +302,18 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         payment.setPgPayment(response);
 
+        if (response.getRpsCd().equals(ResponseCode.SPC_OK.getCode())) {
+            String ym = orglTrxAprvDt.substring(0, 6);
+            HappypointAggregator aggregator = cacheService.getHappypointAggregator(mbrNo, ym);
+            if (aggregator != null) {
+                int pointSum = aggregator.getPointSum();
+                int newPointSum = pointSum - amount.intValue();
+                HappypointAggregator newAggregator = new HappypointAggregator(mbrNo, ym, newPointSum);
+                cacheService.resetHappypointAggregator(newAggregator);
+                logger.info("happypoint aggregator: {}, {} --> {}", ym, pointSum, newPointSum);
+            }
+        }
+
         context = context.payment(payment)
                 .response(new ResponseInfo(payment.getPgPayment().getRpsCd(),
                         payment.getPgPayment().getRpsDtlMsg()));
@@ -301,17 +326,6 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     public String createTraceNo(Payment<HappyPointPayment> payment) {
         return createTraceNo(payment.getPgPayment().getInstCd(), payment.getPgPayment().getTrsDt(),
                 payment.getPgPayment().getTrsTm(), payment.getUserId(), payment.getPaymentId());
-    }
-
-    /**
-     * TraceNo = 기관코드 + 전송일자 + 추적번호는 Unique 해야 함. 20 byte
-     *
-     * @param instCd 기관코드
-     * @return
-     */
-    public String createTraceNo(String instCd, String date, String time, Long userId, Long paymentId) {
-        String traceNo = String.format("%s%s%s", instCd, date, time);
-        return traceNo;
     }
 
     public Command.Type nextTransition(Command.Type currentStep) {

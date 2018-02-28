@@ -42,6 +42,13 @@ public class ScheduleService {
     public void cleanupLguplusLogs() {
         // FIXME lguplus log 를 삭제하지 말고 ES에 저장.
         logger.info("cleanup start");
+        slackNotifier.notify(SlackEvent.builder()
+                .header(Executor.Type.UNKNOWN.name())
+                .level(SlackMessage.LEVEL.INFO)
+                .title("cleanup start")
+                .message("")
+                .build());
+
         estimateVolume(new File(pantherProperties.getLguplus().getLogDir()));
 
         long base = Instant.now().toEpochMilli() - RETENTION;

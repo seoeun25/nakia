@@ -55,7 +55,13 @@ public abstract class Executor<T extends PGPayment> {
 
             @Override
             public Payment createPayment(PGPayment pgPayment) {
-                return null;
+                HappyPointPayment happyPointPayment = (HappyPointPayment) pgPayment;
+                Payment<HappyPointPayment> payment = new Payment<>();
+                payment.setUserId(-1L);
+                payment.setPaymentId(-1L);
+                payment.setPgPayment(happyPointPayment);
+                payment.setMeta(new Meta());
+                return payment;
             }
 
             @Override

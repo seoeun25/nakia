@@ -60,6 +60,12 @@ public class SimpleCacheService {
         redisService.setValue(key, info, 31, TimeUnit.DAYS);
     }
 
+    public void resetHappypointAggregator(final HappypointAggregator info) {
+        String key = String.format("happypoint:%s:mbrNo:%s", info.getYm(), info.getMbrNo());
+        logger.info("reset HappypointAggregator = {}", info.toString());
+        redisService.setValue(key, info, 31, TimeUnit.DAYS);
+    }
+
     public HappypointAggregator getHappypointAggregator(final String mbrNo, String ym) {
         String key = String.format("happypoint:%s:mbrNo:%s", ym, mbrNo);
 

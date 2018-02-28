@@ -64,6 +64,11 @@ public abstract class Command<T extends PGPayment> {
             public Class getCommandClass() {
                 return Cancel.class;
             }
+        }, REFUND {
+            @Override
+            public Class getCommandClass() {
+                return Refund.class;
+            }
         }, DONE {
             @Override
             public Class getCommandClass() {

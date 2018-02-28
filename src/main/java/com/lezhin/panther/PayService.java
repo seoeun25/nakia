@@ -6,6 +6,7 @@ import com.lezhin.panther.command.Command;
 import com.lezhin.panther.command.Complete;
 import com.lezhin.panther.command.Pay;
 import com.lezhin.panther.command.Prepare;
+import com.lezhin.panther.command.Refund;
 import com.lezhin.panther.command.Reserve;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.ExecutorException;
@@ -67,6 +68,9 @@ public class PayService {
                     break;
                 case CANCEL:
                     command = beanFactory.getBean(Cancel.class, requestInfo);
+                    break;
+                case REFUND:
+                    command = beanFactory.getBean(Refund.class, requestInfo);
                     break;
                 case COMPLETE:
                     command = beanFactory.getBean(Complete.class, requestInfo);
