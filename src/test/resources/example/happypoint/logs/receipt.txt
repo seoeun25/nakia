@@ -1,0 +1,4 @@
+receipt:"{\"mbrNo\":\"1052692614\",\"aprvNo\":\"112212695374\",\"rpsMsgCtt\":\"정상\",\"aprvDt\":\"20180219\",\"tracNo\":\"ORJN20180219234721\",\"useReqPt\":2000,\"rpsCd\":\"00\",\"usePt\":2000,\"trxAmt\":2000}"
+receipt:"{\"mbrNo\":\"1050411983\",\"aprvNo\":\"112212702427\",\"rpsMsgCtt\":\"정상\",\"aprvDt\":\"20180220\",\"tracNo\":\"ORJN20180220010828\",\"useReqPt\":1000,\"rpsCd\":\"00\",\"usePt\":1000,\"trxAmt\":1000}"
+receipt:"{\"mbrNo\":\"1038243226\",\"aprvNo\":\"112212703555\",\"rpsMsgCtt\":\"정상\",\"aprvDt\":\"20180220\",\"tracNo\":\"ORJN20180220020432\",\"useReqPt\":1000,\"rpsCd\":\"00\",\"usePt\":1000,\"trxAmt\":1000}"
+receipt:"{\"mbrNo\":\"1039762760\",\"aprvNo\":\"112212703582\",\"rpsMsgCtt\":\"정상\",\"aprvDt\":\"20180220\",\"tracNo\":\"ORJN20180220020648\",\"useReqPt\":1000,\"rpsCd\":\"00\",\"usePt\":1000,\"trxAmt\":1000}"
