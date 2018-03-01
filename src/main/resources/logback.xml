@@ -1,15 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="30 seconds">
-    <property name="LOGS_ABSOLUTE_PATH" value="./logs"/>
+    <property name="LOGS_ABSOLUTE_PATH" value="/opt/logs/panther"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
         <encoder>
             <pattern>[%d{yyyy-MM-dd HH:mm:ss,Asia/Seoul}][%thread][%-5level][%logger{35}] - %msg%n</pattern>
         </encoder>
     </appender>
 
+    <appender name="STDOUT-DEBUG" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss,Asia/Seoul}][%thread][%-5level][%logger{35}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_ABSOLUTE_PATH}/panther.log</file>
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss,Asia/Seoul}][%thread][%-5level][%logger{35}] - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_ABSOLUTE_PATH}/panther.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+
     <logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"  level="debug" additivity="false">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDOUT-DEBUG" />
+        <appender-ref ref="ROLLING"/>
+    </logger>
+
+    <logger name="com.lezhin" level="debug" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="ROLLING"/>
     </logger>
 
     <!--
@@ -20,6 +53,7 @@
 
     <root level="info">
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="ROLLING"/>
     </root>
 
 </configuration>
