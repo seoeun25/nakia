@@ -19,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -39,7 +40,8 @@ public class InternalPaymentService {
     private static final List<Class<? extends Exception>> TRANSIENT_EXECPTIONS = ImmutableList.of(
             IOException.class,
             ResourceAccessException.class,
-            HttpServerErrorException.class);
+            HttpServerErrorException.class,
+            HttpClientErrorException.class);
     private static final int RETRY_COUNT = 3;
     private PantherProperties pantherProperties;
     private ClientHttpRequestFactory clientHttpRequestFactory;
