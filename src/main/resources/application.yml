@@ -40,16 +40,18 @@ panther:
     cstPlatform: test
     cstMid: lezhin001
     txName: PaymentByKey
-  actuator:
-    security:
-      enabled: true
   pincrux:
-      testFlag: true
+    testFlag: true
+    cacheRetention: 60000
+    timeout: 10000
   wallets:
     apiUrl: https://cms-dot-lezhincomix-beta.appspot.com/v2/wallets
     companyEventIdPinCrux: 50
     usageRestrictionIdPinCrux: 40
     cmsToken: c63a7469-08dc-41d9-b477-000e195cae8
+  actuator:
+    security:
+      enabled: true
 
 appengine:
   serviceAccountId: id-aws-image-server-release@lezhincomix-api.iam.gserviceaccount.com

@@ -88,7 +88,11 @@ public class PinCruxController {
                 result.setCode(Integer.parseInt(ResponseInfo.ResponseCode.PINCRUX_OK.getCode()));
                 result.setData(data);
             }
-
+            logger.info("return result.code = {}", result.getCode());
+            if (result.getData() != null) {
+                logger.info("totalCoin = {}, itemCount = {}",
+                        result.getData().getTotalCoin(), result.getData().getItemCount());
+            }
             return result;
         }
 

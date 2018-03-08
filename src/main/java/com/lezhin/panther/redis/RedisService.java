@@ -30,6 +30,16 @@ public class RedisService {
         return template.opsForValue().get(key);
     }
 
+    public <T> T getValue(final String key, final Class<T> clz) {
+        Object obj = getValue(key);
+        if (obj != null) {
+            try {
+                return clz.cast(obj);
+            } catch (ClassCastException cce) {}
+        }
+        return null;
+    }
+
     public void setValue(final String key, final Object value) {
         template.opsForValue().set(key, value);
 

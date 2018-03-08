@@ -1,6 +1,10 @@
 package com.lezhin.panther;
 
 import com.lezhin.panther.config.PantherProperties;
+import com.lezhin.panther.executor.Executor;
+import com.lezhin.panther.notification.SlackEvent;
+import com.lezhin.panther.notification.SlackMessage;
+import com.lezhin.panther.notification.SlackNotifier;
 import com.lezhin.panther.pg.pincrux.Wallets;
 import com.lezhin.panther.pg.pincrux.PinCruxData;
 import com.lezhin.panther.pg.pincrux.PinCruxDataInstallResult;
@@ -23,7 +27,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -31,8 +34,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -44,7 +49,6 @@ import java.util.stream.Collectors;
 @Service
 public class PinCruxService {
 
-
     private static final String PINCRUX_PROTOCOL= "http";
     private static final String PINCRUX_HOST    = "api.pincrux.com";
     private static final String PINCRUX_LIST    = "/offer.pin";
@@ -55,39 +59,69 @@ public class PinCruxService {
     private static final String redisKeyBase = "panther/pincrux/users/";
     private static final Integer walletExpireMonth = 6;
 
+    private static final String MODULE_NAME = "pincrux";
+    private static final Long DEFAULT_USER = Long.valueOf(-1L);
+    private static final String ADS_CACHE = "ADS_CACHE";
 
     @Autowired
-    private ClientHttpRequestFactory clientHttpRequestFactory;
+    private RestTemplate restTemplate;
     private PantherProperties pantherProperties;
     private RedisService redisService;
+    private SlackNotifier slackNotifier;
     private String urlCheckAd;
     private String urlSendInstall;
 
 
-    public PinCruxService(PantherProperties pantherProperties, RedisService redisService) {
+    public PinCruxService(final PantherProperties pantherProperties, final RedisService redisService,
+                          final SlackNotifier slackNotifier) {
         this.pantherProperties = pantherProperties;
         this.redisService = redisService;
+        this.slackNotifier = slackNotifier;
+    }
+
+    private PinCruxData getFromCacheOrServer(final Integer pubkey, final Integer os_flag) {
+        // TODO os_flag 는 optional 인 듯. pincrux 에 확인 필요.
+
+        int cacheRetention = pantherProperties.getPincrux().getCacheRetention(); //ms
+
+        String cacheKey = RedisService.generateKey(MODULE_NAME, ADS_CACHE, os_flag.toString());
+        PinCruxData retData = redisService.getValue(cacheKey, PinCruxData.class);
+
+        if (retData == null) {
+            UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                    .scheme(PINCRUX_PROTOCOL).host(PINCRUX_HOST).path(PINCRUX_LIST)
+                    .queryParam("pubkey", pubkey)
+                    .queryParam("usrkey", DEFAULT_USER.toString())
+                    .queryParam("os_flag", os_flag)
+                    .queryParam("test_flag", pantherProperties.getPincrux().getTestFlag()?"y":"n")//상용화시 이 플래그를 n 으로
+                    .build()
+                    .encode();
+            // 핀크럭스 리턴이 text/html 로 json을 준다
+            logger.info("REQ getAds = {}", uriComponents.toUri());
+            long startTime = Instant.now().toEpochMilli();
+            String responseText = restTemplate.getForObject(uriComponents.toUri(), String.class);
+            long endTime = Instant.now().toEpochMilli();
+            long responseTime = endTime - startTime;
+            logger.info("getAds from pincrux. response time = {} ms", responseTime);
+            processSLA(responseTime);
+            logger.debug("RES getAds = {}", responseText);
+            retData = JsonUtil.fromJson(responseText, PinCruxData.class);
+            logger.info("Get from princrux. status = {}, item_cnt = {}", retData.getStatus(), retData.getItem_cnt());
+            redisService.setValue(cacheKey, retData, cacheRetention, TimeUnit.MILLISECONDS);
+        }
+
+        return retData;
     }
 
     public PinCruxData getAds(Integer pubkey, Long usrkey, Integer os_flag) {
 
-        UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                .scheme(PINCRUX_PROTOCOL).host(PINCRUX_HOST).path(PINCRUX_LIST)
-                .queryParam("pubkey", pubkey)
-                .queryParam("usrkey", usrkey)
-                .queryParam("os_flag", os_flag)
-                .queryParam("test_flag", pantherProperties.getPincrux().getTestFlag()?"y":"n")//상용화시 이 플래그를 n 으로
-                .build()
-                .encode();
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-        /*젠장 핀크럭스 리턴이 text/html 로 json을 준다*/
-        logger.info("REQ getAds = {}", uriComponents.toUri());
-        String responseText = restTemplate.getForObject(uriComponents.toUri(), String.class);
-        logger.info("RES getAds = {}", responseText);
-        PinCruxData  res = JsonUtil.fromJson(responseText, PinCruxData.class);
+        PinCruxData res = getFromCacheOrServer(pubkey, os_flag);
         //filter By os_flag
         if(os_flag != 0 && res.getItem_cnt() > 0){
-            List<PinCruxDataItem> itemsFiltered = res.getItem_list().stream().filter(x->(x.getOs_flag() == 0 || x.getOs_flag() == os_flag) && !StringUtil.isNullOrEmpty(x.getView_title())).collect(Collectors.toList());
+            List<PinCruxDataItem> itemsFiltered = res.getItem_list().stream()
+                    .filter(x -> (Objects.equals(x.getOs_flag(), Integer.valueOf(0))
+                            || Objects.equals(x.getOs_flag(), os_flag)) && !StringUtil.isNullOrEmpty(x.getView_title()))
+                    .collect(Collectors.toList());
             res.setItem_list(itemsFiltered);
         }else{
             res.setItem_list(new ArrayList<>());
@@ -116,7 +150,6 @@ public class PinCruxService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 
         /*reflection 쓸까 했는데 속도 생각해서 노가다로...*/
         MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
@@ -165,7 +198,6 @@ public class PinCruxService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
         map.add("appkey", reqData.getAppkey().toString());
         map.add("pubkey", reqData.getPubkey().toString());
@@ -256,7 +288,6 @@ public class PinCruxService {
         headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
         headers.add("Authorization", "Bearer " + pantherProperties.getWallets().getCmsToken());
         HttpEntity<Wallets> request = new HttpEntity<Wallets>(wallets, headers);
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 
         logger.info("setSendUserCoinReward() = {}, reqBody = {}", this.pantherProperties.getWallets().getApiUrl(), JsonUtil.toJson(request));
         String responseText = restTemplate.postForObject(this.pantherProperties.getWallets().getApiUrl(),
@@ -274,7 +305,6 @@ public class PinCruxService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-            RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 
             String responseText = restTemplate.postForObject(this.pantherProperties.getPushUrl(),
                     pcr,
@@ -282,6 +312,24 @@ public class PinCruxService {
             logger.info("setSendPushMessage() = {}, resBody = {}", pcr, responseText);
         }
 
+
+    }
+
+    /**
+     * TODO 임시 메서드. response time aggregator
+     * @param responseTime
+     */
+    private void processSLA(long responseTime) {
+        int timeout = pantherProperties.getPincrux().getTimeout(); //ms
+        if (responseTime > timeout) {
+            slackNotifier.notify(SlackEvent.builder()
+                    .header("PINCRUX")
+                    .level(SlackMessage.LEVEL.WARN)
+                    .title("pincrux.offer reponseTime > " + timeout + " ms")
+                    .message("responseTime = " + responseTime + " ms")
+                    .build());
+
+        }
 
     }
 }

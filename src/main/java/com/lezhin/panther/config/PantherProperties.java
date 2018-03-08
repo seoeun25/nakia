@@ -45,6 +45,8 @@ public class PantherProperties {
     @Data
     public static class Pincrux {
         private Boolean testFlag = true;
+        private int cacheRetention;
+        private int timeout; // seconds
     }
 
     @Data
