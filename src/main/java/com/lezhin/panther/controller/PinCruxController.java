@@ -1,6 +1,7 @@
 package com.lezhin.panther.controller;
 
 import com.lezhin.panther.PinCruxService;
+import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.internalpayment.Result;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.pg.pincrux.PinCruxData;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -36,9 +38,11 @@ public class PinCruxController {
 
     private static final Logger logger = LoggerFactory.getLogger(PinCruxController.class);
     private PinCruxService pinCruxService;
+    private PantherProperties pantherProperties;
 
-    public PinCruxController(PinCruxService pinCruxService) {
+    public PinCruxController(final PinCruxService pinCruxService, final PantherProperties pantherProperties) {
         this.pinCruxService = pinCruxService;
+        this.pantherProperties = pantherProperties;
     }
 
     private final String cruxkey = "lezhinKey";
@@ -60,17 +64,29 @@ public class PinCruxController {
 
             return result;
         }else{
-            PinCruxData data = this.pinCruxService.getAds(pubkey, usrkey, this.getOsFlag(request));
-            if (data.getStatus().equals("S" )) {
-                data.setItemCount(data.getItems().size());
-                if (!list) {
-                    data.setItems(null);
+            if (pantherProperties.isPincruxAvailable()) {
+                PinCruxData data = this.pinCruxService.getAds(pubkey, usrkey, this.getOsFlag(request));
+                if (data.getStatus().equals("S")) {
+                    data.setItemCount(data.getItems().size());
+                    if (!list) {
+                        data.setItems(null);
+                    }
+                    result.setCode(Integer.parseInt(ResponseInfo.ResponseCode.PINCRUX_OK.getCode()));
+                    result.setData(data);
+                } else {
+                    result.setCode(-1 * Integer.parseInt(ResponseInfo.ResponseCode.PINCRUX_PARAM.getCode()));
+                    result.setDescription(data.getMsg());
                 }
+            } else {
+                logger.info("pincrux is not available");
+                PinCruxData data = new PinCruxData();
+                data.setDa_flag("N");
+                data.setItem_list(new ArrayList<>());
+                data.setItem_cnt(0);
+                data.setTotal_coin(0);
+                data.initCamel();
                 result.setCode(Integer.parseInt(ResponseInfo.ResponseCode.PINCRUX_OK.getCode()));
                 result.setData(data);
-            } else {
-                result.setCode(-1*Integer.parseInt(ResponseInfo.ResponseCode.PINCRUX_PARAM.getCode()));
-                result.setDescription(data.getMsg());
             }
 
             return result;

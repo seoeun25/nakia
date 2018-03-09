@@ -18,6 +18,9 @@ public class PantherProperties {
     private String pantherUrl;
     private String slackChannel;
     private String cloudWatch;
+    private boolean happypointAvailable;
+    private boolean lgudepositAvailable;
+    private boolean pincruxAvailable;
     private Happypoint happypoint;
     private Lguplus lguplus;
     private String pushUrl;

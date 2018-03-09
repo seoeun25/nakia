@@ -28,6 +28,9 @@ panther:
   pantherUrl: https://beta-panther.lezhin.com
   slackChannel: panther_beta
   cloudWatch: https://ap-northeast-2.console.aws.amazon.com/cloudwatch
+  happypointAvailable: true
+  lgudepositAvailable: true
+  pincruxAvailable: true
   happypoint:
     hpcUrl: http://dev-outbound-proxy.lezhin.net/spc/processHpc
     mchtNo: 100015851
