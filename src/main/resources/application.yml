@@ -42,7 +42,7 @@ panther:
     txName: PaymentByKey
   pincrux:
     testFlag: true
-    cacheRetention: 60000
+    cacheRetention: 300000
     timeout: 10000
   wallets:
     apiUrl: https://cms-dot-lezhincomix-beta.appspot.com/v2/wallets
