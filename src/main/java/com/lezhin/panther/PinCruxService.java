@@ -1,6 +1,7 @@
 package com.lezhin.panther;
 
 import com.lezhin.panther.config.PantherProperties;
+import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.notification.SlackEvent;
 import com.lezhin.panther.notification.SlackMessage;
@@ -139,8 +140,8 @@ public class PinCruxService {
         return res;
     }
 
-    public PinCruxDataItemEnable checkEnable(PinCruxRequest reqData){
-        if(StringUtil.isNullOrEmpty(urlCheckAd)){
+    public PinCruxDataItemEnable checkEnable(PinCruxRequest reqData) {
+        if (StringUtil.isNullOrEmpty(urlCheckAd)) {
             UriComponents uriComponents = UriComponentsBuilder.newInstance()
                     .scheme(PINCRUX_PROTOCOL).host(PINCRUX_HOST).path(PINCRUX_CHECK)
                     .build()
@@ -152,7 +153,7 @@ public class PinCruxService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         /*reflection 쓸까 했는데 속도 생각해서 노가다로...*/
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
         map.add("appkey", reqData.getAppkey().toString());
         map.add("pubkey", reqData.getPubkey().toString());
         map.add("usrkey", reqData.getUsrkey().toString());
@@ -170,18 +171,17 @@ public class PinCruxService {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
          /*크럭스는 json 으로 넘기면 못 받는다..*/
-        ResponseEntity<String> responseText = restTemplate.postForEntity(urlCheckAd, request,String.class );
+        ResponseEntity<String> responseText = restTemplate.postForEntity(urlCheckAd, request, String.class);
         PinCruxDataItemEnable res = JsonUtil.fromJson(responseText.getBody(), PinCruxDataItemEnable.class);
         res.setCustomUrl(res.getCustom_url());
         logger.info("checkEnable() = {}, resBody = {}, res = {}", request, responseText.getBody(), res);
 
         //save at redis
-        String redisKey = redisKeyBase+reqData.getUsrkey();
-        logger.info("redis save = {}", redisKey);
-        PinCruxData pcd = this.getAds(reqData.getPubkey(), reqData.getUsrkey(), reqData.getOs_flag());
-        logger.info("redis save = {}", JsonUtil.toJson(pcd));
+        String redisKey = redisKeyBase + reqData.getUsrkey();
+        PinCruxData pcd = getAds(reqData.getPubkey(), reqData.getUsrkey(), reqData.getOs_flag());
+        logger.info("redis save pcu. {} = {}", redisKey, JsonUtil.toJson(pcd));
         PinCruxUser pcu = new PinCruxUser(reqData.getUsrkey(), reqData.getAuthHeader(), pcd.getItems());
-        this.redisService.setValue(redisKey, pcu, 86400, TimeUnit.SECONDS);
+        redisService.setValue(redisKey, pcu, 30, TimeUnit.DAYS);
 
         return res;
     }
@@ -227,24 +227,24 @@ public class PinCruxService {
         return res;
     }
 
-    public void setPostBack(PinCruxRequest reqData) throws Exception{
-        String postBackKey = String.format("%s/%s/trans", redisKeyBase+reqData.getUsrkey(), reqData.getTransid());
+    public void setPostBack(PinCruxRequest reqData) throws Exception {
+        String postBackKey = String.format("%s/%s/trans", redisKeyBase + reqData.getUsrkey(), reqData.getTransid());
         //load from redis
         Object postBack = this.redisService.getValue(postBackKey);
-        if(postBack != null){
-            throw new Exception(String.format("[%s] user's [%s] transId is already completed.", reqData.getUsrkey(),reqData.getTransid()));
+        if (postBack != null) {
+            throw new Exception(String.format("[%s] user's [%s] transId is already completed.", reqData.getUsrkey(), reqData.getTransid()));
         }
-        String redisKey = redisKeyBase+reqData.getUsrkey();
-        logger.info("redis get = {}", redisKey);
-        PinCruxUser pcu = (PinCruxUser)this.redisService.getValue(redisKey);
-        if(pcu == null || pcu.getAds() == null){
-            throw new Exception("This postBack has no ad list at Cache, Do get List or Check Enable Ad First.");
+        String redisKey = redisKeyBase + reqData.getUsrkey();
+        logger.info("redis get pcu. key = {}", redisKey);
+        PinCruxUser pcu = (PinCruxUser) this.redisService.getValue(redisKey);
+        if (pcu == null || pcu.getAds() == null) {
+            throw new PantherException(Executor.Type.UNKNOWN, "No pcu cache");
         }
         reqData.setAuthHeader(pcu.getAuthHeader());
-        PinCruxDataItem appItem = pcu.getAds().stream().filter(x->x.getAppkey().equals(reqData.getAppkey()) ).collect(Collectors.toList()).get(0);
+        PinCruxDataItem appItem = pcu.getAds().stream().filter(x -> x.getAppkey().equals(reqData.getAppkey())).collect(Collectors.toList()).get(0);
         logger.info("pcu.getAds()[0] = {}", JsonUtil.toJson(appItem));
         Integer coin = this.getCoin(reqData.getPubkey(), appItem);
-        setSendUserCoinReward(reqData, coin,  appItem);
+        setSendUserCoinReward(reqData, coin, appItem);
         //Regist transid for prevent duple reward
         this.redisService.setValue(postBackKey, pcu, 100, TimeUnit.DAYS);
         setSendPushMessage(reqData, coin, pcu, appItem);
@@ -317,6 +317,7 @@ public class PinCruxService {
 
     /**
      * TODO 임시 메서드. response time aggregator
+     *
      * @param responseTime
      */
     private void processSLA(long responseTime) {

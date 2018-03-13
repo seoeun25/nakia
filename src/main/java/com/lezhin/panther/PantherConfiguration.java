@@ -1,5 +1,7 @@
 package com.lezhin.panther;
 
+import com.lezhin.panther.util.DateUtil;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +30,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class PantherConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(PantherConfiguration.class);
+
+    private static int CONNECT_TIMEOUT = Long.valueOf(DateUtil.ONE_MINUTE * 2).intValue();
+    private static int READ_TIMEOUT = Long.valueOf(DateUtil.ONE_MINUTE * 2).intValue();
 
     private @Value("${spring.redis.host}")
     String redisHost;
@@ -66,10 +71,10 @@ public class PantherConfiguration {
 
     @Bean
     public ClientHttpRequestFactory clientHttpRequestFactory() {
-        int timeout = 20000;
         HttpComponentsClientHttpRequestFactory clientHttpRequestFactory
                 = new HttpComponentsClientHttpRequestFactory();
-        clientHttpRequestFactory.setConnectTimeout(timeout);
+        clientHttpRequestFactory.setConnectTimeout(CONNECT_TIMEOUT);
+        clientHttpRequestFactory.setReadTimeout(READ_TIMEOUT);
 
         HttpClient httpClient = HttpClientBuilder.create()
                 .disableCookieManagement()

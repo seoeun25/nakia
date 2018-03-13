@@ -43,7 +43,7 @@ panther:
   pincrux:
     testFlag: true
     cacheRetention: 300000
-    timeout: 10000
+    timeout: 40000
   wallets:
     apiUrl: https://cms-dot-lezhincomix-beta.appspot.com/v2/wallets
     companyEventIdPinCrux: 50

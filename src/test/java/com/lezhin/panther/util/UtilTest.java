@@ -92,4 +92,19 @@ public class UtilTest {
 
     }
 
+    @Test
+    public void testFormatString() {
+        Map<String, String> map = new HashMap<>();
+        map.put("appkey", "123-key");
+        String appKey = map.get("appkey");
+        String userKey = map.get("usrkey");
+        String osFlag = map.get("os_flag");
+        String transId = map.get("transid");
+        String appTitle = map.get("app_title");
+
+        String data = String.format("%s,%s,%s,%s,%s", appKey, userKey, osFlag, transId, appTitle);
+        logger.info(data);
+        assertEquals("123-key,null,null,null,null", data);
+    }
+
 }

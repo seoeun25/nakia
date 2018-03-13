@@ -2,16 +2,20 @@ package com.lezhin.panther.controller;
 
 import com.lezhin.panther.PinCruxService;
 import com.lezhin.panther.config.PantherProperties;
+import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.internalpayment.Result;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.pg.pincrux.PinCruxData;
 import com.lezhin.panther.pg.pincrux.PinCruxDataInstallResult;
 import com.lezhin.panther.pg.pincrux.PinCruxDataItemEnable;
 import com.lezhin.panther.pg.pincrux.PinCruxRequest;
+import com.lezhin.panther.util.DateUtil;
 
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -33,7 +38,7 @@ import java.util.Map;
  * @since 2018.1.10
  */
 @RestController
-@RequestMapping("/pincrux/v1" )
+@RequestMapping("/pincrux/v1")
 public class PinCruxController {
 
     private static final Logger logger = LoggerFactory.getLogger(PinCruxController.class);
@@ -194,45 +199,56 @@ public class PinCruxController {
         return result;
     }
 
-    @PostMapping(value = "/postback" )
+    @PostMapping(value = "/postback")
     @ResponseBody
-    public Result setPostBack(HttpServletRequest request, HttpServletResponse response,
-                              @RequestParam Map<String, String> map) {
+    public <T> ResponseEntity<T> setPostBack(HttpServletRequest request, HttpServletResponse response,
+                                             @RequestParam Map<String, String> map) {
         logger.info("PinCruxController.setPostBack.params = {}", map);
         String checkParam;
-        if (!StringUtil.isNullOrEmpty(checkParam = CheckMap(map, "appkey" ))) {
-            return new Result(Integer.parseInt(ResponseInfo.ResponseCode.PINCRUX_PARAM.getCode()), checkParam);
-        } else if (!StringUtil.isNullOrEmpty(checkParam = CheckMap(map, "usrkey" ))) {
-            return new Result(Integer.parseInt(ResponseInfo.ResponseCode.PINCRUX_PARAM.getCode()), checkParam);
+        if (!StringUtil.isNullOrEmpty(checkParam = CheckMap(map, "appkey"))) {
+            return new ResponseEntity(checkParam, HttpStatus.BAD_REQUEST);
+        } else if (!StringUtil.isNullOrEmpty(checkParam = CheckMap(map, "usrkey"))) {
+            return new ResponseEntity(checkParam, HttpStatus.BAD_REQUEST);
         }
-
+        String appKey = map.get("appkey");
+        String userKey = map.get("usrkey");
+        String osFlag = map.get("os_flag");
+        String transId = map.get("transid");
+        String appTitle = map.get("app_title");
+        String coin = map.get("coin");
+        String dt = DateUtil.format(Instant.now().toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyy-MM-dd HH:mm:ss");
         try {
             this.pinCruxService.setPostBack((new PinCruxRequest(
                     this.pubkey,
-                    Integer.parseInt(map.get("appkey" )),
-                    Long.parseLong(map.get("usrkey" )),
+                    Integer.parseInt(map.get("appkey")),
+                    Long.parseLong(map.get("usrkey")),
                     this.cruxkey, //아직 분명한 용도가 없다.
                     null,
-                    map.get("dev_id" ),
-                    map.get("adv_id" ),
-                    map.get("acc_id" ),
-                    map.get("and_id" ),
-                    map.get("device_brand" ),
-                    map.get("device_model" ),
+                    map.get("dev_id"),
+                    map.get("adv_id"),
+                    map.get("acc_id"),
+                    map.get("and_id"),
+                    map.get("device_brand"),
+                    map.get("device_model"),
                     null,
-                    map.get("client_ip" ),
+                    map.get("client_ip"),
                     null,
-                    map.get("app_title" ),
-                    map.get("transid" ),
-                    Integer.parseInt(map.get("os_flag" ))
+                    map.get("app_title"),
+                    map.get("transid"),
+                    Integer.parseInt(map.get("os_flag"))
             )
             ));
+        } catch (PantherException e) {
+            String data = String.format("%s,%s,%s,%s,%s,%s,%s", appKey, userKey, osFlag, transId, appTitle, coin, dt);
+            logger.warn("!!! PinCruxController.NoCache. Need Manual REFUND: " + data , e);
+            return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
-            logger.info("PinCruxController.setPostBack.return = {}, stackTrace = {}", e.getMessage(), e.getStackTrace());
-            return new Result(Integer.parseInt(ResponseInfo.ResponseCode.LEZHIN_INTERNAL_PAYMNENT.getCode()), e.getStackTrace().toString());
+            String data = String.format("%s,%s,%s,%s,%s", appKey, userKey, osFlag, transId, appTitle);
+            logger.warn("!!! PinCruxController.setPostBack.error. Need Manual REFUND: " + data , e);
+            return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new Result(Integer.parseInt(ResponseInfo.ResponseCode.LEZHIN_OK.getCode()), "ok" );
+        return new ResponseEntity("OK", HttpStatus.OK);
     }
 
     private String CheckMap(Map<String, String> map, String param) {
