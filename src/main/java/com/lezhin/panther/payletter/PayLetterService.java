@@ -1,7 +1,6 @@
-package com.lezhin.panther;
+package com.lezhin.panther.payletter;
 
-import com.lezhin.panther.Repository.PayLetterPaymentRepository;
-import com.lezhin.panther.model.PayLetterLog;
+import com.lezhin.panther.datastore.PayLetterPaymentRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

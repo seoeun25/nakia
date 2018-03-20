@@ -1,4 +1,4 @@
-package com.lezhin.support;
+package com.lezhin.panther.datastore.support;
 
 import com.google.api.client.util.StreamingContent;
 import org.apache.http.entity.AbstractHttpEntity;

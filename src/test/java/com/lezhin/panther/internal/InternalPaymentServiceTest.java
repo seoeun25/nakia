@@ -1,6 +1,7 @@
-package com.lezhin.panther.internalpayment;
+package com.lezhin.panther.internal;
 
 import com.lezhin.panther.Context;
+import com.lezhin.panther.HttpClientService;
 import com.lezhin.panther.PayService;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.InternalPaymentException;
@@ -53,6 +54,8 @@ public class InternalPaymentServiceTest {
     @Mock
     private PantherProperties mockPantherProperties;
 
+    private HttpClientService httpClientService;
+
     @Mock
     private Context mockContext;
     @Mock
@@ -68,7 +71,8 @@ public class InternalPaymentServiceTest {
         mockClientHttpRequestFactory = new
                 HttpComponentsClientHttpRequestFactory();
         mockClientHttpRequestFactory.setConnectTimeout(1);
-        internalPaymentService = new InternalPaymentService(mockClientHttpRequestFactory, mockPantherProperties);
+        httpClientService = new HttpClientService(mockClientHttpRequestFactory, mockPantherProperties);
+        internalPaymentService = new InternalPaymentService(mockClientHttpRequestFactory, mockPantherProperties, httpClientService);
         MockitoAnnotations.initMocks(this);
     }
 

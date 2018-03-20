@@ -1,6 +1,6 @@
-package com.lezhin.config;
+package com.lezhin.panther.datastore;
 
-import com.lezhin.support.DatastoreRequestRetryHandler;
+import com.lezhin.panther.datastore.support.DatastoreRequestRetryHandler;
 
 import com.google.api.client.googleapis.GoogleUtils;
 import org.apache.http.client.HttpClient;

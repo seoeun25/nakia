@@ -1,6 +1,7 @@
-package com.lezhin.panther.internalpayment;
+package com.lezhin.panther.internal;
 
 import com.lezhin.panther.Context;
+import com.lezhin.panther.HttpClientService;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.executor.Executor;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,11 +45,14 @@ public class InternalPaymentService {
     private static final int RETRY_COUNT = 3;
     private PantherProperties pantherProperties;
     private ClientHttpRequestFactory clientHttpRequestFactory;
+    private HttpClientService httpClientService;
 
     public InternalPaymentService(final ClientHttpRequestFactory clientHttpRequestFactory,
-                                  final PantherProperties pantherProperties) {
+                                  final PantherProperties pantherProperties,
+                                  final HttpClientService httpClientService) {
         this.clientHttpRequestFactory = clientHttpRequestFactory;
         this.pantherProperties = pantherProperties;
+        this.httpClientService = httpClientService;
     }
 
 
@@ -212,35 +215,43 @@ public class InternalPaymentService {
      * @throws {@linkplain InternalPaymentException}
      */
     public HttpEntity<Result> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Executor.Type type) {
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpEntity<Result> response = null;
-        for (int i = 1; i <= RETRY_COUNT + 1; i++) {
-            try {
-                response = restTemplate.exchange(url, method, requestEntity, Result.class);
-                break;
-            } catch (Throwable e) {
-                if (TRANSIENT_EXECPTIONS.contains(e.getClass()) && i <= RETRY_COUNT) {
-                    logger.info("Failed to exchange: " + e.getMessage());
-                    logger.info("Retrying ...... [{}]", i);
-                    try {
-                        Thread.sleep(500 * i);
-                    } catch (Exception ea) {
-                        logger.warn("Failed", ea);
-                    }
-                } else {
-                    if (i == RETRY_COUNT + 1) {
-                        logger.warn("All retry failed : " + e.getMessage());
-                    }
-                    throw new InternalPaymentException(type, e);
-                }
-            }
-        }
-        if (response.getBody() == null) {
-            ResponseEntity<Result> re = (ResponseEntity<Result>) response;
-            logger.warn("Response is null. Status = {}", re.getStatusCode());
-            throw new InternalPaymentException(type, "InternalPaymentService Error. Status:" + re.getStatusCode());
+        try {
+            response = httpClientService.exchange(url, method, requestEntity, type, Result.class);
+        } catch (Exception e) {
+            throw new InternalPaymentException(type, "InternalPaymentService.Error:" + e.getMessage(), e);
         }
         return response;
+
+//        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+//        HttpEntity<Result> response = null;
+//        for (int i = 1; i <= RETRY_COUNT + 1; i++) {
+//            try {
+//                response = restTemplate.exchange(url, method, requestEntity, Result.class);
+//                break;
+//            } catch (Throwable e) {
+//                if (TRANSIENT_EXECPTIONS.contains(e.getClass()) && i <= RETRY_COUNT) {
+//                    logger.info("Failed to exchange: " + e.getMessage());
+//                    logger.info("Retrying ...... [{}]", i);
+//                    try {
+//                        Thread.sleep(500 * i);
+//                    } catch (Exception ea) {
+//                        logger.warn("Failed", ea);
+//                    }
+//                } else {
+//                    if (i == RETRY_COUNT + 1) {
+//                        logger.warn("All retry failed : " + e.getMessage());
+//                    }
+//                    throw new InternalPaymentException(type, e);
+//                }
+//            }
+//        }
+//        if (response.getBody() == null) {
+//            ResponseEntity<Result> re = (ResponseEntity<Result>) response;
+//            logger.warn("Response is null. Status = {}", re.getStatusCode());
+//            throw new InternalPaymentException(type, "InternalPaymentService Error. Status:" + re.getStatusCode());
+//        }
+//        return response;
     }
 
 

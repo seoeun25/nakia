@@ -3,7 +3,7 @@ package com.lezhin.panther.controller;
 import com.lezhin.panther.PinCruxService;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.PantherException;
-import com.lezhin.panther.internalpayment.Result;
+import com.lezhin.panther.internal.Result;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.pg.pincrux.PinCruxData;
 import com.lezhin.panther.pg.pincrux.PinCruxDataInstallResult;

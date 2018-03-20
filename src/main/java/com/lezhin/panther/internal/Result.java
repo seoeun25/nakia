@@ -1,4 +1,4 @@
-package com.lezhin.panther.internalpayment;
+package com.lezhin.panther.internal;
 
 import java.io.Serializable;
 

@@ -1,4 +1,4 @@
-package com.lezhin.support;
+package com.lezhin.panther.datastore.support;
 
 import org.slf4j.LoggerFactory;
 

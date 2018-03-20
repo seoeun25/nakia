@@ -1,6 +1,6 @@
-package com.lezhin.panther.Repository;
+package com.lezhin.panther.datastore;
 
-import com.lezhin.panther.model.PayLetterLog;
+import com.lezhin.panther.payletter.PayLetterLog;
 import com.lezhin.panther.util.DateUtil;
 
 import com.google.cloud.datastore.Entity;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Repository;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -28,7 +27,7 @@ import java.util.TimeZone;
  */
 
 @Repository
-public class PayLetterPaymentRepository implements PaymentRepository<PayLetterLog> {
+public class PayLetterPaymentRepository {
     private static final Logger logger = LoggerFactory.getLogger(PayLetterPaymentRepository.class);
     private final String KIND = "Payment2";
     private LezhinDataStore lezhinDataStore;
@@ -37,7 +36,6 @@ public class PayLetterPaymentRepository implements PaymentRepository<PayLetterLo
         this.lezhinDataStore = lezhinDataStore;
     }
 
-    @Override
     public List<PayLetterLog> getLogs(Long startDate, Long endDate, String locale) {
         logger.info("PaymentDataStoreRepository startDate {} endDate {}", startDate, endDate);
 //        String gqlQuery = String.format("select * from %s where ");
@@ -67,21 +65,21 @@ public class PayLetterPaymentRepository implements PaymentRepository<PayLetterLo
             String localeData = currentEntity.getKey("locale").name();
             String state = currentEntity.getString("state");
             if ((StringUtil.isNullOrEmpty(locale) || locale.toLowerCase().equals(localeData.toLowerCase()))
-                && !state.equals("R")
+                    && !state.equals("R")
                     ) {/*locale 필터링은 거의 사용하지 않아 굳이 인덱스를 추가할 필요가 없어 루프에서 처리.*/
                 PayLetterLog log = new PayLetterLog();
                 log.setCurrency(currentEntity.getString("currency"));
                 log.setLezhinPaymentId(currentEntity.key().id());
                 log.setUserId(currentEntity.getLong("idUser"));
-                log.setPaidAmount((float)currentEntity.getDouble("amount"));
+                log.setPaidAmount((float) currentEntity.getDouble("amount"));
                 log.setState(currentEntity.getString("state"));
                 Date date = new Date(currentEntity.getLong("createdAt"));
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
                 SimpleDateFormat ymd = new SimpleDateFormat("yyyyMMdd");
                 sdf.setTimeZone(TimeZone.getTimeZone(DateUtil.ASIA_SEOUL_ZONE));
                 ymd.setTimeZone(TimeZone.getTimeZone(DateUtil.ASIA_SEOUL_ZONE));
-                String formattedDate    = DateUtil.format(date.getTime(),DateUtil.ASIA_SEOUL_ZONE, DateUtil.DATE_TIME_FORMATTER );
-                String formattedDate2   = DateUtil.format(date.getTime(),DateUtil.ASIA_SEOUL_ZONE, DateUtil.DATE_FORMATTER );
+                String formattedDate = DateUtil.format(date.getTime(), DateUtil.ASIA_SEOUL_ZONE, DateUtil.DATE_TIME_FORMATTER);
+                String formattedDate2 = DateUtil.format(date.getTime(), DateUtil.ASIA_SEOUL_ZONE, DateUtil.DATE_FORMATTER);
                 log.setRegDate(formattedDate);
                 log.setYmd(formattedDate2);
                 log.setPaymentType(currentEntity.getString("paymentType"));
@@ -93,16 +91,10 @@ public class PayLetterPaymentRepository implements PaymentRepository<PayLetterLo
                 logs.add(log);
             }
         }
-        Collections.sort(logs, new Descending());
+        // descending by paymentId
+        Collections.sort(logs, (o1, o2) -> o2.getLezhinPaymentId().compareTo(o1.getLezhinPaymentId()));
         return logs;
     }
 }
 
-class Descending implements Comparator<PayLetterLog> {
-
-    @Override
-    public int compare(PayLetterLog o1, PayLetterLog o2) {
-        return o2.getLezhinPaymentId().compareTo(o1.getLezhinPaymentId());
-    }
-}
 

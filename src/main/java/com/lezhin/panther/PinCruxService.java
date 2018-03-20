@@ -286,7 +286,7 @@ public class PinCruxService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-        headers.add("Authorization", "Bearer " + pantherProperties.getWallets().getCmsToken());
+        headers.add("Authorization", "Bearer " + pantherProperties.getCmsToken());
         HttpEntity<Wallets> request = new HttpEntity<Wallets>(wallets, headers);
 
         logger.info("setSendUserCoinReward() = {}, reqBody = {}", this.pantherProperties.getWallets().getApiUrl(), JsonUtil.toJson(request));

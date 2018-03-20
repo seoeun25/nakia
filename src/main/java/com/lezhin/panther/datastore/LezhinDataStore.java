@@ -1,7 +1,7 @@
-package com.lezhin.panther.Repository;
+package com.lezhin.panther.datastore;
 
 import com.lezhin.panther.config.AppEngineProperties;
-import com.lezhin.support.ApacheHC44Transport;
+import com.lezhin.panther.datastore.support.ApacheHC44Transport;
 
 import com.google.api.client.util.PemReader;
 import com.google.api.client.util.SecurityUtils;
@@ -14,7 +14,6 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +63,7 @@ public class LezhinDataStore {
 
     private HttpClient createHttpClient() {
         try {
-            return new com.lezhin.config.DatastoreHttpClientConfiguration().datastoreHttpClient();
+            return new DatastoreHttpClientConfiguration().datastoreHttpClient();
         } catch (Exception e) {
             return HttpClientBuilder.create().build();
         }

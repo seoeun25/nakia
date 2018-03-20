@@ -1,6 +1,6 @@
 package com.lezhin.panther.payment2;
 
-import com.lezhin.panther.Repository.LezhinDataStore;
+import com.lezhin.panther.datastore.LezhinDataStore;
 
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;

@@ -8,7 +8,7 @@ import com.lezhin.panther.exception.FraudException;
 import com.lezhin.panther.exception.InternalPaymentException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.internalpayment.InternalPaymentService;
+import com.lezhin.panther.internal.InternalPaymentService;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;

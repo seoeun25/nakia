@@ -15,6 +15,8 @@ public class PantherProperties {
 
     private String webUrl;
     private String apiUrl;
+    private String cmsUrl;
+    private String cmsToken;
     private String pantherUrl;
     private String slackChannel;
     private String cloudWatch;
@@ -54,6 +56,5 @@ public class PantherProperties {
         private String apiUrl;
         private Integer companyEventIdPinCrux;
         private Integer usageRestrictionIdPinCrux;
-        private String cmsToken;
     }
 }

@@ -1,4 +1,4 @@
-package com.lezhin.panther.model;
+package com.lezhin.panther.payletter;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -1,4 +1,4 @@
-package com.lezhin.support;
+package com.lezhin.panther.datastore.support;
 
 import com.google.api.client.http.HttpMethods;
 import com.google.api.client.http.HttpTransport;
