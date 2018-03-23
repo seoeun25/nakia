@@ -31,10 +31,13 @@ public class ScheduleService {
 
     private SlackNotifier slackNotifier;
     private PantherProperties pantherProperties;
+    private PinCruxService pinCruxService;
 
-    public ScheduleService(final PantherProperties pantherProperties, final SlackNotifier slackNotifier) {
+    public ScheduleService(final PantherProperties pantherProperties, final SlackNotifier slackNotifier,
+                           final PinCruxService pinCruxService) {
         this.pantherProperties = pantherProperties;
         this.slackNotifier = slackNotifier;
+        this.pinCruxService = pinCruxService;
     }
 
 
@@ -69,6 +72,21 @@ public class ScheduleService {
 
         estimateVolume(new File(pantherProperties.getLguplus().getLogDir()));
 
+    }
+
+    /**
+     * 5분마다 pincrux ADs caching
+     */
+    @Scheduled(cron = "0 0/5 * * * ?")
+    public void cachePincruxList() {
+        logger.info("pincrux caching ads start");
+        pinCruxService.cacheADs(1); // android
+        try {
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        pinCruxService.cacheADs(2); // ios
     }
 
     /**

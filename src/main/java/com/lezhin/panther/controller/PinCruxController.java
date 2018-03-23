@@ -51,7 +51,7 @@ public class PinCruxController {
     }
 
     private final String cruxkey = "lezhinKey";
-    private final Integer pubkey = 910277;
+    public static final Integer pubkey = 910277;
 
     @RequestMapping(value = "/ads", method = RequestMethod.GET)
     @ResponseBody

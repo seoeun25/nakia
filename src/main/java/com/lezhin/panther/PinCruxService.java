@@ -1,6 +1,7 @@
 package com.lezhin.panther;
 
 import com.lezhin.panther.config.PantherProperties;
+import com.lezhin.panther.controller.PinCruxController;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.notification.SlackEvent;
@@ -16,6 +17,7 @@ import com.lezhin.panther.pg.pincrux.PinCruxRequest;
 import com.lezhin.panther.pg.pincrux.PinCruxUser;
 import com.lezhin.panther.redis.RedisService;
 
+import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.JsonUtil;
 
 
@@ -80,35 +82,45 @@ public class PinCruxService {
         this.slackNotifier = slackNotifier;
     }
 
-    private PinCruxData getFromCacheOrServer(final Integer pubkey, final Integer os_flag) {
+    public PinCruxData cacheADs(final Integer osFlag) {
         // TODO os_flag 는 optional 인 듯. pincrux 에 확인 필요.
 
         int cacheRetention = pantherProperties.getPincrux().getCacheRetention(); //ms
+
+        String cacheKey = RedisService.generateKey(MODULE_NAME, ADS_CACHE, String.valueOf(osFlag));
+
+        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                .scheme(PINCRUX_PROTOCOL).host(PINCRUX_HOST).path(PINCRUX_LIST)
+                .queryParam("pubkey", PinCruxController.pubkey)
+                .queryParam("usrkey", DEFAULT_USER.toString())
+                .queryParam("os_flag", String.valueOf(osFlag))
+                .queryParam("test_flag", pantherProperties.getPincrux().getTestFlag()?"y":"n")//상용화시 이 플래그를 n 으로
+                .build()
+                .encode();
+        // 핀크럭스 리턴이 text/html 로 json을 준다
+        logger.info("REQ offer = {}", uriComponents.toUri());
+        long startTime = Instant.now().toEpochMilli();
+        String responseText = restTemplate.getForObject(uriComponents.toUri(), String.class);
+        long endTime = Instant.now().toEpochMilli();
+        long responseTime = endTime - startTime;
+        logger.info("offer from pincrux. response time = {} ms", responseTime);
+        processSLA(responseTime);
+        logger.debug("RES offer = {}", responseText);
+        PinCruxData retData = JsonUtil.fromJson(responseText, PinCruxData.class);
+        logger.info("cacheADs. status = {}, item_cnt = {}", retData.getStatus(), retData.getItem_cnt());
+        redisService.setValue(cacheKey, retData, cacheRetention, TimeUnit.MILLISECONDS);
+
+        return retData;
+    }
+
+    private PinCruxData getFromCacheOrServer(final Integer pubkey, final Integer os_flag) {
+        // TODO os_flag 는 optional 인 듯. pincrux 에 확인 필요.
 
         String cacheKey = RedisService.generateKey(MODULE_NAME, ADS_CACHE, os_flag.toString());
         PinCruxData retData = redisService.getValue(cacheKey, PinCruxData.class);
 
         if (retData == null) {
-            UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                    .scheme(PINCRUX_PROTOCOL).host(PINCRUX_HOST).path(PINCRUX_LIST)
-                    .queryParam("pubkey", pubkey)
-                    .queryParam("usrkey", DEFAULT_USER.toString())
-                    .queryParam("os_flag", os_flag)
-                    .queryParam("test_flag", pantherProperties.getPincrux().getTestFlag()?"y":"n")//상용화시 이 플래그를 n 으로
-                    .build()
-                    .encode();
-            // 핀크럭스 리턴이 text/html 로 json을 준다
-            logger.info("REQ getAds = {}", uriComponents.toUri());
-            long startTime = Instant.now().toEpochMilli();
-            String responseText = restTemplate.getForObject(uriComponents.toUri(), String.class);
-            long endTime = Instant.now().toEpochMilli();
-            long responseTime = endTime - startTime;
-            logger.info("getAds from pincrux. response time = {} ms", responseTime);
-            processSLA(responseTime);
-            logger.debug("RES getAds = {}", responseText);
-            retData = JsonUtil.fromJson(responseText, PinCruxData.class);
-            logger.info("Get from princrux. status = {}, item_cnt = {}", retData.getStatus(), retData.getItem_cnt());
-            redisService.setValue(cacheKey, retData, cacheRetention, TimeUnit.MILLISECONDS);
+            retData = cacheADs(os_flag);
         }
 
         return retData;
