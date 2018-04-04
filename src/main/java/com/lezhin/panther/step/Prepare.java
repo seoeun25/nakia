@@ -1,4 +1,4 @@
-package com.lezhin.panther.command;
+package com.lezhin.panther.step;
 
 import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.PreconditionException;

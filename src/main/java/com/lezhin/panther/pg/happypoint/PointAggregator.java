@@ -1,4 +1,4 @@
-package com.lezhin.avengers.panther.model;
+package com.lezhin.panther.pg.happypoint;
 
 import lombok.Data;
 
@@ -10,8 +10,7 @@ import java.io.Serializable;
  * @since 2017.12.19
  */
 @Data
-@Deprecated
-public class HappypointAggregator implements Serializable {
+public class PointAggregator implements Serializable {
 
     private String mbrNo;
     /**
@@ -20,7 +19,7 @@ public class HappypointAggregator implements Serializable {
     private String ym;
     private Integer pointSum;
 
-    public HappypointAggregator(String mbrNo, String ym, Integer pointSum) {
+    public PointAggregator(String mbrNo, String ym, Integer pointSum) {
         this.mbrNo = mbrNo;
         this.ym = ym;
         this.pointSum = pointSum;

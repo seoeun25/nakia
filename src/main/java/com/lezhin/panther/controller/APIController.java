@@ -5,7 +5,6 @@ import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.PayService;
 import com.lezhin.panther.SimpleCacheService;
-import com.lezhin.panther.command.Command;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
@@ -15,6 +14,7 @@ import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.pg.happypoint.HappyPointPayment;
 import com.lezhin.panther.pg.lguplus.LguplusPayment;
+import com.lezhin.panther.step.Command;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
 

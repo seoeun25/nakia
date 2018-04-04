@@ -1,4 +1,4 @@
-package com.lezhin.panther.command;
+package com.lezhin.panther.step;
 
 import com.lezhin.panther.Context;
 import com.lezhin.panther.SimpleCacheService;
@@ -211,7 +211,7 @@ public abstract class Command<T extends PGPayment> {
     }
 
     /**
-     * Process next step. If next step is DONE, this command return payment.
+     * Process next step. If next step is DONE, this step return payment.
      *
      * @return
      */

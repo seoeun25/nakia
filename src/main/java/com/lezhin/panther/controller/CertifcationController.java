@@ -4,6 +4,7 @@ import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
+import com.lezhin.panther.util.JsonUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +46,7 @@ public class CertifcationController {
                                   @RequestParam(required = false) String certificationType,
                                   @RequestBody Certification certification) {
 
-        logger.info("certification. userId = {}, name = {}, ci = {}",
-                certification.getUserId(), certification.getName(), certification.getCI());
+        logger.info("certification = {}", JsonUtil.toJson(certification));
 
         simpleCacheService.saveCertification(certification);
 

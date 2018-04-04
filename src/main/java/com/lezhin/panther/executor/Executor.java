@@ -2,7 +2,7 @@ package com.lezhin.panther.executor;
 
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
-import com.lezhin.panther.command.Command;
+import com.lezhin.panther.step.Command;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.Meta;

@@ -1,13 +1,5 @@
 package com.lezhin.panther;
 
-import com.lezhin.panther.command.Authenticate;
-import com.lezhin.panther.command.Cancel;
-import com.lezhin.panther.command.Command;
-import com.lezhin.panther.command.Complete;
-import com.lezhin.panther.command.Pay;
-import com.lezhin.panther.command.Prepare;
-import com.lezhin.panther.command.Refund;
-import com.lezhin.panther.command.Reserve;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.InternalPaymentException;
@@ -17,6 +9,14 @@ import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
+import com.lezhin.panther.step.Authenticate;
+import com.lezhin.panther.step.Cancel;
+import com.lezhin.panther.step.Command;
+import com.lezhin.panther.step.Complete;
+import com.lezhin.panther.step.Pay;
+import com.lezhin.panther.step.Prepare;
+import com.lezhin.panther.step.Refund;
+import com.lezhin.panther.step.Reserve;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

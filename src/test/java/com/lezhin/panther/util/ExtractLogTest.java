@@ -198,7 +198,7 @@ public class ExtractLogTest {
     }
 
     /**
-     * happypoint. receipt 정보에서 refund 용 데이터 추출 및 curl command 생성.
+     * happypoint. receipt 정보에서 refund 용 데이터 추출 및 curl step 생성.
      *
      * @throws Exception
      */

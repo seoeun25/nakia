@@ -3,7 +3,6 @@ package com.lezhin.panther.pg.happypoint;
 import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.SimpleCacheService;
-import com.lezhin.panther.command.Command;
 import com.lezhin.panther.exception.CIException;
 import com.lezhin.panther.exception.ExceedException;
 import com.lezhin.panther.exception.HappyPointParamException;
@@ -14,6 +13,7 @@ import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
+import com.lezhin.panther.step.Command;
 import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
@@ -87,7 +87,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
                 throw new PreconditionException(type, "useReqPt can not be null");
             }
             // 2000point/mbrNo/month
-            HappypointAggregator aggregator = cacheService.getHappypointAggregator(context.getPayment().getPgPayment().getMbrNo(),
+            PointAggregator aggregator = cacheService.getHappypointAggregator(
+                    context.getPayment().getPgPayment().getMbrNo(),
                     DateUtil.format(Instant.now().toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM"));
             if (aggregator != null &&
                     aggregator.getPointSum().intValue() + context.getPayment().getPgPayment().getUseReqPt().intValue() >
@@ -260,7 +261,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
             Instant trxInstant = DateUtil.toInstantFromDate(trxDt, "yyyyMMdd", DateUtil.ASIA_SEOUL_ZONE);
             String ym = DateUtil.format(trxInstant.toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM");
 
-            HappypointAggregator aggregator = new HappypointAggregator(mbrNo, ym,
+            PointAggregator aggregator = new PointAggregator(mbrNo, ym,
                     happyPointPayment.getUsePt());
             cacheService.saveHappypointAggregator(aggregator);
         }
@@ -304,7 +305,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
 
         if (response.getRpsCd().equals(ResponseCode.SPC_OK.getCode())) {
             String ym = orglTrxAprvDt.substring(0, 6);
-            HappypointAggregator aggregator = cacheService.getHappypointAggregator(mbrNo, ym);
+            PointAggregator aggregator = cacheService.getHappypointAggregator(mbrNo, ym);
             if (aggregator != null) {
                 int pointSum = aggregator.getPointSum();
                 int newPointSum = pointSum - amount.intValue();

@@ -1,15 +1,12 @@
 package com.lezhin.panther;
 
 import com.lezhin.avengers.panther.model.HappypointAggregator;
-import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Certification;
-import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
-import com.lezhin.panther.pg.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.happypoint.PointAggregator;
 import com.lezhin.panther.redis.RedisService;
-import com.lezhin.panther.util.JsonUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +46,10 @@ public class SimpleCacheService {
         return value;
     }
 
-    public void saveHappypointAggregator(final HappypointAggregator info) {
+    public void saveHappypointAggregator(final PointAggregator info) {
         String key = String.format("happypoint:%s:mbrNo:%s", info.getYm(), info.getMbrNo());
 
-        HappypointAggregator value = getHappypointAggregator(info.getMbrNo(), info.getYm());
+        PointAggregator value = getHappypointAggregator(info.getMbrNo(), info.getYm());
         if (value != null) {
             info.setPointSum(value.getPointSum() + info.getPointSum());
         }
@@ -66,17 +63,23 @@ public class SimpleCacheService {
         redisService.setValue(key, info, 31, TimeUnit.DAYS);
     }
 
-    public HappypointAggregator getHappypointAggregator(final String mbrNo, String ym) {
+    public PointAggregator getHappypointAggregator(final String mbrNo, String ym) {
         String key = String.format("happypoint:%s:mbrNo:%s", ym, mbrNo);
 
-        HappypointAggregator value;
+        PointAggregator value;
         try {
-            value = (HappypointAggregator) redisService.getValue(key);
+            value = (PointAggregator) redisService.getValue(key);
         } catch (Exception e) {
             // TODO package refactoring의 side effect. 1월에 update.
-            logger.info("Failed to deserialize HappypointAggregator. set and return 2000 point. : " + e.getMessage());
-            value = new HappypointAggregator(mbrNo, ym, 2000);
-            redisService.setValue(key, value, 31, TimeUnit.DAYS);
+            logger.info("Failed to deserialize PointAggregator. set and return 2000 point. : " + e.getMessage());
+            try {
+                HappypointAggregator happypointAggregator = redisService.getValue(key, HappypointAggregator.class);
+                value = new PointAggregator(happypointAggregator.getMbrNo(), ym, happypointAggregator.getPointSum());
+            } catch (Exception a) {
+                value = new PointAggregator(mbrNo, ym, 2000);
+                redisService.setValue(key, value, 31, TimeUnit.DAYS);
+            }
+
         }
         return value;
     }
@@ -95,22 +98,6 @@ public class SimpleCacheService {
         RequestInfo value = (RequestInfo) redisService.getValue(key);
         if (value == null) {
             throw new SessionException(Executor.Type.UNKNOWN, "RequestInfo not found: paymentId=" + paymentId);
-        }
-        try {
-            if (value.getPayment().getPgPayment() instanceof com.lezhin.panther.lguplus.LguplusPayment) {
-                com.lezhin.panther.lguplus.LguplusPayment oldPgPayment = (com.lezhin.panther.lguplus.LguplusPayment) value.getPayment().getPgPayment();
-                String json = JsonUtil.toJson(oldPgPayment);
-                LguplusPayment newPgPayment = JsonUtil.fromJson(json, LguplusPayment.class);
-
-                Payment payment = value.getPayment();
-                payment.setPgPayment(newPgPayment);
-                value = value.withPayment(payment);
-
-                logger.info("Succeed to convert from oldPagPayment to newPgPayment");
-            }
-        } catch (Exception e) {
-            throw new PantherException(Executor.Type.LGUDEPOSIT, "Failed to convert from oldPgPayment to " +
-                    "newPgPayment", e);
         }
         return value;
     }

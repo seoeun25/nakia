@@ -1,16 +1,16 @@
 package com.lezhin.panther;
 
-import com.lezhin.panther.command.Authenticate;
-import com.lezhin.panther.command.Command;
-import com.lezhin.panther.command.Complete;
-import com.lezhin.panther.command.Pay;
-import com.lezhin.panther.command.PreAuthenticate;
-import com.lezhin.panther.command.Reserve;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
+import com.lezhin.panther.step.Authenticate;
+import com.lezhin.panther.step.Command;
+import com.lezhin.panther.step.Complete;
+import com.lezhin.panther.step.Pay;
+import com.lezhin.panther.step.PreAuthenticate;
+import com.lezhin.panther.step.Reserve;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

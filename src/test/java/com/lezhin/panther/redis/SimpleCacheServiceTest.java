@@ -1,15 +1,15 @@
 package com.lezhin.panther.redis;
 
-import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.constant.LezhinStore;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
-import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
+import com.lezhin.panther.pg.happypoint.PointAggregator;
+import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.util.DateUtil;
 
 import org.junit.AfterClass;
@@ -80,13 +80,13 @@ public class SimpleCacheServiceTest {
     }
 
     @Test
-    public void testHappypointAtestHappypointAggregatorggregator() throws InterruptedException {
+    public void testPointAggregator() throws InterruptedException {
 
         String mbrNo = "mbrNo_abc";
         String trxDt = "20171114";
         Integer point = 5;
 
-        HappypointAggregator aggregator = new HappypointAggregator(mbrNo,
+        PointAggregator aggregator = new PointAggregator(mbrNo,
                 DateUtil.format(Instant.now().toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM"),
                 new Integer(10));
         logger.info("aggregator =  {}", aggregator.toString());
@@ -96,24 +96,24 @@ public class SimpleCacheServiceTest {
         String ym = DateUtil.format(trxInstant.toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM");
 
         // 11월
-        HappypointAggregator aggregator1 = new HappypointAggregator(mbrNo, ym, point);
+        PointAggregator aggregator1 = new PointAggregator(mbrNo, ym, point);
         simpleCacheService.saveHappypointAggregator(aggregator1);
 
-        HappypointAggregator aggregator2 = new HappypointAggregator(mbrNo, "201711", new Integer(10));
+        PointAggregator aggregator2 = new PointAggregator(mbrNo, "201711", new Integer(10));
         simpleCacheService.saveHappypointAggregator(aggregator2);
 
         Thread.sleep(100);
-        HappypointAggregator result = simpleCacheService.getHappypointAggregator(mbrNo, "201711");
+        PointAggregator result = simpleCacheService.getHappypointAggregator(mbrNo, "201711");
         assertNotNull(result);
         assertEquals(mbrNo, result.getMbrNo());
         assertEquals("201711", result.getYm());
         assertEquals(15, result.getPointSum().intValue()); // sum = 15
 
         // 12월
-        HappypointAggregator aggregator12 = new HappypointAggregator(mbrNo, "201712", new Integer(3));
+        PointAggregator aggregator12 = new PointAggregator(mbrNo, "201712", new Integer(3));
         simpleCacheService.saveHappypointAggregator(aggregator12);
         Thread.sleep(100);
-        HappypointAggregator result12 = simpleCacheService.getHappypointAggregator(mbrNo, "201712");
+        PointAggregator result12 = simpleCacheService.getHappypointAggregator(mbrNo, "201712");
         assertNotNull(result12);
         assertEquals(mbrNo, result12.getMbrNo());
         assertEquals("201712", result12.getYm());
@@ -196,7 +196,7 @@ public class SimpleCacheServiceTest {
             simpleCacheService.saveRequestInfo(requestInfo);
             fail("Saving session should be failed");
         } catch (SessionException e) {
-            
+
         }
 
     }
