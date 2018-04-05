@@ -84,12 +84,13 @@ public class PantherController {
         Boolean delete = Boolean.valueOf(Optional.ofNullable(map.get("delete")).orElse("false").toString());
         if (key != null) {
             try {
-                Object value = simpleCacheService.get(key.toString());
-                logger.info("key = {}, value = {}", key, value);
-
                 if (delete) {
                     logger.info("deleted = {}", simpleCacheService.delete(key.toString()));
                 }
+
+                Object value = simpleCacheService.get(key.toString());
+                logger.info("key = {}, value = {}", key, value);
+
             } catch (Exception e) {
                 logger.warn("Failed to get cache value", e);
             }

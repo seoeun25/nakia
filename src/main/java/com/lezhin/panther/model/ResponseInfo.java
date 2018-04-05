@@ -50,8 +50,9 @@ public class ResponseInfo implements Serializable {
         LGUPLUS_OK("0000", "OK"),
         LGUPLUS_ERROR("X0X0", "LGUPLUS_ERROR"),
 
-        PINCRUX_OK("000", "PINCRUX_OK"),
-        PINCRUX_PARAM("001", "PINCRUX_ERROR"),
+        PINCRUX_OK("00", "PINCRUX_OK"),
+        PINCRUX_ERROR("01", "PINCRUX_ERROR"),
+        PINCRUX_NOT_AVAILABLE("99", "Service Not available"),
 
         // internalPayment
         INTERNAL_OK("0", "OK"),

@@ -87,6 +87,7 @@ dependencies {
         exclude(group: 'org.apache.httpcomponents')
         exclude(module: 'guava-jdk5')
     }
+    compile('com.zaxxer:HikariCP:3.0.0')
 
     compileOnly('org.projectlombok:lombok')
     apt("org.projectlombok:lombok")

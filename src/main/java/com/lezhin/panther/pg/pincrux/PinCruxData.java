@@ -15,6 +15,7 @@ import java.util.List;
  * @author benjamin
  * @since 2017.12.19
  */
+@Deprecated
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data

@@ -81,7 +81,49 @@ public class HttpClientService {
         if (response.getBody() == null) {
             ResponseEntity<T> re = (ResponseEntity<T>) response;
             logger.warn("Response is null. Status = {}", re.getStatusCode());
-            throw new HttpClientException(type, "HttpClientService.Response.Status:" + re.getStatusCode());
+            throw new HttpClientException(type, "HttpClientService.exchange.Status:" + re.getStatusCode());
+        }
+        return response;
+    }
+
+    /**
+     * Execute the HTTP method to the given URI template, writing the given request entity to the request, and
+     * returns the response as {@link ResponseEntity}.
+     * It will retry {@linkplain #RETRY_COUNT} times if failed and then will throw
+     * {@linkplain InternalPaymentException} if failed.
+     *
+     * @return
+     * @throws {@linkplain InternalPaymentException}
+     */
+    public <T> HttpEntity<T> postForEntity(String url, HttpEntity<?> requestEntity,
+                                           Class<T> responseType, Executor.Type type ) {
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+        HttpEntity<T> response = null;
+        for (int i = 1; i <= RETRY_COUNT + 1; i++) {
+            try {
+                response = restTemplate.postForEntity(url, requestEntity, responseType);
+                break;
+            } catch (Throwable e) {
+                if (TRANSIENT_EXECPTIONS.contains(e.getClass()) && i <= RETRY_COUNT) {
+                    logger.info("Failed to postForEntity: " + e.getMessage());
+                    logger.info("Retrying ...... [{}]", i);
+                    try {
+                        Thread.sleep(500 * i);
+                    } catch (Exception ea) {
+                        logger.warn("Failed", ea);
+                    }
+                } else {
+                    if (i == RETRY_COUNT + 1) {
+                        logger.warn("All retry failed : " + e.getMessage());
+                    }
+                    throw new HttpClientException(type, e);
+                }
+            }
+        }
+        if (response.getBody() == null) {
+            ResponseEntity<T> re = (ResponseEntity<T>) response;
+            logger.warn("Response is null. Status = {}", re.getStatusCode());
+            throw new HttpClientException(type, "HttpClientService.postForEntity.Status:" + re.getStatusCode());
         }
         return response;
     }

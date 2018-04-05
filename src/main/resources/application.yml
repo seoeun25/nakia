@@ -6,8 +6,17 @@ spring:
     url: jdbc:mysql://${lezhin.panther.datasource.serverAddress}/${lezhin.panther.datasource.database}
     username: ${lezhin.panther.datasource.username}
     password: ${lezhin.panther.datasource.password}
-    driverClassName: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-test-query: SELECT 1 FROM DUAL
+      minimum-idle: 20
+      maximum-pool-size: 20
+      pool-name: pantherConnectionPool
   jpa:
+    generate-ddl: false
+    hibernate.ddl-auto: validate
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5Dialect
@@ -43,8 +52,10 @@ panther:
     cstMid: lezhin001
     txName: PaymentByKey
   pincrux:
-    testFlag: true
-    cacheRetention: 420000
+    pincruxUrl: http://test-api.pincrux.com
+    pubkey: 910277
+    testFlag: n
+    cacheRetention: 900000
     timeout: 40000
   wallets:
     apiUrl: https://cms-dot-lezhincomix-beta.appspot.com/v2/wallets
@@ -64,9 +75,9 @@ appengine:
 spring:
   profiles: production
   jpa:
-    generate-ddl: true
+    generate-ddl: false
     hibernate.ddl-auto: validate
-    show-sql: true
+    show-sql: false
 server:
   error:
     include-stacktrace: never
@@ -86,7 +97,8 @@ panther:
     confDir: /etc/panther/conf/production/lgdacom
     cstPlatform: service
   pincrux:
-    testFlag: false
+    pincruxUrl: http://api.pincrux.com
+    testFlag: n
   wallets:
     apiUrl: https://cms-dot-lezhincomix-api.appspot.com/v2/wallets
     companyEventIdPinCrux: 199
@@ -94,10 +106,6 @@ panther:
 ---
 spring:
   profiles: staging
-  jpa:
-    generate-ddl: true
-    hibernate.ddl-auto: validate
-    show-sql: true
 panther:
   webUrl: https://mirror-www.lezhin.com
   apiUrl: https://mirror-www.lezhin.com/api/v2/internal/payments
@@ -115,10 +123,6 @@ panther:
 ---
 spring:
   profiles: mirror
-  jpa:
-    generate-ddl: true
-    hibernate.ddl-auto: validate
-    show-sql: true
 panther:
   webUrl: https://mirror-www.lezhin.com
   apiUrl: https://mirror-www.lezhin.com/api/v2/internal/payments
@@ -136,8 +140,6 @@ panther:
 spring:
   profiles: qa
   jpa:
-    generate-ddl: true
-    hibernate.ddl-auto: validate
     show-sql: true
 panther:
   webUrl: https://q-www.lezhin.com
@@ -156,10 +158,6 @@ appengine:
 ---
 spring:
   profiles: beta
-  jpa:
-    generate-ddl: true
-    hibernate.ddl-auto: validate
-    show-sql: true
 panther:
   webUrl: https://beta-www.lezhin.com
   apiUrl: https://beta-api.lezhin.com/api/v2/internal/payments
@@ -177,10 +175,6 @@ panther:
 ---
 spring:
   profiles: alpha
-  jpa:
-    generate-ddl: true
-    hibernate.ddl-auto: validate
-    show-sql: true
 panther:
   webUrl: https://a-www.lezhin.com
   apiUrl: https://a-api.lezhin.com/api/v2/internal/payments
@@ -199,12 +193,13 @@ appengine:
 spring:
   profiles: local
   datasource:
-      url: jdbc:mysql://127.0.0.1:3306/panther
-      username: root
-      password: ""
-      driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/panther
+    username: root
+    password: ""
+    driver-class-name: com.mysql.jdbc.Driver
   jpa:
-    hibernate.ddl-auto: update
+    generate-ddl: false
+    hibernate.ddl-auto: validate
     show-sql: true
   redis:
     host: localhost
@@ -262,4 +257,18 @@ panther:
   webUrl: https://t-www.lezhin.com
   apiUrl: https://t-api.lezhin.com/api/v2/internal/payments
   pantherUrl: https://localhost
-
+---
+spring:
+  profiles: local-mysql
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/panther
+    username: root
+    password: ""
+    driver-class-name: com.mysql.jdbc.Driver
+  jpa:
+    generate-ddl: false
+    hibernate.ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect

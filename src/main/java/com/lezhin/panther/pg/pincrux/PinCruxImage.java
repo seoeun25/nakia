@@ -10,6 +10,7 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
+@Deprecated
 public class PinCruxImage  implements Serializable {
     public String src;
     public String ext;

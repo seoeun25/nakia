@@ -41,6 +41,15 @@ public class PantherConfiguration {
     private @Value("${spring.redis.database}")
     int redisDatabase;
 
+    private @Value("${spring.datasource.url}")
+    String datasourceUrl;
+    private @Value("${spring.datasource.username}")
+    String datasourceUsername;
+    private @Value("${spring.datasource.password}")
+    String datasourcePassword;
+    private @Value("${spring.datasource.driver-class-name}")
+    String datasourceDriver;
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -66,6 +75,7 @@ public class PantherConfiguration {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         return objectMapper;
     }
 
@@ -91,6 +101,9 @@ public class PantherConfiguration {
     public JedisConnectionFactory jedisConnectionFactory() {
         try {
             logger.info("redis host= {}, port = {}, database={}", redisHost, redisPort, redisDatabase);
+            logger.info("datastore url= {}, username = {}, password={}, driver ={}",
+                    datasourceUrl, datasourceUsername, datasourcePassword, datasourceDriver);
+
             JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
             jedisConnectionFactory.setHostName(redisHost);
             jedisConnectionFactory.setPort(redisPort);

@@ -14,6 +14,7 @@ import java.io.Serializable;
  * @author benjamin
  * @since 2017.1.12
  */
+@Deprecated
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data

@@ -6,6 +6,8 @@ import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.notification.SlackEvent;
 import com.lezhin.panther.notification.SlackMessage;
 import com.lezhin.panther.notification.SlackNotifier;
+import com.lezhin.panther.pg.pincrux.OsFlag;
+import com.lezhin.panther.pg.pincrux.PinCruxService;
 import com.lezhin.panther.util.DateUtil;
 
 import org.slf4j.Logger;
@@ -77,16 +79,16 @@ public class ScheduleService {
     /**
      * 5분마다 pincrux ADs caching
      */
-    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0 0/10 * * * ?")
     public void cachePincruxList() {
         logger.info("pincrux caching ads start");
-        pinCruxService.cacheADs(1); // android
         try {
+            pinCruxService.cacheCruxADs(OsFlag.ANDROID.flag()); // android
             Thread.sleep(1000);
+            pinCruxService.cacheCruxADs(OsFlag.IOS.flag()); // ios
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn("Failed to cacheAds.", e);
         }
-        pinCruxService.cacheADs(2); // ios
     }
 
     /**
