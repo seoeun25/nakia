@@ -1,5 +1,6 @@
 package com.lezhin.panther.internal;
 
+import com.lezhin.panther.Context;
 import com.lezhin.panther.HttpClientService;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.HttpClientException;
@@ -14,6 +15,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+
+import java.nio.file.OpenOption;
+import java.util.Optional;
 
 /**
  * @author seoeun
@@ -45,15 +49,15 @@ public class InternalPurchaseService {
 
         HttpEntity request = new HttpEntity<>(headers);
 
-        HttpEntity<Result> response = exchange(url, HttpMethod.POST, request,
-                Executor.Type.UNKNOWN);
+        HttpEntity<Result> response = exchange(url, HttpMethod.POST, request, null);
 
         return convert(response.getBody(), Executor.Type.UNKNOWN);
 
     }
 
-    public HttpEntity<Result> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Executor.Type type) {
+    public HttpEntity<Result> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Context context) {
         HttpEntity<Result> response = null;
+        Executor.Type type = Optional.ofNullable(context).map(c -> c.getType()).orElse(Executor.Type.UNKNOWN);
         try {
             response = httpClientService.exchange(url, method, requestEntity, type, Result.class);
         } catch (Exception e) {

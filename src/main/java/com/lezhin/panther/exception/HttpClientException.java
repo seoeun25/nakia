@@ -10,6 +10,10 @@ import com.lezhin.panther.notification.NotificationLevel;
 @NotificationLevel(level = NotificationLevel.Level.ERROR)
 public class HttpClientException extends PantherException {
 
+    public HttpClientException(String message) {
+        super(message);
+    }
+
     public HttpClientException(Executor.Type type, String message) {
         super(type, message);
     }

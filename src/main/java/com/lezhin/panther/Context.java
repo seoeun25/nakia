@@ -1,11 +1,11 @@
 package com.lezhin.panther;
 
+import com.lezhin.panther.exception.PantherException;
+import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
-
-import com.google.common.base.MoreObjects;
 
 import java.util.Optional;
 
@@ -18,19 +18,22 @@ public class Context<T extends PGPayment> {
     private Payment<T> payment;
     private RequestInfo requestInfo;
     private ResponseInfo responseInfo;
+    private Long paymentId;
+    private Long userId;
+    private Executor.Type type;
 
     public Context(Builder<T> builder) {
         this.payment = builder.payment;
         this.requestInfo = builder.requestInfo;
         this.responseInfo = builder.responseInfo;
+        Optional.ofNullable(requestInfo).orElseThrow(() -> new PantherException("RequestInfo can not be null"));
+        this.userId = requestInfo.getUserId();
+        this.type = requestInfo.getExecutorType();
+        this.paymentId = Optional.ofNullable(payment).map(a -> payment.getPaymentId()).orElse(null);
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public Builder toBuilder() {
-        return new Builder();
+    public static Builder builder(RequestInfo requestInfo) {
+        return new Builder(requestInfo);
     }
 
     public Payment<T> getPayment() {
@@ -45,12 +48,16 @@ public class Context<T extends PGPayment> {
         return responseInfo;
     }
 
-    public Long getPaymentId() {
-        return Optional.ofNullable(payment.getPaymentId()).orElse(-1L);
+    public Optional<Long> getPaymentId() {
+        return Optional.ofNullable(new Long(-1L));
     }
 
-    public Long getUserId() {
-        return Optional.ofNullable(payment.getUserId()).orElse(-1L);
+    public Optional<Long> getUserId() {
+        return Optional.ofNullable(userId);
+    }
+
+    public Executor.Type getType() {
+        return type;
     }
 
     public boolean executionSucceed() {
@@ -63,7 +70,12 @@ public class Context<T extends PGPayment> {
     }
 
     public Context<T> payment(Payment<T> payment) {
+        if (payment == null) {
+            throw new PantherException(this, "Payment can not be null");
+        }
         this.payment = payment;
+        this.paymentId = payment.getPaymentId();
+        // TODO userId 셋팅은 ??
         return this;
     }
 
@@ -72,13 +84,12 @@ public class Context<T extends PGPayment> {
         return this;
     }
 
-    public String printPretty() {
-        return MoreObjects.toStringHelper(this)
-                .add("type", requestInfo.getExecutorType())
-                .add("request.user", requestInfo.getUserId())
-                .add("payment.user", getUserId())
-                .add("paymert.id", getPaymentId())
-                .toString();
+    public String print() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[" + type);
+        builder.append(", u=" + userId);
+        builder.append(", p=" + paymentId + "]");
+        return builder.toString();
     }
 
     public static class Builder<T extends PGPayment> {
@@ -86,23 +97,12 @@ public class Context<T extends PGPayment> {
         private RequestInfo requestInfo;
         private ResponseInfo responseInfo;
 
-        public Builder() {
-
-        }
-
-        Builder(RequestInfo requestInfo, Payment<T> payment, ResponseInfo responseInfo) {
+        public Builder(RequestInfo requestInfo) {
             this.requestInfo = requestInfo;
-            this.payment = payment;
-            this.responseInfo = responseInfo;
         }
 
         public Builder payment(Payment<T> payment) {
             this.payment = payment;
-            return this;
-        }
-
-        public Builder requestInfo(RequestInfo requestInfo) {
-            this.requestInfo = requestInfo;
             return this;
         }
 

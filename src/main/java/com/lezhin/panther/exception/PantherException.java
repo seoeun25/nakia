@@ -1,7 +1,10 @@
 package com.lezhin.panther.exception;
 
+import com.lezhin.panther.Context;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.notification.NotificationLevel;
+
+import java.util.Optional;
 
 /**
  * Panther의 최상위 Exception.
@@ -12,25 +15,52 @@ import com.lezhin.panther.notification.NotificationLevel;
 @NotificationLevel(level = NotificationLevel.Level.ERROR)
 public class PantherException extends RuntimeException {
 
-    protected Executor.Type type;
+    protected Optional<Context> context = Optional.empty();
+    protected Optional<Executor.Type> executorType;
 
-    public PantherException(Executor.Type type, String message) {
+    public PantherException(String message) {
         super(message);
-        this.type = type;
+    }
+
+    public PantherException(Throwable e) {
+        super(e);
+    }
+
+    public PantherException(Context context, String message) {
+        super(context.print() + ": " + message);
+        this.context = Optional.of(context);
+    }
+
+    public PantherException(Context context, Throwable e) {
+        super(context.print(), e);
+        this.context = Optional.of(context);
+    }
+
+    public PantherException(Context context, String message, Throwable e) {
+        super(context.print() + ": " + message, e);
+        this.context = Optional.of(context);
     }
 
     public PantherException(Executor.Type type, Throwable e) {
         super(e);
-        this.type = type;
+        this.executorType = Optional.of(type);
+    }
+
+    public PantherException(Executor.Type type, String message) {
+        super(message);
+        this.executorType = Optional.of(type);
     }
 
     public PantherException(Executor.Type type, String message, Throwable e) {
         super(message, e);
-        this.type = type;
+        this.executorType = Optional.of(type);
     }
 
-    public Executor.Type getType() {
-        return type;
+    public Optional<Context> getContext() {
+        return context;
     }
 
+    public Optional<Executor.Type> getExecutorType() {
+        return Optional.ofNullable(executorType).orElse(context.map(c -> c.getType()));
+    }
 }

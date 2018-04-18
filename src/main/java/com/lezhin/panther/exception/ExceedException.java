@@ -10,6 +10,10 @@ import com.lezhin.panther.executor.Executor;
  */
 public class ExceedException extends PantherException {
 
+    public ExceedException(String message) {
+        super(message);
+    }
+
     public ExceedException(Executor.Type type, String message) {
         super(type, message);
     }

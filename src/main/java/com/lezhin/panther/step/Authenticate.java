@@ -6,7 +6,6 @@ import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
-import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.constant.PaymentState;
@@ -32,11 +31,6 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
         this.commandType = Type.AUTHENTICATE;
     }
 
-    public Authenticate(RequestInfo requestInfo) {
-        super(requestInfo);
-        this.commandType = Type.AUTHENTICATE;
-    }
-
     public Authenticate(Context<T> context) {
         super(context);
         this.commandType = Type.AUTHENTICATE;
@@ -44,7 +38,7 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
 
     public void verifyPrecondition() throws PreconditionException {
         if (payment.getState() != PaymentState.R) {
-            throw new PreconditionException(requestInfo.getExecutorType(),
+            throw new PreconditionException(context,
                     String.format("Payment[%s] state should be %s but %s",
                             payment.getPaymentId(), PaymentState.R, payment.getState()));
         }
@@ -54,7 +48,7 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
     public Payment execute() {
         initExecutor();
 
-        logger.info("{} start. {}", commandType.name(), context.printPretty());
+        logger.info("{} {} start.", context.print(), commandType.name());
 
         try {
             payment = executor.authenticate();
@@ -63,7 +57,7 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
         } finally {
             payment = executor.getContext().getPayment();
             context = context.payment(payment).response(executor.getContext().getResponseInfo());
-            logger.info("{} [{}] done. {}", commandType.name(), executor.getType(),
+            logger.info("{} {} done. {}", context.print(), commandType.name(),
                     context.getResponseInfo().toString());
             logger.debug("payment = {}, \n{}", payment.getPaymentId(), JsonUtil.toJson(payment));
         }
@@ -83,7 +77,7 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
                 // response는 panther.
                 context = context.response(
                         new ResponseInfo(ResponseCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
-                throw new InternalPaymentException(requestInfo.getExecutorType(), e);
+                throw new InternalPaymentException(context, e);
 
             } else {
                 // pg.execution 도 실패. internal 도 실패. 그냥 pg.execution 실패로 남김.
@@ -94,9 +88,9 @@ public class Authenticate<T extends PGPayment> extends Command<T> {
 
         }
 
-        logger.info("{} [{}] complete. {} ", commandType.name(), executor.getType(),
+        logger.info("{} {} complete. {} ", context.print(), commandType.name(),
                 context.getResponseInfo().toString());
-        executor.handleResponseCode(context.getResponseInfo().getCode());
+        executor.handleResponse(context);
 
         return processNextStep();
     }

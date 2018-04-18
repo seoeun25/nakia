@@ -5,6 +5,7 @@ import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.PayService;
 import com.lezhin.panther.SimpleCacheService;
+import com.lezhin.panther.step.Command;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
@@ -14,7 +15,6 @@ import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.pg.happypoint.HappyPointPayment;
 import com.lezhin.panther.pg.lguplus.LguplusPayment;
-import com.lezhin.panther.step.Command;
 import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
 
@@ -63,25 +63,30 @@ public class APIController {
     @RequestMapping(value = "/{pg}/preparation", method = RequestMethod.POST)
     @ResponseBody
     public Payment prepare(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
+        logger.info("  >>> api.prepare. pg = {}", pg);
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
+        Context context = Context.builder(requestInfo)
+                .payment(requestInfo.getPayment())
+                .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN))
+                .build();
 
-        logger.info("HTTP prepare. requestInfo = {}", pg, requestInfo);
-
-        Payment payment = payService.doCommand(Command.Type.PREPARE, requestInfo);
+        Payment payment = payService.doCommand(Command.Type.PREPARE, context);
         return payment;
     }
 
     @RequestMapping(value = "/{pg}/reservation", method = RequestMethod.POST)
     @ResponseBody
     public Payment reservation(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
-
-        Util.printAccessLog(request);
+        logger.info("  >>> api.reservation, pg = {}", pg);
 
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
+        Payment<LguplusPayment> requestPayment = requestInfo.getPayment();
+        Context context = Context.builder(requestInfo)
+                .payment(requestPayment)
+                .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN))
+                .build();
 
-        logger.info("HTTP reservation. requestInfo = {}", requestInfo);
-
-        Payment payment = payService.doCommand(Command.Type.RESERVE, requestInfo);
+        Payment payment = payService.doCommand(Command.Type.RESERVE, context);
         return payment;
     }
 
@@ -91,8 +96,12 @@ public class APIController {
                                   @PathVariable String pg) {
 
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
+        Context context = Context.builder(requestInfo)
+                .payment(requestInfo.getPayment())
+                .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN))
+                .build();
 
-        Payment payment = payService.doCommand(Command.Type.AUTHENTICATE, requestInfo);
+        Payment payment = payService.doCommand(Command.Type.AUTHENTICATE, context);
         return payment;
     }
 
@@ -101,8 +110,12 @@ public class APIController {
     public Payment payment(HttpServletRequest request, HttpServletResponse response, @PathVariable String pg) {
 
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
+        Context context = Context.builder(requestInfo)
+                .payment(requestInfo.getPayment())
+                .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN))
+                .build();
 
-        Payment payment = payService.doCommand(Command.Type.PAY, requestInfo);
+        Payment payment = payService.doCommand(Command.Type.PAY, context);
         return payment;
     }
 
@@ -112,7 +125,8 @@ public class APIController {
                                              @PathVariable String pg,
                                              @PathVariable String paymentType) {
 
-        logger.info("PAYMENT_DONE [{}-{}]", pg, paymentType);
+        logger.info("  >>> api.paymentdone, paymentType = {}", paymentType);
+
         Payment payment = null;
         Map<String, Object> transformedParams = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()[0]));
@@ -141,13 +155,14 @@ public class APIController {
                 Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
 
-                logger.debug("API [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
+                logger.debug("api.paymentdone [{}]. requestPayment = {}", pg, JsonUtil.toJson(requestPayment));
 
-                context = Context.builder()
-                        .requestInfo(requestInfo)
+                context = Context.builder(requestInfo)
                         .payment(requestPayment)
                         .responseInfo(new ResponseInfo(pgPayment.getLGD_RESPCODE(), pgPayment.getLGD_RESPMSG()))
                         .build();
+                logger.info("{}, requestInfo = {}", context.print(), requestInfo);
+
             } catch (SessionException e) {
                 // TODO 만약에 redis가 죽었다가 살아나서 requestInfo가 모두 reset 될 수도 있다면.
                 // 그런데 입금했다면, purchase는 안되어서 결국은 CR로.
@@ -159,8 +174,8 @@ public class APIController {
             }
 
             // 실패시 exceptionHandler에 의해 처리됨
-            payment = payService.doCommand(Command.Type.PAY, requestInfo);
-            logger.info("PAYMENT_DONE. OK. \n{}", JsonUtil.toJson(payment));
+            payment = payService.doCommand(Command.Type.PAY, context);
+            logger.info("{} api.paymentdone. OK. \n{}", context.print(), JsonUtil.toJson(payment));
             return new ResponseEntity("OK", HttpStatus.OK);
 
         } else {
@@ -178,8 +193,7 @@ public class APIController {
                                                @PathVariable String pg,
                                                @PathVariable String paymentType,
                                                @PathVariable Long paymentId) {
-
-        logger.info("CANCEL. [{}-{}], paymentId = {}", pg, paymentType, paymentId);
+        logger.info("  >>> api.cancel, paymentType = {}, paymentId = {}", paymentType, paymentId);
         if (request.getHeader("__x") == null || !request.getHeader("__x").toString().equals("nakia")) {
             // TODO 임시로 fraud detecting.
             logger.info("We need __x nakia");
@@ -199,11 +213,11 @@ public class APIController {
 
                 Payment<LguplusPayment> requestPayment = requestInfo.getPayment();
 
-                context = Context.builder()
-                        .requestInfo(requestInfo)
+                context = Context.builder(requestInfo)
                         .payment(requestPayment)
                         .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN))
                         .build();
+                logger.info("{} api.cancel requestInfo = {}", context.print(), requestInfo);
             } catch (SessionException e) {
                 // TODO 만약에 redis가 죽었다가 살아나서 requestInfo가 모두 reset 될 수도 있다면.
                 // 그런데 입금했다면, purchase는 안되어서 결국은 CR로.
@@ -213,8 +227,9 @@ public class APIController {
             }
 
             // 실패시 exceptionHandler에 의해 처리됨
-            payment = payService.doCommand(Command.Type.CANCEL, requestInfo);
-            logger.info("CANCEL OK. paymentId={}, userId={}", payment.getPaymentId(), payment.getUserId());
+            payment = payService.doCommand(Command.Type.CANCEL, context);
+            logger.info("{} api.cancel OK. paymentId={}, userId={}", context.print(),
+                    payment.getPaymentId(), payment.getUserId());
             return new ResponseEntity("OK", HttpStatus.OK);
 
         } else {
@@ -231,7 +246,7 @@ public class APIController {
     public <T> ResponseEntity<T> paymentRefund(HttpServletRequest request, HttpServletResponse response,
                                                @PathVariable String pg) {
 
-        logger.info("REFUND. [{}]", pg);
+        logger.info("  >>> api.refund, pg = {}", pg);
         if (request.getHeader("__x") == null || !request.getHeader("__x").toString().equals("nakia")) {
             return new ResponseEntity("Fraud", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -263,8 +278,14 @@ public class APIController {
                 requestPayment.setPaymentType(PaymentType.happypoint); // refund용은 정확한 값대신 null을 피하기 위해 임시 세팅.
 
                 requestInfo = new RequestInfo.Builder(requestPayment, "happypoint").build();
+                Context context = Context.builder(requestInfo)
+                        .payment(requestInfo.getPayment())
+                        .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN))
+                        .build();
 
-                payment = payService.doCommand(Command.Type.REFUND, requestInfo);
+                logger.info("{} api.refund. requestInfo = {}", context.print(), requestInfo);
+
+                payment = payService.doCommand(Command.Type.REFUND, context);
                 HappyPointPayment resultHappyPoint = (HappyPointPayment) payment.getPgPayment();
                 result = String.format("REFUND OK. paymentId=%s, userId=%s, mbrNo=%s, orgAprvNo=%s, orgAprvDt=%s",
                         payment.getPaymentId(), payment.getUserId(), happyPointPayment.getMbrNo(),

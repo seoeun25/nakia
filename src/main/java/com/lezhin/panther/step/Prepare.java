@@ -1,10 +1,10 @@
 package com.lezhin.panther.step;
 
+import com.lezhin.panther.Context;
 import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
-import com.lezhin.panther.model.RequestInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +30,8 @@ public class Prepare<T extends PGPayment> extends Command<T> {
         this.commandType = Type.PREPARE;
     }
 
-    public Prepare(RequestInfo requestInfo) {
-        super(requestInfo);
+    public Prepare(Context<T> context) {
+        super(context);
         this.commandType = Type.PREPARE;
     }
 
@@ -43,10 +43,11 @@ public class Prepare<T extends PGPayment> extends Command<T> {
     @Override
     public Payment<T> execute() throws PreconditionException, ExecutorException {
         initExecutor();
-        logger.info("{} start. {}", commandType.name(), context.printPretty());
+        logger.info("{} {} start.", context.print(), commandType.name());
         Payment<T> payment = executor.prepare();
         context = context.response(executor.getContext().getResponseInfo());
-        logger.info("{} complete. {}", commandType.name(), context.getResponseInfo().toString());
+        logger.info("{} {} complete. {} ", context.print(), commandType.name(),
+                context.getResponseInfo().toString());
 
         return payment;
     }

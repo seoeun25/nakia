@@ -7,7 +7,6 @@ import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
-import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.util.JsonUtil;
@@ -32,11 +31,6 @@ public class Pay<T extends PGPayment> extends Command<T> {
         this.commandType = Type.PAY;
     }
 
-    public Pay(RequestInfo requestInfo) {
-        super(requestInfo);
-        this.commandType = Type.PAY;
-    }
-
     public Pay(Context<T> context) {
         super(context);
         this.commandType = Type.PAY;
@@ -44,7 +38,7 @@ public class Pay<T extends PGPayment> extends Command<T> {
 
     public void verifyPrecondition() throws PreconditionException {
         if (payment.getState() != PaymentState.PC) {
-            throw new PreconditionException(requestInfo.getExecutorType(),
+            throw new PreconditionException(context,
                     String.format("Payment[%s] state should be %s but %s",
                             payment.getPaymentId(), PaymentState.PC, payment.getState()));
         }
@@ -54,7 +48,7 @@ public class Pay<T extends PGPayment> extends Command<T> {
     public Payment execute() {
         initExecutor();
 
-        logger.info("{} start {}", commandType.name(), context.printPretty());
+        logger.info("{} {} start.", context.print(), commandType.name());
 
         try {
             executor.pay();
@@ -63,7 +57,7 @@ public class Pay<T extends PGPayment> extends Command<T> {
         } finally {
             payment = executor.getContext().getPayment();
             context = context.payment(payment).response(executor.getContext().getResponseInfo());
-            logger.info("{} [{}] done. {}", commandType.name(), executor.getType(),
+            logger.info("{} {} done. {}", context.print(), commandType.name(),
                     context.getResponseInfo().toString());
             logger.debug("payment = {}, \n{}", payment.getPaymentId(), JsonUtil.toJson(payment));
         }
@@ -88,7 +82,7 @@ public class Pay<T extends PGPayment> extends Command<T> {
                 // response는 panther.
                 context = context.response(
                         new ResponseInfo(ResponseCode.LEZHIN_INTERNAL_PAYMNENT.getCode(), e.getMessage()));
-                throw new InternalPaymentException(requestInfo.getExecutorType(), e);
+                throw new InternalPaymentException(context, e);
             } else {
                 // execution이 fail되었다면 internalPayment의 update가 fail 되어도 그냥 둔다.
                 // response는 pg.errorCode
@@ -97,8 +91,9 @@ public class Pay<T extends PGPayment> extends Command<T> {
             logger.info("{} internal.error {} ", commandType.name(), context.getResponseInfo().toString());
         }
 
-        logger.info("{} complete. {} ", commandType.name(), context.getResponseInfo().toString());
-        executor.handleResponseCode(context.getResponseInfo().getCode());
+        logger.info("{} {} complete. {} ", context.print(), commandType.name(),
+                context.getResponseInfo().toString());
+        executor.handleResponse(context);
 
         return processNextStep();
     }

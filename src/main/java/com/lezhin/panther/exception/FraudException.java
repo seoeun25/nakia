@@ -10,6 +10,10 @@ import com.lezhin.panther.notification.NotificationLevel;
 @NotificationLevel(level = NotificationLevel.Level.ERROR)
 public class FraudException extends PantherException {
 
+    public FraudException(String message) {
+        super(message);
+    }
+
     public FraudException(Executor.Type type, String message) {
         super(type, message);
     }

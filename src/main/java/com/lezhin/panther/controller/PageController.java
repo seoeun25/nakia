@@ -98,12 +98,15 @@ public class PageController {
     public ModelAndView reservation(HttpServletRequest request, HttpServletResponse response,
                                     @PathVariable String pg, @PathVariable String paymentType) {
 
-        logger.info("  >>  RESERVATION [{}-{}]", pg, paymentType);
-        Util.printAccessLog(request);
+        logger.info("  >>>  page.reservation = {}", paymentType);
         RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
+        Context context = Context.builder(requestInfo)
+                .payment(requestInfo.getPayment())
+                .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN))
+                .build();
         Payment payment = null;
         try {
-            payment = pagePayService.doCommand(Command.Type.RESERVE, requestInfo);
+            payment = pagePayService.doCommand(Command.Type.RESERVE, context);
         } catch (Throwable e) {
             logger.warn("Failed to reserve !!!", e);
             String redirectUrl = getPaymentUrl(requestInfo, -1L);
@@ -113,7 +116,6 @@ public class PageController {
         Map<String, Object> map = JsonUtil.toMap(payment.getPgPayment());
 
         String jspName = String.format("pg/%s/%s/reservation", pg, paymentType);
-        logger.info("[{}] will show = {}", pg, jspName);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("pantherUrl", pantherProperties.getPantherUrl());
         modelAndView.addObject("failUrl",
@@ -132,7 +134,7 @@ public class PageController {
     public ModelAndView preAuthDone(HttpServletRequest request, HttpServletResponse response,
                                     @PathVariable String pg, @PathVariable String paymentType) {
 
-        logger.info("PREAUTH_DONE [{}-{}]", pg, paymentType);
+        logger.info("  >> page.preAuthDone = {}", paymentType);
         Payment payment = null;
 
         Map<String, Object> params = request.getParameterMap().entrySet().stream()
@@ -164,8 +166,7 @@ public class PageController {
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
                 params.put("isMobile", requestInfo.getIsMobile().booleanValue());
 
-                Context context = Context.builder()
-                        .requestInfo(requestInfo)
+                Context context = Context.builder(requestInfo)
                         .payment(requestPayment)
                         .responseInfo(new ResponseInfo(pgPayment.getLGD_RESPCODE(), pgPayment.getLGD_RESPMSG()))
                         .build();
@@ -186,7 +187,6 @@ public class PageController {
         }
 
         String jspName = String.format("pg/%s/%s/preauth_done", pg, paymentType);
-        logger.info("[{}] will show = {}", pg, jspName);
 
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("pantherUrl", pantherProperties.getPantherUrl());
@@ -204,7 +204,7 @@ public class PageController {
     @RequestMapping(value = "/{pg}/{paymentType}/authentication", method = RequestMethod.POST)
     public ModelAndView authenticate(HttpServletRequest request, HttpServletResponse response,
                                      @PathVariable String pg, @PathVariable String paymentType) {
-        logger.info("Authentication. [{}-{}]", pg, paymentType);
+        logger.info("  >> page.authenticate = {}", paymentType);
         Payment payment = null;
 
         Map<String, Object> params = request.getParameterMap().entrySet().stream()
@@ -224,8 +224,7 @@ public class PageController {
                 Payment requestPayment = Executor.Type.LGUDEPOSIT.createPayment(pgPayment);
                 requestInfo = new RequestInfo.Builder(requestInfo).withPayment(requestPayment).build();
 
-                Context context = Context.builder()
-                        .requestInfo(requestInfo)
+                Context context = Context.builder(requestInfo)
                         .payment(requestPayment)
                         .responseInfo(new ResponseInfo(pgPayment.getLGD_RESPCODE(), pgPayment.getLGD_RESPMSG()))
                         .build();
@@ -253,15 +252,14 @@ public class PageController {
                     DateUtil.toInstant(finalPayment.getLGD_CLOSEDATE(), "yyyyMMddHHmmss", DateUtil.ASIA_SEOUL_ZONE)
                             .toEpochMilli(),
                     DateUtil.ASIA_SEOUL_ZONE, "yyyy/MM/dd");
-            logger.info("  >>>  [LGUDEPOSIT] authentication done. payment={}, user={}, bank={}, account={}",
-                    finalPayment.getLGD_OID(), finalPayment.getLGD_BUYER(), finalPayment.getLGD_FINANCENAME(),
-                    finalPayment.getLGD_ACCOUNTNUM());
+            logger.info("  >>>  page.authenticate done. [LGUDEPOSIT, u={}, p={}] bank={}, account={}",
+                    finalPayment.getLGD_BUYER(), finalPayment.getLGD_OID(),
+                    finalPayment.getLGD_FINANCENAME(), finalPayment.getLGD_ACCOUNTNUM());
             return redirect(redirectUrl, requestInfo, finalPayment.getLGD_FINANCENAME(),
                     finalPayment.getLGD_ACCOUNTNUM(), date, null);
         }
 
         String jspName = String.format("pg/%s/%s/authentication", pg, paymentType);
-        logger.info("PAGE [{}] will show = {}", pg, jspName);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addAllObjects(JsonUtil.toMap(payment.getPgPayment()));
         modelAndView.setViewName(jspName);
@@ -306,7 +304,7 @@ public class PageController {
     private ModelAndView redirect(String redirectTargetUrl, RequestInfo requestInfo, String bank,
                                   String accountNumber, String date, Throwable e) {
         RedirectView redirectView = new RedirectView(redirectTargetUrl);
-        logger.info("REDIRECT to = {}", redirectView.getUrl());
+        logger.debug("  >> page.redirect to = {}", redirectView.getUrl());
         Map<String, Object> attrs = new HashMap<>();
         attrs.put("__u", Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getUserId()).orElse(-1L));
         attrs.put("isMobile", Optional.ofNullable(requestInfo).map(requestInfo1 -> requestInfo1.getIsMobile())

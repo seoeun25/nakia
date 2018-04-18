@@ -1,5 +1,6 @@
 package com.lezhin.panther.exception;
 
+import com.lezhin.panther.Context;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.notification.NotificationLevel;
 
@@ -10,16 +11,20 @@ import com.lezhin.panther.notification.NotificationLevel;
 @NotificationLevel(level = NotificationLevel.Level.ERROR)
 public class InternalPaymentException extends PantherException {
 
-    public InternalPaymentException(Executor.Type type, String message) {
-        super(type, message);
+    public InternalPaymentException(String message) {
+        super(message);
     }
 
-    public InternalPaymentException(Executor.Type type, Throwable e) {
-        super(type, e);
+    public InternalPaymentException(Context context, String message) {
+        super(context, message);
     }
 
-    public InternalPaymentException(Executor.Type type, String message, Throwable e) {
-        super(type, message, e);
+    public InternalPaymentException(Context context, Throwable e) {
+        super(context, e);
+    }
+
+    public InternalPaymentException(Context context, String message, Throwable e) {
+        super(context, message, e);
     }
 
 }

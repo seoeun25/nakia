@@ -22,11 +22,6 @@ public class Complete<T extends PGPayment> extends Command<T> {
         this.commandType = Type.COMPLETE;
     }
 
-    public Complete(RequestInfo requestInfo) {
-        super(requestInfo);
-        this.commandType = Type.COMPLETE;
-    }
-
     public Complete(Context<T> context) {
         super(context);
         this.commandType = Type.COMPLETE;

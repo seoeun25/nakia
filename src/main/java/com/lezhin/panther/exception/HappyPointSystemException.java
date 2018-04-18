@@ -1,5 +1,6 @@
 package com.lezhin.panther.exception;
 
+import com.lezhin.panther.Context;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 
@@ -11,24 +12,18 @@ public class HappyPointSystemException extends PantherException {
 
     private String code;
 
-    public HappyPointSystemException(Executor.Type type, String code) {
-        super(type, code);
+    public HappyPointSystemException(String message) {
+        super(message);
+    }
+
+    public HappyPointSystemException(Context context, String code) {
+        super(context, code);
         this.code = code;
     }
 
-    public HappyPointSystemException(Executor.Type type, String code, String message) {
-        super(type, code + ":" + message);
+    public HappyPointSystemException(Context context, String code, String message) {
+        super(context, code + ":" + message);
         this.code = code;
-    }
-
-    public HappyPointSystemException(Executor.Type type, ResponseCode errorCode) {
-        super(type, errorCode.getMessage());
-        this.code = errorCode.getCode();
-    }
-
-
-    public HappyPointSystemException(Executor.Type type, Throwable e) {
-        super(type, e);
     }
 
     public String getCode() {

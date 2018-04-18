@@ -10,6 +10,10 @@ import com.lezhin.panther.notification.NotificationLevel;
 @NotificationLevel(level = NotificationLevel.Level.ERROR)
 public class PincruxException extends PantherException {
 
+    public PincruxException(String message) {
+        super(message);
+    }
+
     public PincruxException(Executor.Type type, String message) {
         super(type, message);
     }

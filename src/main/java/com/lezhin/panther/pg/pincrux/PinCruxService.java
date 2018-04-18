@@ -130,7 +130,7 @@ public class PinCruxService {
                     .build()
                     .encode();
         } catch (URISyntaxException e) {
-            throw new PantherException(Executor.Type.UNKNOWN, e);
+            throw new PantherException(e);
         }
 
         // 핀크럭스 리턴이 text/html 로 json을 준다
@@ -239,8 +239,7 @@ public class PinCruxService {
                         || Objects.equals(OsFlag.ALL.flag(), item.getOsFlag())))
                 .collect(Collectors.toList());
         if (items.size() == 0) {
-            throw new PantherException(Executor.Type.UNKNOWN,
-                    "Item not found for attp. request = " + JsonUtil.toJson(reqData));
+            throw new PantherException("Item not found for attp. request = " + JsonUtil.toJson(reqData));
         }
         Item item = items.get(0);
         logger.info("attp.item. appkey={}, coin={}, appName={}, viewTitle={}, ",
@@ -299,7 +298,7 @@ public class PinCruxService {
                 .filter(adEvent1 -> adEvent1.getStatus() == ADEvent.Status.reward
                         && !StringUtils.isEmpty(adEvent1.getRewardAt()))
                 .ifPresent(ad -> {
-                    throw new ParameterException(Executor.Type.UNKNOWN,
+                    throw new ParameterException(
                             String.format("ADEvent is already rewarded. user=%s, appkey=%s, transid=%s, rewardAt=%s",
                                     reqData.getUsrkey(), reqData.getAppkey(), reqData.getTransid(),
                                     DateUtil.getDateTimeString(ad.getRewardAt().getTime())));

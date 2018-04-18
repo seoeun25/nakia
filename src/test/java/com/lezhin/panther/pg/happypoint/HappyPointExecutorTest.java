@@ -21,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,17 +65,17 @@ public class HappyPointExecutorTest {
         request1.setParameter("_lz", "4ea0f867-ad9c-4ad7-b024-0b8c258f853d");
         RequestInfo requestInfo = new RequestInfo.Builder(request1, "happypoint").build();
 
-        Context context = Context.builder().requestInfo(requestInfo).payment(requestInfo.getPayment())
+        Context context = Context.builder(requestInfo).payment(requestInfo.getPayment())
                 .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN)).build();
 
-        Long paymentId = context.getPaymentId();
-        Long userId = context.getUserId();
+        Optional<Long> paymentId = context.getPaymentId();
+        Optional<Long> userId = context.getUserId();
 
         System.out.println(paymentId);
         System.out.println(userId);
 
-        assertEquals(-1L, paymentId.longValue());
-        assertEquals(10101L, userId.longValue());
+        assertEquals(-1L, paymentId.get().longValue());
+        assertEquals(10101L, userId.get().longValue());
         assertEquals(ResponseCode.LEZHIN_UNKNOWN.getCode(), context.getResponseInfo().getCode());
 
     }

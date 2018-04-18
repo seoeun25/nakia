@@ -48,7 +48,7 @@ public class ScheduleService {
         // FIXME lguplus log 를 삭제하지 말고 ES에 저장.
         logger.info("cleanup start");
         slackNotifier.notify(SlackEvent.builder()
-                .header(Executor.Type.UNKNOWN.name())
+                .header("cleanup")
                 .level(SlackMessage.LEVEL.INFO)
                 .title("cleanup start")
                 .message("")
@@ -68,7 +68,7 @@ public class ScheduleService {
                         .forEach(file -> logger.info("delete {} = {} ", file.getName(), file.delete()));
             } catch (Exception e) {
                 logger.warn("Failed to delete logFile", e);
-                handlePantherException(new PantherException(Executor.Type.UNKNOWN, e));
+                handlePantherException(new PantherException(e));
             }
         }
 
@@ -124,7 +124,7 @@ public class ScheduleService {
     public void handlePantherException(final PantherException e) {
         logger.error("ScheduleService. PantherException", e);
         slackNotifier.notify(SlackEvent.builder()
-                .header(Optional.ofNullable(e.getType()).orElse(Executor.Type.UNKNOWN).name())
+                .header(e.getExecutorType().orElse(Executor.Type.UNKNOWN).name())
                 .level(SlackMessage.LEVEL.ERROR)
                 .title(e.getMessage())
                 .message("")

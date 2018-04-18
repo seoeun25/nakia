@@ -46,8 +46,9 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
 
     public static final int CLOSE_PERIOD = 3; // 무통장 입금 마감시간. days.
 
-    public LguDepositExecutor() {
+    protected LguDepositExecutor() {
         this.type = Type.LGUDEPOSIT;
+        logger.warn("Context can not be null");
     }
 
     public LguDepositExecutor(Context<LguplusPayment> context) {
@@ -126,7 +127,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             logger.info("문의전화 LG유플러스 1544-7772<br>");
             context = context.response(ResponseInfo.builder().code(LEZHIN_EXECUTION.getCode())
                     .description("mall.conf is not valid").build());
-            throw new ExecutorException(type, "Failed to load XPayClient. Check the mall.conf and Mert Key");
+            throw new ExecutorException(context, "Failed to load XPayClient. Check the mall.conf and Mert Key");
         } else {
             logger.info("[TX] init config done");
             logger.info("[TX]   CST_PLATFORM = " + CST_PLATFORM);
@@ -150,7 +151,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
                 logger.info("" + e.getMessage());
                 context = context.response(ResponseInfo.builder().code(LEZHIN_EXECUTION.getCode())
                         .description("XPayClient.INIT_TX failed").build());
-                throw new ExecutorException(type, "Failed to init XPayClient.INIT_TX : " + e.getMessage());
+                throw new ExecutorException(context, "Failed to init XPayClient.INIT_TX : " + e.getMessage());
             }
         }
 
@@ -162,7 +163,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             context = context.response(responseInfo);
             if (!succeeded(responseInfo)) {
                 logger.info("[TX] done. failed. PaymentByKey= {}", responseInfo.toString());
-                throw new LguDepositException(type, "Tx failed : " + xpay.m_szResCode +
+                throw new LguDepositException(context, "Tx failed : " + xpay.m_szResCode +
                         ":" + xpay.m_szResMsg);
             }
 
@@ -178,10 +179,10 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             logger.info("[TX]   LGD_BUYER = {}", xpay.Response("LGD_BUYER", 0));
 
             if (StringUtils.isEmpty(xpay.Response("LGD_FINANCENAME", 0))) {
-                throw new LguDepositException(type, "LGD_FINANCENAME can not be empty");
+                throw new LguDepositException(context, "LGD_FINANCENAME can not be empty");
             }
             if (StringUtils.isEmpty(xpay.Response("LGD_ACCOUNTNUM", 0))) {
-                throw new LguDepositException(type, "LGD_ACCOUNTNUM can not be empty");
+                throw new LguDepositException(context, "LGD_ACCOUNTNUM can not be empty");
             }
 
             Map<String, Object> responseMap = new HashMap<>();
@@ -209,7 +210,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
                     .code(xpay.m_szResCode).description(xpay.m_szResMsg).build();
             logger.info("[TX PaymentByKey] result is false !!!!. FAILED. response = {}", responseInfo.toString());
             context.response(responseInfo);
-            throw new LguDepositException(type, "Tx result is false. TX(PaymentByKey): " + xpay.m_szResCode +
+            throw new LguDepositException(context, "Tx result is false. TX(PaymentByKey): " + xpay.m_szResCode +
                     ":" + xpay.m_szResMsg);
         }
 
@@ -280,7 +281,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
                     // 가상 계좌 생성
                     responseInfo = responseInfo.toBuilder().description("CASFLAG should be 'I' but R").build();
                     context = context.response(responseInfo);
-                    throw new LguDepositException(type, "CASFLAG should be 'I' but 'R'");
+                    throw new LguDepositException(context, "CASFLAG should be 'I' but 'R'");
 
                 } else if ("I".equals(LGD_CASFLAG.trim())) {
                     // 입금
@@ -294,18 +295,18 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
                     // 입금 취소
                     responseInfo = responseInfo.toBuilder().description("CASFLAG should be 'I' but C").build();
                     context = context.response(responseInfo);
-                    throw new LguDepositException(type, "CASFLAG should be 'I' but C");
+                    throw new LguDepositException(context, "CASFLAG should be 'I' but C");
                 }
             } else { //결제가 실패이면
                 responseInfo = responseInfo.toBuilder().description("LGU payment failed").build();
                 context = context.response(responseInfo);
-                throw new LguDepositException(type, "LGU deposit payment failed:" + LGD_RESPMSG);
+                throw new LguDepositException(context, "LGU deposit payment failed:" + LGD_RESPMSG);
             }
         } else { //해쉬값이 검증이 실패이면
             responseInfo = responseInfo.toBuilder().code(ResponseCode.LGUPLUS_ERROR.getCode())
                     .description("LGD_HASHDATA is not valid").build();
             context = context.response(responseInfo);
-            throw new LguDepositException(type, "LGD_HASHDATA is not valid");
+            throw new LguDepositException(context, "LGD_HASHDATA is not valid");
         }
 
         return payment;
@@ -406,7 +407,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
                 context = context.response(responseInfo);
                 if (!succeeded(responseInfo)) {
                     logger.info("[TX] done. failed. CyberAccount= {}", responseInfo.toString());
-                    throw new LguDepositException(type, "Tx failed : " + xpay.m_szResCode +
+                    throw new LguDepositException(context, "Tx failed : " + xpay.m_szResCode +
                             ":" + xpay.m_szResMsg);
                 }
 
@@ -427,7 +428,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
             ResponseInfo responseInfo = new ResponseInfo(xpay.m_szResCode, xpay.m_szResMsg);
             logger.info("[TX CyberAccount] result is false !!!!. FAILED. response = {}", responseInfo.toString());
             context.response(responseInfo);
-            throw new LguDepositException(type, "Tx result is false. TX(CyberAccount): " + xpay.m_szResCode +
+            throw new LguDepositException(context, "Tx result is false. TX(CyberAccount): " + xpay.m_szResCode +
                     ":" + xpay.m_szResMsg);
         }
 
@@ -454,12 +455,13 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
     /**
      * Throws Exception if lguplus execution failed.
      *
-     * @param responseCode
+     * @param context
      * @throws LguDepositException
      */
-    public void handleResponseCode(String responseCode) throws HappyPointParamException, HappyPointSystemException {
-        if (!responseCode.equals(ResponseCode.LGUPLUS_OK.getCode())) {
-            throw new LguDepositException(type, context.getResponseInfo().getCode(),
+    public void handleResponse(Context context) throws LguDepositException {
+        String resCode = context.getResponseInfo().getCode();
+        if (!resCode.equals(ResponseCode.LGUPLUS_OK.getCode())) {
+            throw new LguDepositException(context, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
     }

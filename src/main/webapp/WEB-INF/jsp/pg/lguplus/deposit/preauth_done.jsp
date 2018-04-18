@@ -22,7 +22,7 @@
     <title>LG U+ 전자결제 서비스</title>
     <link href="https://xpay.lgdacom.net:7443/xpay/css/red_v25/import.css" rel="stylesheet" type="text/css">
     <!--[if IE 6]>
-    <link rel="stylesheet" href='https://xpay.lgdacom.net:7443/xpay/css/red_v25/ie6.css' type="text/css"
+    <link rel="stylesheet" href='https://xpay.lgdacom.net:7443/xpay/css/red_v25/ie6.css' context="text/css"
           charset="euc-kr" media="all"/>
     <![endif]-->
     <style>
@@ -76,10 +76,10 @@
                     if (payReqMap.get(key) instanceof String[]) {
                         String[] valueArr = (String[]) payReqMap.get(key);
                         for (int k = 0; k < valueArr.length; k++)
-                            out.println("<input type='hidden' name='" + key + "' id='" + key + "'value='" + valueArr[k] + "'/>");
+                            out.println("<input context='hidden' name='" + key + "' id='" + key + "'value='" + valueArr[k] + "'/>");
                     } else {
                         String value = payReqMap.get(key) == null ? "" : (String) payReqMap.get(key);
-                        out.println("<input type='hidden' name='" + key + "' id='" + key + "'value='" + value + "'/>");
+                        out.println("<input context='hidden' name='" + key + "' id='" + key + "'value='" + value + "'/>");
                     }
                 }
             %>

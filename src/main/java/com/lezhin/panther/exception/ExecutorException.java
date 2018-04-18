@@ -1,5 +1,6 @@
 package com.lezhin.panther.exception;
 
+import com.lezhin.panther.Context;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.notification.NotificationLevel;
 
@@ -10,11 +11,16 @@ import com.lezhin.panther.notification.NotificationLevel;
 @NotificationLevel(level = NotificationLevel.Level.ERROR)
 public class ExecutorException extends PantherException {
 
-    public ExecutorException(Executor.Type type, String message) {
-        super(type, message);
+    public ExecutorException(String message) {
+        super(message);
     }
 
-    public ExecutorException(Executor.Type type, Throwable e) {
-        super(type, e);
+
+    public ExecutorException(Context context, String message) {
+        super(context, message);
+    }
+
+    public ExecutorException(Context context, Throwable e) {
+        super(context, e);
     }
 }

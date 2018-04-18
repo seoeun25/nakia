@@ -34,43 +34,18 @@ public class PagePayService {
     @Autowired
     private BeanFactory beanFactory;
 
-    public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final RequestInfo requestInfo) {
-        logger.info("[{}, {}, u={}, p={}]", type, requestInfo.getExecutorType(), requestInfo.getUserId(),
-                Optional.ofNullable(requestInfo.getPayment()).map(e -> e.getPaymentId()).orElse(-1l));
+    public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final Context<T> context) {
+        logger.info("[{}, u={}, p={}] {}", context.getRequestInfo().getExecutorType(),
+                context.getRequestInfo().getUserId(),
+                Optional.ofNullable(context.getRequestInfo().getPayment()).map(e -> e.getPaymentId()).orElse(null),
+                type);
         Payment<T> resultPayment = null;
         Command<T> command = null;
 
         switch (type) {
             case RESERVE:
-                command = beanFactory.getBean(Reserve.class, requestInfo);
+                command = beanFactory.getBean(Reserve.class, context);
                 break;
-            case AUTHENTICATE:
-                command = beanFactory.getBean(Authenticate.class, requestInfo);
-                break;
-            case PAY:
-                command = beanFactory.getBean(Pay.class, requestInfo);
-                break;
-            case COMPLETE:
-                command = beanFactory.getBean(Complete.class, requestInfo);
-                break;
-            default:
-                throw new PantherException(Executor.Type.UNKNOWN, "Unsupported type = " + type);
-        }
-        command.loadState();
-        resultPayment = command.execute();
-
-
-        return resultPayment;
-    }
-
-    public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final Context<T> context) {
-        logger.info("[{}, {}, u={}, p={}]", type, context.getRequestInfo().getExecutorType(),
-                context.getRequestInfo().getUserId(),
-                Optional.ofNullable(context.getRequestInfo().getPayment()).map(e -> e.getPaymentId()).orElse(-1l));
-        Payment<T> resultPayment = null;
-        Command<T> command = null;
-
-        switch (type) {
             case PREAUTHENTICATE:
                 command = beanFactory.getBean(PreAuthenticate.class, context);
                 break;
@@ -84,17 +59,12 @@ public class PagePayService {
                 command = beanFactory.getBean(Complete.class, context);
                 break;
             default:
-                throw new PantherException(Executor.Type.UNKNOWN, "Unsupported type = " + type);
+                throw new PantherException(Executor.Type.UNKNOWN, "Unsupported context = " + type);
         }
         command.loadState();
         resultPayment = command.execute();
 
         return resultPayment;
-    }
-
-    private void mergeParam(HttpServletRequest request, HttpServletResponse response, PGPayment pgPayment) {
-
-
     }
 
 }

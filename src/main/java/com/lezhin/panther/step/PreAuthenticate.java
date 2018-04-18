@@ -5,7 +5,6 @@ import com.lezhin.panther.Context;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
-import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.util.JsonUtil;
 
 import org.slf4j.Logger;
@@ -30,11 +29,6 @@ public class PreAuthenticate<T extends PGPayment> extends Command<T> {
         this.commandType = Type.PREAUTHENTICATE;
     }
 
-    public PreAuthenticate(RequestInfo requestInfo) {
-        super(requestInfo);
-        this.commandType = Type.PREAUTHENTICATE;
-    }
-
     public PreAuthenticate(Context<T> context) {
         super(context);
         this.commandType = Type.PREAUTHENTICATE;
@@ -42,7 +36,7 @@ public class PreAuthenticate<T extends PGPayment> extends Command<T> {
 
     public void verifyPrecondition() throws PreconditionException {
         if (payment.getState() != PaymentState.R) {
-            throw new PreconditionException(requestInfo.getExecutorType(),
+            throw new PreconditionException(context,
                     String.format("Payment[%s] state should be %s but %s",
                             payment.getPaymentId(), PaymentState.R, payment.getState()));
         }
@@ -52,16 +46,16 @@ public class PreAuthenticate<T extends PGPayment> extends Command<T> {
     public Payment execute() {
         initExecutor();
 
-        logger.info("{} start. {}", commandType.name(), context.printPretty());
+        logger.info("{} {} start.", context.print(), commandType.name());
 
         payment = executor.preAuthenticate();
         context = context.payment(payment).response(executor.getContext().getResponseInfo());
-        logger.info("{} [{}] done. {}", commandType.name(), executor.getType(),
+        logger.info("{} {} done. {}", context.print(), commandType.name(),
                 context.getResponseInfo().toString());
         logger.debug("payment = {}", JsonUtil.toJson(payment));
-        executor.handleResponseCode(context.getResponseInfo().getCode());
+        executor.handleResponse(context);
 
-        logger.info("{} [{}] complete. {} ", commandType.name(), executor.getType(),
+        logger.info("{} {} complete. {} ", context.print(), commandType.name(),
                 context.getResponseInfo().toString());
 
         return processNextStep();

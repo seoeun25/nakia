@@ -157,7 +157,7 @@ public class Util {
 
     public static Executor.Type getType(Throwable e) {
         Executor.Type executorType = Optional.of(e).filter(ex -> (ex instanceof PantherException))
-                .map(ex -> ((PantherException) ex).getType()).orElse(Executor.Type.UNKNOWN);
+                .map(ex -> ((PantherException) ex).getExecutorType().get()).orElse(Executor.Type.UNKNOWN);
         return executorType;
     }
 

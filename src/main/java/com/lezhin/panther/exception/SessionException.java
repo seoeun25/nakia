@@ -12,6 +12,10 @@ import com.lezhin.panther.notification.NotificationLevel;
 @NotificationLevel(level = NotificationLevel.Level.ERROR)
 public class SessionException extends PantherException {
 
+    public SessionException(String message) {
+        super(message);
+    }
+
     public SessionException(Executor.Type type, String message) {
         super(type, message);
     }

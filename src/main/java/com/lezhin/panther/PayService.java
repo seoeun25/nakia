@@ -46,34 +46,36 @@ public class PayService {
 
     }
 
-    public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final RequestInfo requestInfo) {
-        logger.info("[{}, {}, u={}, p={}]", type, requestInfo.getExecutorType(), requestInfo.getUserId(),
-                Optional.ofNullable(requestInfo.getPayment()).map(e -> e.getPaymentId()).orElse(-1l));
+    public <T extends PGPayment> Payment<T> doCommand(final Command.Type type, final Context context) {
+        logger.info("[{}, u={}, p={}] {}", context.getRequestInfo().getExecutorType(),
+                context.getRequestInfo().getUserId(),
+                Optional.ofNullable(context.getRequestInfo().getPayment()).map(e -> e.getPaymentId()).orElse(null),
+                type);
         Payment<T> resultPayment = null;
         Command<T> command = null;
         try {
 
             switch (type) {
                 case PREPARE:
-                    command = beanFactory.getBean(Prepare.class, requestInfo);
+                    command = beanFactory.getBean(Prepare.class, context);
                     break;
                 case RESERVE:
-                    command = beanFactory.getBean(Reserve.class, requestInfo);
+                    command = beanFactory.getBean(Reserve.class, context);
                     break;
                 case AUTHENTICATE:
-                    command = beanFactory.getBean(Authenticate.class, requestInfo);
+                    command = beanFactory.getBean(Authenticate.class, context);
                     break;
                 case PAY:
-                    command = beanFactory.getBean(Pay.class, requestInfo);
+                    command = beanFactory.getBean(Pay.class, context);
                     break;
                 case CANCEL:
-                    command = beanFactory.getBean(Cancel.class, requestInfo);
+                    command = beanFactory.getBean(Cancel.class, context);
                     break;
                 case REFUND:
-                    command = beanFactory.getBean(Refund.class, requestInfo);
+                    command = beanFactory.getBean(Refund.class, context);
                     break;
                 case COMPLETE:
-                    command = beanFactory.getBean(Complete.class, requestInfo);
+                    command = beanFactory.getBean(Complete.class, context);
                     break;
             }
             command.loadState();
@@ -96,7 +98,7 @@ public class PayService {
             throw e;
         } catch (Throwable e) {
             logger.warn("Unexpected error. failed !!!");
-            throw new PantherException(requestInfo.getExecutorType(), e);
+            throw new PantherException(context.getRequestInfo().getExecutorType(), e);
         }
 
         return resultPayment;

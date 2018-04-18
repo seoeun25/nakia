@@ -10,6 +10,10 @@ import com.lezhin.panther.executor.Executor;
  */
 public class CIException extends PantherException {
 
+    public CIException(String message) {
+        super(message);
+    }
+
     public CIException(Executor.Type type, String message) {
         super(type, message);
     }

@@ -24,9 +24,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
+import javax.management.openmbean.OpenDataException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 /**
@@ -56,10 +58,9 @@ public class InternalPaymentService {
     }
 
 
-    public <T extends PGPayment> Payment<T> reserve(Context<T> context) {
+    public <T extends PGPayment> Payment<T> reserve(final Context<T> context) {
 
         String url = pantherProperties.getApiUrl() + "/reserve";
-        logger.info("RESERVE. to {}. token = {}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -70,15 +71,23 @@ public class InternalPaymentService {
         T pgPayment = (T) payment.getPgPayment();
         payment.setPgPayment(null); // internal에 없는 모델 제외. TODO annotation
         HttpEntity<Payment> request = new HttpEntity<>(payment, headers);
-        logger.info("RESERVE. send : \n{}", JsonUtil.toJson(payment));
+        logger.info("{} internal.reserve. \nto {}. token={}, request={}", context.print(), url, context
+                        .getRequestInfo().getToken(),
+                JsonUtil.toJson(payment));
 
-        HttpEntity<Result> response = exchange(url, HttpMethod.POST, request,
-                context.getRequestInfo().getExecutorType());
-        logger.info("RESERVE. internal.reserve response code = {}, {} ", response.getBody().getCode(),
+        HttpEntity<Result> response = exchange(url, HttpMethod.POST, request, context);
+        logger.info("{} internal.reserve. {}={} ", context.print(), response.getBody().getCode(),
                 response.getBody().getDescription());
 
-        return convert(response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment, payment.getExternalStoreProductId(),
-                context.getRequestInfo().getExecutorType());
+        Payment<T> reserved = convert(context, response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment,
+                payment.getExternalStoreProductId());
+
+        logger.info("{} reserved. u={}, p={}, state={}, coinProductId={}, " +
+                        "coinProductName={}, amount={}",
+                context.print(), reserved.getUserId(), reserved.getPaymentId(),
+                reserved.getState(), reserved.getCoinProductId(),
+                reserved.getCoinProductName(), reserved.getAmount());
+        return reserved;
 
     }
 
@@ -93,7 +102,6 @@ public class InternalPaymentService {
         } else {
             url += "/authentication/fail";
         }
-        logger.info("AUTHENTICATE. to {}, token = {}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -120,15 +128,17 @@ public class InternalPaymentService {
         }
 
         HttpEntity<Meta> request = new HttpEntity<>(meta, headers);
-        logger.info("AUTHENTICATE send : \n{}", JsonUtil.toJson(meta));
+        logger.info("{} internal.authenticate \nto {}. token={}, request={}", context.print(), url,
+                context.getRequestInfo().getToken(),
+                JsonUtil.toJson(payment));
 
-        HttpEntity<Result> response = exchange(url, HttpMethod.PUT, request,
-                context.getRequestInfo().getExecutorType());
-        logger.info("AUTHENTICATE. internal.authenticate response code = {}, {} ", response.getBody().getCode(),
+        HttpEntity<Result> response = exchange(url, HttpMethod.PUT, request, context);
+        logger.info("{} internal.authenticate. {}={} ", context.print(),
+                response.getBody().getCode(),
                 response.getBody().getDescription());
 
-        return convert(response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment, payment.getExternalStoreProductId(),
-                context.getRequestInfo().getExecutorType());
+        return convert(context, response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment,
+                payment.getExternalStoreProductId());
     }
 
     public <T extends PGPayment> Payment<T> pay(Context<T> context) {
@@ -144,7 +154,6 @@ public class InternalPaymentService {
         } else {
             url += "/fail";
         }
-        logger.info("PAY. to {}. token = {}", url, context.getRequestInfo().getToken());
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -170,16 +179,18 @@ public class InternalPaymentService {
         }
 
         HttpEntity<Meta> request = new HttpEntity<>(meta, headers);
-        logger.info("PAY. send : \n{}", JsonUtil.toJson(meta));
+        logger.info("{} internal.pay \nto {}. token={}, request={}", context.print(), url,
+                context.getRequestInfo().getToken(),
+                JsonUtil.toJson(payment));
 
-        HttpEntity<Result> response = exchange(url, HttpMethod.PUT, request,
-                context.getRequestInfo().getExecutorType());
+        HttpEntity<Result> response = exchange(url, HttpMethod.PUT, request, context);
 
-        logger.info("PAY. internal.pay response code = {}, {} ", response.getBody().getCode(),
+        logger.info("{} internal.pay {}={} ", context.print(),
+                response.getBody().getCode(),
                 response.getBody().getDescription());
 
-        return convert(response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment, payment.getExternalStoreProductId(),
-                context.getRequestInfo().getExecutorType());
+        return convert(context, response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment,
+                payment.getExternalStoreProductId());
 
     }
 
@@ -198,11 +209,10 @@ public class InternalPaymentService {
 
         HttpEntity request = new HttpEntity<>(headers);
 
-        HttpEntity<Result> response = exchange(url, HttpMethod.GET, request,
-                context.getRequestInfo().getExecutorType());
+        HttpEntity<Result> response = exchange(url, HttpMethod.GET, request, context);
 
-        return convert(response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment, payment.getExternalStoreProductId(),
-                context.getRequestInfo().getExecutorType());
+        return convert(context, response.getBody(), (Class<T>) pgPayment.getClass(), pgPayment,
+                payment.getExternalStoreProductId());
     }
 
     /**
@@ -214,44 +224,16 @@ public class InternalPaymentService {
      * @return
      * @throws {@linkplain InternalPaymentException}
      */
-    public HttpEntity<Result> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Executor.Type type) {
+    public HttpEntity<Result> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Context context) {
         HttpEntity<Result> response = null;
+        Executor.Type type = Optional.ofNullable(context).map(c -> c.getType()).orElse(Executor.Type.UNKNOWN);
         try {
             response = httpClientService.exchange(url, method, requestEntity, type, Result.class);
         } catch (Exception e) {
-            throw new InternalPaymentException(type, "InternalPaymentService.Error:" + e.getMessage(), e);
+            throw new InternalPaymentException(context, "InternalPaymentService.Error:" + e.getMessage(), e);
         }
         return response;
 
-//        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-//        HttpEntity<Result> response = null;
-//        for (int i = 1; i <= RETRY_COUNT + 1; i++) {
-//            try {
-//                response = restTemplate.exchange(url, method, requestEntity, Result.class);
-//                break;
-//            } catch (Throwable e) {
-//                if (TRANSIENT_EXECPTIONS.contains(e.getClass()) && i <= RETRY_COUNT) {
-//                    logger.info("Failed to exchange: " + e.getMessage());
-//                    logger.info("Retrying ...... [{}]", i);
-//                    try {
-//                        Thread.sleep(500 * i);
-//                    } catch (Exception ea) {
-//                        logger.warn("Failed", ea);
-//                    }
-//                } else {
-//                    if (i == RETRY_COUNT + 1) {
-//                        logger.warn("All retry failed : " + e.getMessage());
-//                    }
-//                    throw new InternalPaymentException(type, e);
-//                }
-//            }
-//        }
-//        if (response.getBody() == null) {
-//            ResponseEntity<Result> re = (ResponseEntity<Result>) response;
-//            logger.warn("Response is null. Status = {}", re.getStatusCode());
-//            throw new InternalPaymentException(type, "InternalPaymentService Error. Status:" + re.getStatusCode());
-//        }
-//        return response;
     }
 
 
@@ -261,39 +243,41 @@ public class InternalPaymentService {
      * @return
      * @throws {@linkplain InternalPaymentException}
      */
-    public <T extends PGPayment> Payment<T> convert(Result result, Class<T> pgPaymentClass, T pgPayment,
-                                                    String externalStoreProductId, Executor.Type type) {
+    public <T extends PGPayment> Payment<T> convert(final Context context,
+                                                    final Result result, final Class<T> pgPaymentClass, final T pgPayment,
+                                                    final String externalStoreProductId) {
         if (result == null) {
-            throw new InternalPaymentException(type, "Internal. result is null");
+            throw new InternalPaymentException(context, "Internal. result is null");
         }
 
         if (!ResponseCode.INTERNAL_OK.getCode().equals(String.valueOf(result.getCode()))) {
-            throw new InternalPaymentException(type, "InternalFailed: " + result.getCode() + ":" +
+            throw new InternalPaymentException(context, "InternalFailed: " + result.getCode() + ":" +
                     result.getDescription());
         }
 
         String jsonData = JsonUtil.toJson(result.getData());
         if (jsonData == null) {
-            throw new InternalPaymentException(type,
+            throw new InternalPaymentException(context,
                     "Internal. result.data is null : " + String.valueOf(result.getCode()));
         }
 
         Payment<T> responsePayment = null;
         try {
             responsePayment = JsonUtil.fromJsonToPayment(jsonData, pgPaymentClass);
-            logger.info("RESPONSE. paymentId={}, state={}, userId={}, coinProductId={}, coinProductName={}, " +
-                            "amount={}", responsePayment.getPaymentId(), responsePayment.getState(),
-                    responsePayment.getUserId(), responsePayment.getCoinProductId(),
+            logger.debug("{} internal.response. u={}, p={}, state={}, coinProductId={}, " +
+                            "coinProductName={}, amount={}",
+                    context.print(), responsePayment.getUserId(), responsePayment.getPaymentId(),
+                    responsePayment.getState(), responsePayment.getCoinProductId(),
                     responsePayment.getCoinProductName(), responsePayment.getAmount());
-            logger.debug("responsedPayment = \n{}", JsonUtil.toJson(responsePayment));
+            logger.debug("{} responsedPayment = \n{}", context.print(), JsonUtil.toJson(responsePayment));
             responsePayment.setPgPayment(pgPayment);
             responsePayment.setExternalStoreProductId(externalStoreProductId);
         } catch (Exception e) {
-            throw new InternalPaymentException(type, e);
+            throw new InternalPaymentException(context, e);
         }
 
         if (responsePayment == null) {
-            throw new InternalPaymentException(type, String.valueOf(result.getCode()));
+            throw new InternalPaymentException(context, String.valueOf(result.getCode()));
         }
 
         return responsePayment;

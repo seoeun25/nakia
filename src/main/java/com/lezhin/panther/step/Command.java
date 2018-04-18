@@ -101,12 +101,6 @@ public abstract class Command<T extends PGPayment> {
 
     }
 
-    public Command(final RequestInfo requestInfo) {
-        this.requestInfo = requestInfo;
-        this.payment = requestInfo.getPayment();
-        initContext();
-    }
-
     public Command(final Context<T> context) {
         this.context = context;
         this.requestInfo = context.getRequestInfo();
@@ -170,7 +164,7 @@ public abstract class Command<T extends PGPayment> {
     }
 
     protected void initContext() {
-        context = Context.builder().requestInfo(requestInfo).payment(payment)
+        context = Context.builder(requestInfo).payment(payment)
                 .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN)).build();
     }
 
@@ -222,7 +216,6 @@ public abstract class Command<T extends PGPayment> {
         } else {
             // TODO toBudiler로 create
             Context<T> nextStepContext = context.payment(context.getPayment());
-            logger.info("nextStep = {}, context = {} ", next, nextStepContext.printPretty());
             Command nextCommand = beanFactory.getBean(next.getCommandClass(), nextStepContext);
             Payment<T> nextResult = nextCommand.execute();
             return nextResult;

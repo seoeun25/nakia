@@ -62,13 +62,13 @@ public class PayLetterController {
             startDateTime = DateUtil.toInstantFromDate(fromYMD, "yyyyMMdd", DateUtil.ASIA_SEOUL_ZONE);
             endDateTime = DateUtil.toInstantFromDate(toYMD, "yyyyMMdd", DateUtil.ASIA_SEOUL_ZONE).plusSeconds(86400);
         } catch (Exception e) {
-            throw new ParameterException(Executor.Type.UNKNOWN, "fromYMD and toYMD should be 'yyyyMMdd'");
+            throw new ParameterException("fromYMD and toYMD should be 'yyyyMMdd'");
         }
 
         Long period = endDateTime.getEpochSecond() - startDateTime.getEpochSecond();
         Long days = period > 0 ? period / 86400 : 0;
         if (days > 3) {
-            throw new ExceedException(Executor.Type.UNKNOWN, "Search range can not be over 3 days");
+            throw new ParameterException("Search range can not be over 3 days");
         }
 
         List<PayLetterLog> logs = payLetterService.getLogs(startDateTime, endDateTime, locale);

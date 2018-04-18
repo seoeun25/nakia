@@ -165,7 +165,7 @@ public abstract class Executor<T extends PGPayment> {
     @Autowired
     protected PantherProperties pantherProperties;
 
-    public Executor() {
+    protected Executor() {
 
     }
 
@@ -228,10 +228,10 @@ public abstract class Executor<T extends PGPayment> {
     /**
      * Throws Exception if the responseCode is not OK state.
      *
-     * @param responseCode
+     * @param context
      * @throws RuntimeException
      */
-    public void handleResponseCode(String responseCode) {
+    public void handleResponse(Context context) {
 
     }
 

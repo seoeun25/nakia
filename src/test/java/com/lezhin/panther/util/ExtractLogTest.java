@@ -99,7 +99,7 @@ public class ExtractLogTest {
 
         String line = null;
         boolean complete = false;
-        String payComplente = "PAY start Context{type=HAPPYPOINT, request.user=";
+        String payComplente = "PAY start Context{context=HAPPYPOINT, request.user=";
         boolean send = false;
         String paySend = "PAY. send :";
         String userId = null;

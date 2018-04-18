@@ -1,6 +1,5 @@
 package com.lezhin.panther.pg.happypoint;
 
-import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.exception.CIException;
@@ -57,8 +56,9 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     @Autowired
     private ClientHttpRequestFactory clientHttpRequestFactory;
 
-    public HappyPointExecutor() {
+    protected HappyPointExecutor() {
         this.type = Type.HAPPYPOINT;
+        logger.warn("Context can not be null");
     }
 
     public HappyPointExecutor(Context<HappyPointPayment> context) {
@@ -99,12 +99,10 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     }
 
     public Payment<HappyPointPayment> checkPoint() throws HappyPointParamException, HappyPointSystemException {
-        logger.info("checkPoint. {}", context.printPretty());
 
         Payment<HappyPointPayment> payment = context.getPayment();
         HappyPointPayment requestPayment = Util.merge(payment.getPgPayment(),
                 HappyPointPayment.API.pointcheck.createRequest(), HappyPointPayment.class);
-        logger.info("requestPayment. merged = \n{}", JsonUtil.toJson(requestPayment));
         if (requestPayment.getTracNo() == null) {
             requestPayment.setTracNo(createTraceNo(payment));
         }
@@ -112,7 +110,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         requestPayment = clearResponseField(requestPayment);
         payment.setPgPayment(requestPayment);
 
-        logger.info("send for checkPoint. \n{}", JsonUtil.toJson(requestPayment));
+        logger.debug("{} send for checkPoint. \n{}", context.print(), JsonUtil.toJson(requestPayment));
 
         // 포인트 조회
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
@@ -120,9 +118,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(pantherProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("CHECK POINT response from happypoint: {} = {} \n{}", response.getRpsCd(),
-                response.getRpsDtlMsg(),
-                JsonUtil.toJson(response));
+        logger.info("{} checkpoint.response: {} = {} \n{}", context.print(), response.getRpsCd(),
+                response.getRpsDtlMsg(), JsonUtil.toJson(response));
 
         payment.setPgPayment(response);
 
@@ -130,8 +127,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         context = context.response(new ResponseInfo(payment.getPgPayment().getRpsCd(),
                 payment.getPgPayment().getRpsDtlMsg()));
 
-        String responseCode = context.getResponseInfo().getCode();
-        handleResponseCode(responseCode);
+        handleResponse(context);
 
         return payment;
     }
@@ -144,8 +140,6 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
      * @throws HappyPointSystemException
      */
     public Payment<HappyPointPayment> prepare() throws HappyPointParamException, HappyPointSystemException {
-
-        logger.info("PREPARE. {}", context.printPretty());
 
         Payment<HappyPointPayment> payment = context.getPayment();
         HappyPointPayment requestPayment = Util.merge(payment.getPgPayment(),
@@ -160,13 +154,12 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         }
         String name = certification.getName();
         String ci = certification.getCI();
-        logger.info("userId = {}, name = {}, ci = {}", context.getRequestInfo().getUserId(), name, ci);
 
         requestPayment.setMbrNm(name);
         requestPayment.setMbrIdfNo(ci);
         payment.setPgPayment(requestPayment);
 
-        logger.info("send for auth. \n{}", JsonUtil.toJson(requestPayment));
+        logger.debug("{} send for auth. \n{}", context.print(), JsonUtil.toJson(requestPayment));
 
         // 회원인증
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
@@ -174,9 +167,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(pantherProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("PREPARE.(auth) response from happypoint: {} = {} \n{}", response.getRpsCd(),
-                response.getRpsDtlMsg(),
-                JsonUtil.toJson(response));
+        logger.info("{}, auth.response. {} = {}", context.print(), response.getRpsCd(), response.getRpsDtlMsg());
 
         payment.setPgPayment(response);
 
@@ -184,8 +175,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
                 .response(new ResponseInfo(payment.getPgPayment().getRpsCd(),
                         payment.getPgPayment().getRpsDtlMsg()));
 
-        String responseCode = context.getResponseInfo().getCode();
-        handleResponseCode(responseCode);
+        handleResponse(context);
 
         // 포인트조회.
         payment = checkPoint();
@@ -216,11 +206,9 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     public Payment<HappyPointPayment> pay() {
 
         Payment<HappyPointPayment> payment = context.getPayment();
-        logger.debug("base payment = \n{}", JsonUtil.toJson(payment.getPgPayment()));
         HappyPointPayment requestPayment = Util.merge(payment.getPgPayment(),
                 HappyPointPayment.API.pointuse.createRequest(), HappyPointPayment.class);
         payment.setPgPayment(requestPayment);
-        logger.debug("merged payment = \n{}", JsonUtil.toJson(requestPayment));
         requestPayment.setTracNo(createTraceNo(payment));
         requestPayment.setTrxTypCd(HappyPointPayment.trxTypCd_USE);
         requestPayment.setMchtNo(pantherProperties.getHappypoint().getMchtNo());
@@ -230,7 +218,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         requestPayment = clearResponseField(requestPayment);
         payment.setPgPayment(requestPayment);
 
-        logger.info("PAY. send. = \n{}", JsonUtil.toJson(requestPayment));
+        logger.debug("{} send for pay = \n{}", context.print(), JsonUtil.toJson(requestPayment));
 
         // 포인트 사용
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
@@ -238,8 +226,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(pantherProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("PAY. response from happypoint: {} = {}, \n{}", response.getRpsCd(), response.getRpsDtlMsg(),
-                JsonUtil.toJson(response));
+        logger.info("{} pay.response {} = {}, \n{}", context.print(), response.getRpsCd(),
+                response.getRpsDtlMsg(), JsonUtil.toJson(response));
 
         payment.setPgPayment(response);
 
@@ -247,7 +235,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         context = context.response(new ResponseInfo(payment.getPgPayment().getRpsCd(),
                 payment.getPgPayment().getRpsDtlMsg()));
 
-        handleResponseCode(context.getResponseInfo().getCode());
+        handleResponse(context);
 
         return payment;
     }
@@ -275,7 +263,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         String orglTrxAprvDt = payment.getPgPayment().getAprvDt();
         String orglTrxAprvNo = payment.getPgPayment().getAprvNo();
         Long amount = payment.getPgPayment().getTrxAmt();
-        logger.info("REFUND. orglTrxAprvNo = {}, orglTrxAprvDt = {}", orglTrxAprvNo, orglTrxAprvDt);
+        logger.info("{} refund. orglTrxAprvNo = {}, orglTrxAprvDt = {}", context.print(), orglTrxAprvNo, orglTrxAprvDt);
         HappyPointPayment requestPayment = Util.merge(payment.getPgPayment(),
                 HappyPointPayment.API.pointrefund.createRequest(), HappyPointPayment.class);
         payment.setPgPayment(requestPayment);
@@ -290,7 +278,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         requestPayment = clearResponseField(requestPayment);
         payment.setPgPayment(requestPayment);
 
-        logger.info("REFUND. send. = \n{}", JsonUtil.toJson(requestPayment));
+        logger.info("{} send for refund = \n{}", context.print(), JsonUtil.toJson(requestPayment));
 
         // 포인트 취소
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
@@ -298,8 +286,8 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
         HttpEntity<HappyPointPayment> request = new HttpEntity<>(requestPayment);
         HappyPointPayment response = restTemplate.postForObject(pantherProperties.getHappypoint().getHpcUrl(),
                 request, HappyPointPayment.class);
-        logger.info("REFUND. response from happypoint: {} = {}, \n{}", response.getRpsCd(), response.getRpsDtlMsg(),
-                JsonUtil.toJson(response));
+        logger.info("{} refund.response {} = {}, \n{}", context.print(), response.getRpsCd(),
+                response.getRpsDtlMsg(), JsonUtil.toJson(response));
 
         payment.setPgPayment(response);
 
@@ -309,7 +297,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
             if (aggregator != null) {
                 int pointSum = aggregator.getPointSum();
                 int newPointSum = pointSum - amount.intValue();
-                HappypointAggregator newAggregator = new HappypointAggregator(mbrNo, ym, newPointSum);
+                PointAggregator newAggregator = new PointAggregator(mbrNo, ym, newPointSum);
                 cacheService.resetHappypointAggregator(newAggregator);
                 logger.info("happypoint aggregator: {}, {} --> {}", ym, pointSum, newPointSum);
             }
@@ -319,7 +307,7 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
                 .response(new ResponseInfo(payment.getPgPayment().getRpsCd(),
                         payment.getPgPayment().getRpsDtlMsg()));
 
-        handleResponseCode(context.getResponseInfo().getCode());
+        handleResponse(context);
 
         return payment;
     }
@@ -345,27 +333,29 @@ public class HappyPointExecutor extends Executor<HappyPointPayment> {
     /**
      * Throws Exception if happypoint execution failed.
      *
-     * @param responseCode
+     * @param context
      * @throws HappyPointParamException
      * @throws HappyPointSystemException
      */
-    public void handleResponseCode(String responseCode) throws HappyPointParamException, HappyPointSystemException {
-        if (ResponseCode.SPC_DENY_44.getCode().equals(responseCode)
-                || ResponseCode.SPC_DENY_77.getCode().equals(responseCode)
-                || ResponseCode.SPC_DENY_88.getCode().equals(responseCode)) {
-            throw new HappyPointParamException(type, context.getResponseInfo().getCode(),
+    public void handleResponse(Context context) throws HappyPointParamException,
+            HappyPointSystemException {
+        String resCode = context.getResponseInfo().getCode();
+        if (ResponseCode.SPC_DENY_44.getCode().equals(resCode)
+                || ResponseCode.SPC_DENY_77.getCode().equals(resCode)
+                || ResponseCode.SPC_DENY_88.getCode().equals(resCode)) {
+            throw new HappyPointParamException(context, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
-        if (ResponseCode.SPC_ERROR_22.getCode().equals(responseCode)
-                || ResponseCode.SPC_ERROR_80.getCode().equals(responseCode)
-                || ResponseCode.SPC_ERROR_92.getCode().equals(responseCode)
-                || ResponseCode.SPC_ERROR_99.getCode().equals(responseCode)) {
-            throw new HappyPointSystemException(type, context.getResponseInfo().getCode(),
+        if (ResponseCode.SPC_ERROR_22.getCode().equals(resCode)
+                || ResponseCode.SPC_ERROR_80.getCode().equals(resCode)
+                || ResponseCode.SPC_ERROR_92.getCode().equals(resCode)
+                || ResponseCode.SPC_ERROR_99.getCode().equals(resCode)) {
+            throw new HappyPointSystemException(context, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
         // 문서에 정의 되지 않은 response code가 올 수도 있음.
-        if (!responseCode.equals(ResponseCode.SPC_OK.getCode())) {
-            throw new HappyPointSystemException(type, context.getResponseInfo().getCode(),
+        if (!resCode.equals(ResponseCode.SPC_OK.getCode())) {
+            throw new HappyPointSystemException(context, context.getResponseInfo().getCode(),
                     context.getResponseInfo().getDescription());
         }
     }

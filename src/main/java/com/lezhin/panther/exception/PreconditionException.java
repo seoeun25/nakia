@@ -1,5 +1,6 @@
 package com.lezhin.panther.exception;
 
+import com.lezhin.panther.Context;
 import com.lezhin.panther.executor.Executor;
 
 /**
@@ -10,12 +11,24 @@ import com.lezhin.panther.executor.Executor;
  */
 public class PreconditionException extends PantherException {
 
+    public PreconditionException(String message) {
+        super(message);
+    }
+
     public PreconditionException(Executor.Type type, String message) {
         super(type, message);
     }
 
     public PreconditionException(Executor.Type type, Throwable e) {
         super(type, e);
+    }
+
+    public PreconditionException(Context context, String message) {
+        super(context, message);
+    }
+
+    public PreconditionException(Context context, Throwable e) {
+        super(context, e);
     }
 
 }

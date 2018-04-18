@@ -5,7 +5,6 @@ import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
-import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.util.JsonUtil;
 
 import org.slf4j.Logger;
@@ -30,11 +29,6 @@ public class Refund<T extends PGPayment> extends Command<T> {
         this.commandType = Type.REFUND;
     }
 
-    public Refund(RequestInfo requestInfo) {
-        super(requestInfo);
-        this.commandType = Type.REFUND;
-    }
-
     public Refund(Context<T> context) {
         super(context);
         this.commandType = Type.REFUND;
@@ -48,7 +42,7 @@ public class Refund<T extends PGPayment> extends Command<T> {
     public Payment execute() {
         initExecutor();
 
-        logger.info("{} start {}", commandType.name(), context.printPretty());
+        logger.info("{} {} start.", context.print(), commandType.name());
 
         try {
             executor.refund();
@@ -57,14 +51,15 @@ public class Refund<T extends PGPayment> extends Command<T> {
         } finally {
             payment = executor.getContext().getPayment();
             context = context.payment(payment).response(executor.getContext().getResponseInfo());
-            logger.info("{} [{}] done. {}", commandType.name(), executor.getType(),
+            logger.info("{} {} done. {}", context.print(), commandType.name(),
                     context.getResponseInfo().toString());
             logger.debug("payment = {}, \n{}", payment.getPaymentId(), JsonUtil.toJson(payment));
         }
 
         // no need to InternalPayment call.
-        logger.info("{} complete. {} ", commandType.name(), context.getResponseInfo().toString());
-        executor.handleResponseCode(context.getResponseInfo().getCode());
+        logger.info("{} {} complete. {} ", context.print(), commandType.name(),
+                context.getResponseInfo().toString());
+        executor.handleResponse(context);
 
         return processNextStep();
     }

@@ -91,15 +91,15 @@ public class SlackNotifier {
         String message = "";
         if (e instanceof PantherException) {
             PantherException pantherException = (PantherException) e;
-            type = pantherException.getType();
+            type = pantherException.getExecutorType().orElse(Executor.Type.UNKNOWN);
         } else {
             title = "Unexpected error";
             message = e.getMessage();
         }
-
+        String header = type == Executor.Type.UNKNOWN ? "" : type.name();
         if (slackLevel != null) {
             notify(SlackEvent.builder()
-                    .header(type.name())
+                    .header(header)
                     .level(slackLevel)
                     .title(title)
                     .message(message)
@@ -155,7 +155,7 @@ public class SlackNotifier {
                         .text(text)
                         .color(event.getLevel().getColor())
                         .field(SlackMessage.Field.builder()
-                                .title(event.getLevel().name())
+                                .title("") // event.getLevel().name()
                                 .build())
                         .mrkdwn_in(ImmutableList.of("pretext", "text"))
                         .build())

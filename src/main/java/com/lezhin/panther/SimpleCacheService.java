@@ -53,11 +53,10 @@ public class SimpleCacheService {
         if (value != null) {
             info.setPointSum(value.getPointSum() + info.getPointSum());
         }
-        logger.info("addHappypointAggregator = {}", info.toString());
         redisService.setValue(key, info, 31, TimeUnit.DAYS);
     }
 
-    public void resetHappypointAggregator(final HappypointAggregator info) {
+    public void resetHappypointAggregator(final PointAggregator info) {
         String key = String.format("happypoint:%s:mbrNo:%s", info.getYm(), info.getMbrNo());
         logger.info("reset HappypointAggregator = {}", info.toString());
         redisService.setValue(key, info, 31, TimeUnit.DAYS);
@@ -86,7 +85,7 @@ public class SimpleCacheService {
 
     public void saveRequestInfo(RequestInfo requestInfo) {
         if (requestInfo.getPayment().getPaymentId() == null) {
-            throw new SessionException(Executor.Type.UNKNOWN, "Failed to save session. paymentId is null");
+            throw new SessionException("Failed to save session. paymentId is null");
         }
         String key = RedisService.generateKey("reservation", "requestinfo",
                 String.valueOf(requestInfo.getPayment().getPaymentId()));
@@ -97,7 +96,7 @@ public class SimpleCacheService {
         String key = RedisService.generateKey("reservation", "requestinfo", String.valueOf(paymentId));
         RequestInfo value = (RequestInfo) redisService.getValue(key);
         if (value == null) {
-            throw new SessionException(Executor.Type.UNKNOWN, "RequestInfo not found: paymentId=" + paymentId);
+            throw new SessionException("RequestInfo not found: paymentId=" + paymentId);
         }
         return value;
     }
