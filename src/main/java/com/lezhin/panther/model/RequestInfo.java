@@ -299,7 +299,7 @@ public class RequestInfo implements Serializable {
                 withExecutor(Executor.Type.HAPPYPOINT);
             } else if ("lguplus".equals(pg)) {
                 PaymentType pType = PaymentType.valueOf(Optional.ofNullable(paymentType).orElseThrow(
-                        () -> new ParameterException(executorType, "paymentType can not be null")));
+                        () -> new ParameterException(Executor.Type.UNKNOWN, "lguplus paymentType can not be null")));
                 withPaymentType(pType);
                 if (pType == PaymentType.deposit || pType == PaymentType.mdeposit) {
                     withExecutor(Executor.Type.LGUDEPOSIT);

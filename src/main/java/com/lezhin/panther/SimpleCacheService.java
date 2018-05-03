@@ -1,8 +1,6 @@
 package com.lezhin.panther;
 
-import com.lezhin.avengers.panther.model.HappypointAggregator;
 import com.lezhin.panther.exception.SessionException;
-import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.pg.happypoint.PointAggregator;
@@ -69,16 +67,9 @@ public class SimpleCacheService {
         try {
             value = (PointAggregator) redisService.getValue(key);
         } catch (Exception e) {
-            // TODO package refactoring의 side effect. 1월에 update.
-            logger.info("Failed to deserialize PointAggregator. set and return 2000 point. : " + e.getMessage());
-            try {
-                HappypointAggregator happypointAggregator = redisService.getValue(key, HappypointAggregator.class);
-                value = new PointAggregator(happypointAggregator.getMbrNo(), ym, happypointAggregator.getPointSum());
-            } catch (Exception a) {
-                value = new PointAggregator(mbrNo, ym, 2000);
-                redisService.setValue(key, value, 31, TimeUnit.DAYS);
-            }
-
+            logger.info("Failed to deserialize PointAggregator. set and return 0 point. : " + e.getMessage());
+            value = new PointAggregator(mbrNo, ym, 0);
+            redisService.setValue(key, value, 31, TimeUnit.DAYS);
         }
         return value;
     }

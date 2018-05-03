@@ -226,7 +226,7 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
 
         String configPath = pantherProperties.getLguplus().getConfDir();
 
-        logger.info("request lguplusPayment = {}", JsonUtil.toJson(lguplusPayment));
+        logger.info("{} request lguplusPayment = {}", context.print(), JsonUtil.toJson(lguplusPayment));
 
         String LGD_RESPCODE = lguplusPayment.getLGD_RESPCODE();
         String LGD_RESPMSG = lguplusPayment.getLGD_RESPMSG();
@@ -286,8 +286,9 @@ public class LguDepositExecutor extends Executor<LguplusPayment> {
                 } else if ("I".equals(LGD_CASFLAG.trim())) {
                     // 입금
                     context = context.response(responseInfo);
-                    logger.info("==== Deposit Succeed !!!! ==== \n" +
+                    logger.info("{} ==== Deposit Succeed !!!! ==== \n" +
                                     "payment={}, user={}, approvalId={}, bank={}, amount={}",
+                            context.print(),
                             payment.getPaymentId(), payment.getUserId(),
                             lguplusPayment.getApprovalId(), lguplusPayment.getLGD_FINANCENAME(),
                             lguplusPayment.getLGD_AMOUNT());
