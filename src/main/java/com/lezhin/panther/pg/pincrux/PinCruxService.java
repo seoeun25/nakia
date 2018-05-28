@@ -136,7 +136,7 @@ public class PinCruxService {
         // 핀크럭스 리턴이 text/html 로 json을 준다
         logger.info("REQ offer = {}", uriComponents.toUri());
         CruxADs ads = null;
-        Exception occured = null;
+        Exception occurred = null;
         String responseText = null;
 
         long startTime = Instant.now().toEpochMilli();
@@ -148,20 +148,24 @@ public class PinCruxService {
             processSLA(responseTime);
             logger.debug("pincrux.offer = {}", responseText);
             ads = JsonUtil.fromJson(responseText, CruxADs.class);
+            if (ads != null && !"S".equals(ads.getStatus())) {
+                processSLA(new Exception(
+                        "pincrux.offer.response status=" + ads.getStatus() +", item_cnt=" + ads.getItemCount()));
+            }
             logger.info("cacheCruxADs. status = {}, item_cnt = {}, osFlag= {}",
                     ads.getStatus(), ads.getItemCount(), osFlag);
             redisService.setValue(cacheKey, ads, cacheRetention, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            occured = e;
+            occurred = e;
         } finally {
-            if (occured != null) {
-                logger.info("Failed to getPincruxADs. exception= {}, response = {}", occured.getMessage(),
+            if (occurred != null) {
+                logger.info("Failed to getPincruxADs. exception= {}, response = {}", occurred.getMessage(),
                         responseText);
-                processSLA(occured);
+                processSLA(occurred);
                 ads = new CruxADs();
                 ads.setStatus("F");
                 ads.setCode("99");
-                ads.setMsg(occured.getMessage());
+                ads.setMsg(occurred.getMessage());
             }
         }
 
@@ -183,6 +187,10 @@ public class PinCruxService {
             ads.setItems(new ArrayList<>());
         }
 
+        if (ads.getItems() == null) {
+            ads.setItems(new ArrayList());
+        }
+
         if (osFlag != 0) { // android(ios) 일 경우, osFlag = 0인 항목도 추가. 
             List<Item> itemsFiltered = ads.getItems().stream()
                     .filter(x -> (Objects.equals(x.getOsFlag(), Integer.valueOf(0))
@@ -193,10 +201,6 @@ public class PinCruxService {
             ads.setItems(itemsFiltered);
         }
 
-
-        if (ads.getItems() == null) {
-            ads.setItems(new ArrayList());
-        }
         Integer totalCoin = 0;
         for (Item item : ads.getItems()) {
             Integer coin = item.getCoinInt();
@@ -462,7 +466,8 @@ public class PinCruxService {
 
 
     /**
-     * TODO 임시 메서드. response time aggregator
+     * TODO 임시 메서드. response time aggregator.
+     * 현재는 warn만 발행. 이를 기준은로 circuit breaker 가동 필요.
      *
      * @param responseTime
      */
@@ -482,6 +487,8 @@ public class PinCruxService {
 
     /**
      * TODO 임시 메서드.
+     *
+     * 현재는 warn만 발행. 이를 기준은로 circuit breaker 가동 필요.
      *
      * @param e
      */

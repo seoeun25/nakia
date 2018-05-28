@@ -77,7 +77,8 @@ public class PinCruxController {
         //list=false&usrkey=6623614697734144
         //list=0&usrkey=6151969840037888
         Result<CruxADs> result = new Result<>();
-        if (!request.getHeader("X-LZ-Locale").toLowerCase().equals("ko-kr")
+        if (request.getHeader("X-LZ-Locale") == null
+                || !request.getHeader("X-LZ-Locale").toLowerCase().equals("ko-kr")
                 || !pantherProperties.isPincruxAvailable()
                 || (usrkey == null)) {
             logger.info("return no item. locale={}, pincruxAvailable={}, usrky={}",
