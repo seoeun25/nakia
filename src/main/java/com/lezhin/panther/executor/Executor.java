@@ -2,7 +2,6 @@ package com.lezhin.panther.executor;
 
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
-import com.lezhin.panther.step.Command;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.Meta;
@@ -14,9 +13,11 @@ import com.lezhin.panther.pg.happypoint.HappyPointExecutor;
 import com.lezhin.panther.pg.happypoint.HappyPointPayment;
 import com.lezhin.panther.pg.lguplus.LguDepositExecutor;
 import com.lezhin.panther.pg.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.lpoint.LPointExecutor;
+import com.lezhin.panther.pg.lpoint.LPointPayment;
 import com.lezhin.panther.pg.unknown.UnknownExecutor;
 import com.lezhin.panther.pg.unknown.UnknownPayment;
-
+import com.lezhin.panther.step.Command;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -119,6 +120,45 @@ public abstract class Executor<T extends PGPayment> {
             @Override
             public boolean isAsync() {
                 return true;
+            }
+        },
+        LPOINT("lpoint") {
+            @Override
+            public Payment createPayment(Context context) {
+                return new Payment<LPointPayment>(System.currentTimeMillis());
+            }
+
+            @Override
+            public Payment createPayment(PGPayment pgPayment) {
+                Payment<LPointPayment> payment = new Payment<>();
+                payment.setUserId(-1L);
+                payment.setPaymentId(-1L);
+                payment.setPgPayment((LPointPayment) pgPayment);
+                payment.setMeta(new Meta());
+                return payment;
+            }
+
+            public PaymentType getPaymentType(String externalStoreProductId) {
+                if (externalStoreProductId == null) {
+                    return PaymentType.lpoint;
+                }
+                return externalStoreProductId.contains("mlpoint") ? PaymentType.mlpoint :
+                        PaymentType.lpoint;
+            }
+
+            @Override
+            public Class getExecutorClass() {
+                return LPointExecutor.class;
+            }
+
+            @Override
+            public boolean isAsync() {
+                return true;
+            }
+
+            @Override
+            public boolean succeeded(ResponseInfo responseInfo) {
+                return responseInfo.getCode().equals(ResponseCode.LPOINT_OK.getCode());
             }
         };
 

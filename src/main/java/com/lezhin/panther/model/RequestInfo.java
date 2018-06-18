@@ -1,5 +1,8 @@
 package com.lezhin.panther.model;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.MoreObjects;
+import com.google.common.io.CharStreams;
 import com.lezhin.constant.LezhinCurrency;
 import com.lezhin.constant.LezhinStore;
 import com.lezhin.constant.PaymentType;
@@ -7,11 +10,8 @@ import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.pg.happypoint.HappyPointPayment;
 import com.lezhin.panther.pg.lguplus.LguplusPayment;
+import com.lezhin.panther.pg.lpoint.LPointPayment;
 import com.lezhin.panther.util.JsonUtil;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.MoreObjects;
-import com.google.common.io.CharStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.WebUtils;
@@ -252,6 +252,36 @@ public class RequestInfo implements Serializable {
                 meta.setDynamicAmount(pgPayment.getUseReqPt());
                 payment.setMeta(meta);
                 withPayment(payment);
+            } else if (executorType == Executor.Type.LPOINT) {
+                payment.setUserId(userId);
+
+                payment.setPaymentId((Long) Optional.ofNullable(requestMap.get("paymentId")).orElse(-1L));
+                payment.setExternalStoreProductId(
+                        Optional.ofNullable(requestMap.get("_lz_externalStoreProductId")).orElse("").toString());
+                payment.setStore(LezhinStore.valueOf(Optional.ofNullable(requestMap.get("_lz_store"))
+                        .orElse("base").toString()));
+                payment.setStoreVersion(Optional.ofNullable(requestMap.get("_lz_storeVersion"))
+                        .orElse("").toString());
+                payment.setPaymentType(executorType.getPaymentType(payment.getExternalStoreProductId()));
+
+                LPointPayment pgPayment = new LPointPayment();
+                pgPayment.setCtfCno(Optional.ofNullable(requestMap.get("pgPayment_ctfCno"))
+                        .orElse("").toString());
+                pgPayment.setPswd(Optional.ofNullable(requestMap.get("pgPayment_pswd"))
+                        .orElse("").toString());
+                pgPayment.setAkCvPt((Integer) Optional.ofNullable(requestMap.get("pgPayment_akCvPt"))
+                        .orElse(0));
+
+                payment.setAmount(pgPayment.getAkCvPt().floatValue());
+
+                Meta meta = new Meta();
+                meta.setDynamicAmount(pgPayment.getAkCvPt());
+
+                payment.setMeta(meta);
+                payment.setPgPayment(pgPayment);
+
+                withPaymentType(payment.getPaymentType());
+                withPayment(payment);
             } else if (executorType == Executor.Type.LGUDEPOSIT) {
                 payment.setUserId(userId); // token base라 reserve에서 payment 만들 때 다시 세팅됨. 여기서는 딱히 필요 없음
 
@@ -287,7 +317,6 @@ public class RequestInfo implements Serializable {
                 payment.setMeta(new Meta());
                 withPayment(payment);
             }
-
             logger.info("request. payment = {}", JsonUtil.toJson(payment));
 
         }
@@ -307,6 +336,8 @@ public class RequestInfo implements Serializable {
                     throw new ParameterException(Executor.Type.UNKNOWN, "Not support. PG = " + pg + ", paymentType = " +
                             paymentType);
                 }
+            } else if ("lpoint".equals(pg)) {
+                withExecutor(Executor.Type.LPOINT);
             } else if ("unknown".equals(pg)) {
                 withPaymentType(PaymentType.unknown);
                 withExecutor(Executor.Type.UNKNOWN);

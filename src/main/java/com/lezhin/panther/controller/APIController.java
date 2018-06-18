@@ -1,11 +1,12 @@
 package com.lezhin.panther.controller;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import com.lezhin.constant.PGCompany;
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.PayService;
 import com.lezhin.panther.SimpleCacheService;
-import com.lezhin.panther.step.Command;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.SessionException;
 import com.lezhin.panther.executor.Executor;
@@ -15,11 +16,8 @@ import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.pg.happypoint.HappyPointPayment;
 import com.lezhin.panther.pg.lguplus.LguplusPayment;
+import com.lezhin.panther.step.Command;
 import com.lezhin.panther.util.JsonUtil;
-import com.lezhin.panther.util.Util;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +85,21 @@ public class APIController {
                 .build();
 
         Payment payment = payService.doCommand(Command.Type.RESERVE, context);
+        return payment;
+    }
+
+    @RequestMapping(value = "/{pg}/preauth", method = RequestMethod.POST)
+    @ResponseBody
+    public Payment preauthentication(HttpServletRequest request, HttpServletResponse response,
+                                     @PathVariable String pg) {
+
+        RequestInfo requestInfo = new RequestInfo.Builder(request, pg).build();
+        Context context = Context.builder(requestInfo)
+                .payment(requestInfo.getPayment())
+                .responseInfo(new ResponseInfo(ResponseCode.LEZHIN_UNKNOWN))
+                .build();
+
+        Payment payment = payService.doCommand(Command.Type.PREAUTHENTICATE, context);
         return payment;
     }
 

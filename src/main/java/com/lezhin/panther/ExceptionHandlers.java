@@ -6,13 +6,13 @@ import com.lezhin.panther.exception.ExecutorException;
 import com.lezhin.panther.exception.HappyPointParamException;
 import com.lezhin.panther.exception.HappyPointSystemException;
 import com.lezhin.panther.exception.InternalPaymentException;
+import com.lezhin.panther.exception.LPointException;
 import com.lezhin.panther.exception.OwnerException;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PreconditionException;
-import com.lezhin.panther.notification.SlackNotifier;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
-
+import com.lezhin.panther.notification.SlackNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -58,6 +58,14 @@ public class ExceptionHandlers {
     @ResponseBody
     public ErrorInfo handleHappypointSystemException(final HappyPointSystemException e) {
         logger.error("HappyPointSystemException", e);
+        return new ErrorInfo(e.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler(LPointException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public ErrorInfo handleLPointException(final LPointException e) {
+        logger.error("LPointException", e);
         return new ErrorInfo(e.getCode(), e.getMessage());
     }
 

@@ -8,16 +8,15 @@ import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.model.PGPayment;
 import com.lezhin.panther.model.Payment;
-import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.step.Authenticate;
 import com.lezhin.panther.step.Cancel;
 import com.lezhin.panther.step.Command;
 import com.lezhin.panther.step.Complete;
 import com.lezhin.panther.step.Pay;
+import com.lezhin.panther.step.PreAuthenticate;
 import com.lezhin.panther.step.Prepare;
 import com.lezhin.panther.step.Refund;
 import com.lezhin.panther.step.Reserve;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
@@ -61,6 +60,9 @@ public class PayService {
                     break;
                 case RESERVE:
                     command = beanFactory.getBean(Reserve.class, context);
+                    break;
+                case PREAUTHENTICATE:
+                    command = beanFactory.getBean(PreAuthenticate.class, context);
                     break;
                 case AUTHENTICATE:
                     command = beanFactory.getBean(Authenticate.class, context);

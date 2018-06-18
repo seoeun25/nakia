@@ -5,7 +5,6 @@ import com.lezhin.panther.model.Certification;
 import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.util.JsonUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
  * @since 2017.11.08
  */
 @RestController
-@RequestMapping("/v1/certification")
+@RequestMapping({"/v1/certification", "/certification/v1"})
 public class CertifcationController {
 
     private static final Logger logger = LoggerFactory.getLogger(CertifcationController.class);

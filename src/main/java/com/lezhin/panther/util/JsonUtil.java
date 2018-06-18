@@ -31,6 +31,14 @@ public class JsonUtil {
         }
     }
 
+    public static <T> T fromJson(InputStream inputStream, Class<T> claz) {
+        try{
+            return getObjectMapper().readValue(inputStream, claz);
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static String toJson(Object obj) {
         try {
             return getObjectMapper().writeValueAsString(obj);

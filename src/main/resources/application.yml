@@ -57,6 +57,11 @@ panther:
     testFlag: n
     cacheRetention: 900000
     timeout: 40000
+  lpoint:
+    lpointUrl: https://devop.lpoint.com:8903/op
+    copMcnoWeb: P012500002
+    copMcnoMobile: P012500003
+    keyPath: /etc/panther/conf/beta/lpoint
   wallets:
     apiUrl: https://cms-dot-lezhincomix-beta.appspot.com/v2/wallets
     companyEventIdPinCrux: 50
@@ -99,6 +104,10 @@ panther:
   pincrux:
     pincruxUrl: http://api.pincrux.com
     testFlag: n
+  lpoint:
+    lpointUrl: https://op.lpoint.com/op
+    copMcnoWeb: P008900002
+    copMcnoMobile: P008900003
   wallets:
     apiUrl: https://cms-dot-lezhincomix-api.appspot.com/v2/wallets
     companyEventIdPinCrux: 199
@@ -222,6 +231,8 @@ panther:
   pantherUrl: https://localhost:9443
   lguplus:
     confDir: conf/local/lgdacom
+  lpoint:
+    keyPath: conf/local/lpoint
   wallets:
     apiUrl: https://cms-dot-lezhincomix-qa.appspot.com/v2/wallets
     companyEventIdPinCrux: 281

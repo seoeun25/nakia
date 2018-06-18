@@ -54,6 +54,11 @@ public class ResponseInfo implements Serializable {
         PINCRUX_ERROR("01", "PINCRUX_ERROR"),
         PINCRUX_NOT_AVAILABLE("99", "Service Not available"),
 
+        // lpoint (하위 몇개를 제외하곤 L.Point code 이용)
+        LPOINT_OK("00", "OK"),
+        LPOINT_EXCEED_DAY("44", "Exceed Day Throttle"),
+        LPOINT_EXCEED_MONTH("44", "Exceed Month Throttle"),
+
         // internalPayment
         INTERNAL_OK("0", "OK"),
 

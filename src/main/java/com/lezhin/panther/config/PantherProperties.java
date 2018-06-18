@@ -25,6 +25,7 @@ public class PantherProperties {
     private boolean pincruxAvailable;
     private Happypoint happypoint;
     private Lguplus lguplus;
+    private LPoint lpoint;
     private String pushUrl;
     private Pincrux pincrux;
     private Wallets wallets;
@@ -42,6 +43,14 @@ public class PantherProperties {
         private String cstPlatform;
         private String cstMid;
         private String txName;
+    }
+
+    @Data
+    public static class LPoint {
+        private String lpointUrl;
+        private String copMcnoWeb;
+        private String copMcnoMobile;
+        private String keyPath;
     }
 
     @Data

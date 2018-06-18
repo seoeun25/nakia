@@ -1,0 +1,16 @@
+{
+  "filler": "",
+  "msg": "000",
+  "aprDt": "20180613",
+  "resPt": 998920,
+  "aprno": "031006758",
+  "ttnCvPt": 200,
+  "cvAvlPt": 30000,
+  "rspSgnC": "+",
+  "avlPt": 998920,
+  "aprHr": "121106",
+  "control": {
+    "flwNo": "O440O73020180613113555",
+    "rspC": "00"
+  }
+}
