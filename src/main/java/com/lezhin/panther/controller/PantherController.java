@@ -9,6 +9,7 @@ import com.lezhin.panther.model.ResponseInfo;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.pg.lguplus.LguplusPayment;
 import com.lezhin.panther.util.DateUtil;
+import com.lezhin.panther.util.JsonUtil;
 import com.lezhin.panther.util.Util;
 
 import org.slf4j.Logger;
@@ -89,7 +90,7 @@ public class PantherController {
                 }
 
                 Object value = simpleCacheService.get(key.toString());
-                logger.info("key = {}, value = {}", key, value);
+                logger.info("key = {}, value = {}", key, JsonUtil.toJson(value));
 
             } catch (Exception e) {
                 logger.warn("Failed to get cache value", e);

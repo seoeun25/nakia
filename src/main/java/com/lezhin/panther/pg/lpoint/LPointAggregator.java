@@ -16,8 +16,8 @@ import java.util.Optional;
  */
 @Data
 public class LPointAggregator implements Serializable {
-    private static int MAX_DAY = 30000;
-    private static int MAX_MONTH = 300000;
+    public static int MAX_DAY = 30000;
+    public static int MAX_MONTH = 300000;
     /**
      * cache key: {pgCompany.name}:[yyyymm]:mbrNo:[yyyymmdd]
      */

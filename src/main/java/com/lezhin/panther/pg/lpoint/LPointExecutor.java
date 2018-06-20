@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.SimpleCacheService;
 import com.lezhin.panther.exception.CIException;
+import com.lezhin.panther.exception.ExceedException;
 import com.lezhin.panther.exception.LPointException;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PreconditionException;
@@ -226,6 +227,10 @@ public class LPointExecutor extends Executor<LPointPayment> {
             }
 
             // 일 최대 3만, 월 최대 30만 엘포인트 전환가능
+            if(pgPayment.getAkCvPt() > LPointAggregator.MAX_DAY) {
+                throw new ExceedException(Executor.Type.LPOINT, ResponseInfo.ResponseCode.LPOINT_EXCEED_DAY.getMessage());
+            }
+
             String ym = DateUtil.format(Instant.now().toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMM");
             String ymd = DateUtil.format(Instant.now().toEpochMilli(), DateUtil.ASIA_SEOUL_ZONE, "yyyyMMdd");
             Optional<LPointAggregator> optionalAggregator = cacheService.getLPointAggregator(ym, pgPayment.getCtfCno());
@@ -371,7 +376,7 @@ public class LPointExecutor extends Executor<LPointPayment> {
         boolean isMobile = requestInfo.getIsMobile() == null ? false : requestInfo.getIsMobile();
         boolean isApp = requestInfo.getIsApp() == null ? false : requestInfo.getIsApp();
 
-        if (isMobile && isApp) {
+        if (isMobile || isApp) {
             return pantherProperties.getLpoint().getCopMcnoMobile();
         }
 
