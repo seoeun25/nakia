@@ -163,12 +163,17 @@ public class LPointExecutor extends Executor<LPointPayment> {
         Payment<LPointPayment> payment = context.getPayment();
 
         // 포인트전환 요청
-        LPointPayment rspData = request(makePayload(LPointPayment.API.POINT_USE));
-        rspData.setApprovalId(rspData.getAprno());
-        payment.setPgPayment(rspData);
+        try{
+            LPointPayment rspData = request(makePayload(LPointPayment.API.POINT_USE));
+            rspData.setApprovalId(rspData.getAprno());
+            payment.setPgPayment(rspData);
+            context = context.payment(payment)
+                    .response(new ResponseInfo(rspData.getControl().getRspC(), rspData.getMsg()));
 
-        context = context.payment(payment)
-                .response(new ResponseInfo(rspData.getControl().getRspC(), rspData.getMsg()));
+        }catch(Exception e) {
+            context = context.payment(payment)
+                    .response(new ResponseInfo(ResponseInfo.ResponseCode.LEZHIN_THROWABLE));
+        }
 
         handleResponse(context);
         return payment;
