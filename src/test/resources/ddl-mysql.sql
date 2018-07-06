@@ -5,7 +5,7 @@ CREATE TABLE `adevent` (
   `appkey` int(11) DEFAULT NULL,
   `transid` varchar(255) DEFAULT NULL,
   `osFlag` varchar(255) DEFAULT NULL,
-  `customUrl` varchar(255) DEFAULT NULL,
+  `customUrl` varchar(500) DEFAULT NULL,
   `appName` varchar(255) DEFAULT NULL,
   `appTitle` varchar(255) DEFAULT NULL,
   `coin` int(11) DEFAULT NULL,
