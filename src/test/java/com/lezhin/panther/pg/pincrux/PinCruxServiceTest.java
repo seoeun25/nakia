@@ -180,21 +180,21 @@ public class PinCruxServiceTest {
         assertNotNull(pantherProperties);
         assertNotNull(adEventRepository);
 
-        ADEvent adEvent = ADEvent.builder().appkey(102830).usrkey(6408038695829506L).osFlag(1)
-                .cointInt(3).attpAt(new Timestamp(Instant.now().toEpochMilli()))
+        ADEvent adEvent = ADEvent.builder().appkey(102830).usrkey(6408038695829506L).osflag(1)
+                .coinint(3).attpAt(new Timestamp(Instant.now().toEpochMilli()))
                 .build();
         logger.info("before save attp. id = {}", adEvent.getId());
         ADEvent saved = pinCruxService.persistADEvent(adEvent);
         Long id = saved.getId();
         assertNotNull(saved);
         assertNotNull(saved.getId());
-        assertEquals(3, saved.getCointInt().intValue());
+        assertEquals(3, saved.getCoinint().intValue());
         assertNull(saved.getCoin());
         logger.info("saved. attt = {}", JsonUtil.toJson(saved));
 
 
         saved.setCoin(2);
-        saved.setTransid("98b8e01266e192c65cff74a5aec72d32d6438fea");
+        saved.setTransId("98b8e01266e192c65cff74a5aec72d32d6438fea");
         saved.setStatus(ADEvent.Status.postback);
         saved.setPostbackAt(new Timestamp(Instant.now().toEpochMilli()));
 
@@ -214,11 +214,11 @@ public class PinCruxServiceTest {
         Integer osFlag = 1;
 
         ADEvent saved1 = pinCruxService.persistADEvent(ADEvent.builder().appkey(appkey).usrkey(usrkey)
-                .osFlag(osFlag).status(ADEvent.Status.attp).build());
+                .osflag(osFlag).status(ADEvent.Status.attp).build());
         ADEvent saved2 = pinCruxService.persistADEvent(ADEvent.builder().appkey(appkey).usrkey(usrkey)
-                .osFlag(osFlag).status(ADEvent.Status.reward).build());
+                .osflag(osFlag).status(ADEvent.Status.reward).build());
         ADEvent saved3 = pinCruxService.persistADEvent(ADEvent.builder().appkey(appkey).usrkey(usrkey)
-                .osFlag(osFlag).status(ADEvent.Status.reward)
+                .osflag(osFlag).status(ADEvent.Status.reward)
                 .rewardAt(new Timestamp(Instant.now().toEpochMilli())).build());
 
         logger.info("id1 = {}", saved1.getId());

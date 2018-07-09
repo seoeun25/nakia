@@ -11,9 +11,9 @@ import java.util.List;
  */
 public interface ADEventRepository extends CrudRepository<ADEvent, Long> {
 
-    List<ADEvent> findByUsrkeyAndAppkeyAndOsFlagOrderByIdDesc(Long usrkey, Integer appkey, Integer osFlag);
+    List<ADEvent> findByUsrkeyAndAppkeyAndOsflagOrderByIdDesc(Long usrkey, Integer appkey, Integer osFlag);
 
-    List<ADEvent> findByUsrkeyAndAppkeyAndOsFlagAndTransidOrderByIdDesc(Long usrkey, Integer appkey, Integer osFlag,
+    List<ADEvent> findByUsrkeyAndAppkeyAndOsflagAndTransIdOrderByIdDesc(Long usrkey, Integer appkey, Integer osFlag,
                                                                         String transid);
 
     List<ADEvent> findByAttpAtBetween(Timestamp start, Timestamp end);

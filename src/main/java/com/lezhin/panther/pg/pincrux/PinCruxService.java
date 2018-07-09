@@ -96,7 +96,7 @@ public class PinCruxService {
      */
     public Optional<ADEvent> findADEventBy(Long usrkey, Integer appkey, Integer osFlag) {
 
-        List<ADEvent> events = adEventRepository.findByUsrkeyAndAppkeyAndOsFlagOrderByIdDesc(usrkey, appkey, osFlag);
+        List<ADEvent> events = adEventRepository.findByUsrkeyAndAppkeyAndOsflagOrderByIdDesc(usrkey, appkey, osFlag);
         events.stream().forEach(e -> logger.debug("{} = {}", e.getId(), JsonUtil.toJson(e)));
 
         return events.stream().max((o1, o2) -> (int) (o1.getId() - o2.getId()));
@@ -105,9 +105,9 @@ public class PinCruxService {
 
     public Optional<ADEvent> findADEventBy(Long usrkey, Integer appkey, Integer osFlag, String transid) {
 
-        List<ADEvent> events = adEventRepository.findByUsrkeyAndAppkeyAndOsFlagAndTransidOrderByIdDesc(usrkey, appkey,
+        List<ADEvent> events = adEventRepository.findByUsrkeyAndAppkeyAndOsflagAndTransIdOrderByIdDesc(usrkey, appkey,
                 osFlag, transid);
-        events.stream().forEach(e -> logger.debug("{}, {} = {}", e.getId(), e.getTransid(),
+        events.stream().forEach(e -> logger.debug("{}, {} = {}", e.getId(), e.getTransId(),
                 JsonUtil.toJson(e)));
 
         return events.stream().max((o1, o2) -> (int) (o1.getId() - o2.getId()));
@@ -251,11 +251,11 @@ public class PinCruxService {
         ADEvent adEvent = ADEvent.builder()
                 .usrkey(reqData.getUsrkey())
                 .appkey(reqData.getAppkey())
-                .osFlag(reqData.getOs_flag())
+                .osflag(reqData.getOs_flag())
                 .token(reqData.getAuthToken())
-                .cointInt(item.getCoinInt())
-                .appName(item.getAppName())
-                .customUrl(res.getCustomUrl())
+                .coinint(item.getCoinInt())
+                .appname(item.getAppName())
+                .customurl(res.getCustomUrl())
                 .attpAt(new Timestamp(Instant.now().toEpochMilli()))
                 .status(ADEvent.Status.attp)
                 .build();
@@ -317,22 +317,22 @@ public class PinCruxService {
                 });
         adEvent.setAppkey(reqData.getAppkey());
         adEvent.setUsrkey(reqData.getUsrkey());
-        adEvent.setTransid(reqData.getTransid());
-        adEvent.setOsFlag(reqData.getOs_flag());
-        adEvent.setAppTitle(reqData.getApp_title());
+        adEvent.setTransId(reqData.getTransid());
+        adEvent.setOsflag(reqData.getOs_flag());
+        adEvent.setApptitle(reqData.getApp_title());
         adEvent.setCoin(reqData.getCoin());
 
         logger.info("postback.adEvent = {}", JsonUtil.toJson(adEvent));
-        if (!Objects.equals(adEvent.getCoin(), adEvent.getCointInt())) {
+        if (!Objects.equals(adEvent.getCoin(), adEvent.getCoinint())) {
             logger.warn("Coin is different. postback={}, attp={}",
-                    reqData.getCoin(), adEvent.getCointInt());
+                    reqData.getCoin(), adEvent.getCoinint());
         }
 
         adEvent.setPostbackAt(new Timestamp(Instant.now().toEpochMilli()));
         adEvent.setStatus(ADEvent.Status.postback);
         persistADEvent(adEvent);
         logger.info("saved. postback. usrkey={}, appkey={}, appTitle={}, coin={}",
-                adEvent.getUsrkey(), adEvent.getAppkey(), adEvent.getAppTitle(), adEvent.getCoin());
+                adEvent.getUsrkey(), adEvent.getAppkey(), adEvent.getApptitle(), adEvent.getCoin());
 
         try {
             sendCoinReward(adEvent.getCoin(), adEvent);
@@ -356,14 +356,14 @@ public class PinCruxService {
 
         // TODO message
         String presentDescription = String.format("무료코인존: <%s>이벤트에 참여해주셔서 감사합니다."
-                , adEvent.getAppName());
+                , adEvent.getAppname());
         String purchaseTitle = String.format("무료코인존: [%s]"
-                , adEvent.getAppName());//appItem.getViewTitle().length() > 50 ? appItem.getViewTitle().substring(0,50) : appItem.getViewTitle());
+                , adEvent.getAppname());//appItem.getViewTitle().length() > 50 ? appItem.getViewTitle().substring(0,50) : appItem.getViewTitle());
         String presentTitle = String.format("%s 보너스코인", coin);
         Wallets wallets = new Wallets();
         wallets.setUserId(adEvent.getUsrkey());
         wallets.setLocale("ko-KR");
-        wallets.setPlatform(adEvent.getOsFlag() == 1 ? "android" : "ios");
+        wallets.setPlatform(adEvent.getOsflag() == 1 ? "android" : "ios");
         wallets.setCompanyEventId(this.pantherProperties.getWallets().getCompanyEventIdPinCrux());
         wallets.setUsageRestrictionId(this.pantherProperties.getWallets().getUsageRestrictionIdPinCrux());
         wallets.setPurchaseType("R");
@@ -399,7 +399,7 @@ public class PinCruxService {
         try {
             // TODO message
             String msg = String.format("%s 보너스코인 지급 완료!  무료코인존: <%s>이벤트에 참여해주셔서 감사합니다. (지급일로부터 %s개월간 사용 가능)"
-                    , coin, appItem.getAppName(), walletExpireMonth);
+                    , coin, appItem.getAppname(), walletExpireMonth);
             PinCruxPushRequest pcr = new PinCruxPushRequest(appItem.getUsrkey(),
                     "lezhin://present", "레진코믹스", msg);
 
