@@ -18,6 +18,7 @@ import java.util.List;
  * @author benjamin
  * @since 2017.1.12
  */
+@Deprecated
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 public class PinCruxPushRequest implements Serializable {

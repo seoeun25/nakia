@@ -7,13 +7,16 @@ import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PincruxException;
 import com.lezhin.panther.executor.Executor;
+import com.lezhin.panther.internal.InternalWalletService;
 import com.lezhin.panther.internal.Result;
+import com.lezhin.panther.internal.Wallet;
 import com.lezhin.panther.notification.SlackEvent;
 import com.lezhin.panther.notification.SlackMessage;
 import com.lezhin.panther.notification.SlackNotifier;
 import com.lezhin.panther.redis.RedisService;
 import com.lezhin.panther.util.DateUtil;
 import com.lezhin.panther.util.JsonUtil;
+import com.lezhin.panther.util.MessageManager;
 
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
@@ -69,15 +72,20 @@ public class PinCruxService {
     private SlackNotifier slackNotifier;
     private HttpClientService httpClientService;
     private ADEventRepository adEventRepository;
+    private InternalWalletService internalWalletService;
+    private MessageManager messageManager;
 
-    public PinCruxService(final PantherProperties pantherProperties, final RedisService redisService,
-                          final SlackNotifier slackNotifier, final HttpClientService httpClientService,
-                          final ADEventRepository adEventRepository) {
+    public PinCruxService(final PantherProperties pantherProperties,
+                          final RedisService redisService, final SlackNotifier slackNotifier,
+                          final HttpClientService httpClientService, final ADEventRepository adEventRepository,
+                          final InternalWalletService internalWalletService, final MessageManager messageManager) {
         this.pantherProperties = pantherProperties;
         this.redisService = redisService;
         this.slackNotifier = slackNotifier;
         this.httpClientService = httpClientService;
         this.adEventRepository = adEventRepository;
+        this.internalWalletService = internalWalletService;
+        this.messageManager = messageManager;
     }
 
     @Transactional(value = "pantherTransactionManager")
@@ -338,7 +346,7 @@ public class PinCruxService {
             sendCoinReward(adEvent.getCoin(), adEvent);
         } catch (Exception e) {
             logger.info("Failed to coin reward. Check CMS wallets={}, user={}",
-                    pantherProperties.getWallets().getApiUrl(), adEvent.getUsrkey());
+                    pantherProperties.getWalletUrl(), adEvent.getUsrkey());
             throw new PantherException(Executor.Type.UNKNOWN,
                     "Failed to coin reward. ADEvent: " + JsonUtil.toJson(adEvent));
         }
@@ -353,71 +361,38 @@ public class PinCruxService {
 
 
     private void sendCoinReward(Integer coin, ADEvent adEvent) {
+        String presentTitle = messageManager.get("pincrux.present.title", coin);
+        String presentDescription = messageManager.get("pincrux.present.description", adEvent.getAppname());
+        String purchaseTitle = messageManager.get("pincrux.purchase.title", adEvent.getAppname());
 
-        // TODO message
-        String presentDescription = String.format("무료코인존: <%s>이벤트에 참여해주셔서 감사합니다."
-                , adEvent.getAppname());
-        String purchaseTitle = String.format("무료코인존: [%s]"
-                , adEvent.getAppname());//appItem.getViewTitle().length() > 50 ? appItem.getViewTitle().substring(0,50) : appItem.getViewTitle());
-        String presentTitle = String.format("%s 보너스코인", coin);
-        Wallets wallets = new Wallets();
-        wallets.setUserId(adEvent.getUsrkey());
-        wallets.setLocale("ko-KR");
-        wallets.setPlatform(adEvent.getOsflag() == 1 ? "android" : "ios");
-        wallets.setCompanyEventId(this.pantherProperties.getWallets().getCompanyEventIdPinCrux());
-        wallets.setUsageRestrictionId(this.pantherProperties.getWallets().getUsageRestrictionIdPinCrux());
-        wallets.setPurchaseType("R");
-        wallets.setPurchaseTitle(purchaseTitle);
-        wallets.setSendPresent(true);
-        wallets.setPresentTitle(presentTitle);
-        wallets.setPresentDescription(presentDescription);
-        wallets.setAmount(coin);
-        wallets.setImmediate(true);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-        headers.add("Authorization", "Bearer " + pantherProperties.getCmsToken());
-        HttpEntity<Wallets> request = new HttpEntity<Wallets>(wallets, headers);
-
-        logger.info("sendCoinReward. url = {}, reqBody = {}",
-                pantherProperties.getWallets().getApiUrl(), JsonUtil.toJson(request));
-
-        HttpEntity<Result> responseText = postForEntity(pantherProperties.getWallets().getApiUrl(),
-                request, Result.class, Executor.Type.UNKNOWN);
-        if (responseText.getBody() != null) {
-            logger.info("sendCoinReward. {} = {}", responseText.getBody().getCode(), responseText.getBody().getDescription());
-            if (responseText.getBody().getCode() != 0) {
-                throw new PantherException(Executor.Type.UNKNOWN, "Failed to reward. Request: "
-                        + JsonUtil.toJson(request));
-            }
+        Wallet wallet = Wallet.builder()
+                .userId(adEvent.getUsrkey())
+                .locale("ko-KR")
+                .platform(adEvent.getOsflag() == 1 ? "android" : "ios")
+                .companyEventId(pantherProperties.getPincrux().getCompanyEventId())
+                .usageRestrictionId(pantherProperties.getPincrux().getUsageRestrictionId())
+                .purchaseType("R")
+                .purchaseTitle(purchaseTitle)
+                .sendPresent(true)
+                .presentTitle(presentTitle)
+                .presentDescription(presentDescription)
+                .amount(coin)
+                .immediate(true)
+                .build();
+        Result response = internalWalletService.sendCoinReward(wallet, null);
+        if(response.getCode() != 0) {
+            throw new PantherException(Executor.Type.UNKNOWN, "sendCoinReward fail. code= " + response.getCode() + ", description= "+ response.getDescription());
         }
-
-        logger.info("sendCoinReward. resBody = {}", responseText.getBody());
     }
 
     private void sendPushMessage(Integer coin, ADEvent appItem) {
+
         try {
-            // TODO message
-            String msg = String.format("%s 보너스코인 지급 완료!  무료코인존: <%s>이벤트에 참여해주셔서 감사합니다. (지급일로부터 %s개월간 사용 가능)"
-                    , coin, appItem.getAppname(), walletExpireMonth);
-            PinCruxPushRequest pcr = new PinCruxPushRequest(appItem.getUsrkey(),
-                    "lezhin://present", "레진코믹스", msg);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-            HttpEntity<PinCruxPushRequest> request = new HttpEntity<>(pcr, headers);
-
-//            HttpEntity<String> responseText = postForEntity(pantherProperties.getPushUrl(), request, String.class,
-//                    Executor.Type.UNKNOWN);
-
-            String responseText = restTemplate.postForObject(this.pantherProperties.getPushUrl(),
-                    pcr,
-                    String.class);
-
-
-            logger.info("sendPushMessage() = {}, resBody = {}", pcr, responseText);
+            String pushTitle = messageManager.get("pincrux.push.title");
+            String pushMsg = messageManager.get("pincrux.push.message", coin, appItem.getAppname(), walletExpireMonth);
+            internalWalletService.sendPresentPush(appItem.getUsrkey(), "lezhin://present", pushTitle, pushMsg);
         } catch (Exception e) {
-            logger.warn("Failed to send PushMessage", e);
+            logger.warn("sendPresentPush fail. userId: {}, appName: {}", appItem.getUsrkey(), appItem.getAppname(), e);
         }
     }
 

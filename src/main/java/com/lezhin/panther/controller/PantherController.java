@@ -2,7 +2,9 @@ package com.lezhin.panther.controller;
 
 import com.lezhin.constant.PaymentType;
 import com.lezhin.panther.SimpleCacheService;
+import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.executor.Executor;
+import com.lezhin.panther.internal.InternalWalletService;
 import com.lezhin.panther.model.Payment;
 import com.lezhin.panther.model.RequestInfo;
 import com.lezhin.panther.model.ResponseInfo;
@@ -38,9 +40,11 @@ public class PantherController {
     private static final Logger logger = LoggerFactory.getLogger(PantherController.class);
 
     private final SimpleCacheService simpleCacheService;
+    private InternalWalletService internalWalletService;
 
-    public PantherController(SimpleCacheService simpleCacheService) {
+    public PantherController(SimpleCacheService simpleCacheService, InternalWalletService internalWalletService) {
         this.simpleCacheService = simpleCacheService;
+        this.internalWalletService = internalWalletService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -122,6 +126,21 @@ public class PantherController {
         return new ResponseInfo(ResponseCode.LEZHIN_OK);
     }
 
+    /**
+     * 선물함 push 테스트용
+     * @param map {user_id(required), title, msg}
+     */
+    @RequestMapping(value = "/push", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseInfo sendPush(HttpServletRequest request, HttpServletResponse response,
+            @RequestBody Map<String, Object> map) {
 
+        Optional.ofNullable(map.get("user_id")).orElseThrow(() -> new ParameterException("user_id can not be null"));
+        Long userId = Long.parseLong((String)map.get("user_id"));
+        String title = map.get("title") != null? String.valueOf(map.get("title")) : "Panther 테스트";
+        String msg = map.get("msg") != null? String.valueOf(map.get("msg")) : "Panther Push 발송 테스트입니다.";
 
+        internalWalletService.sendPresentPush(userId, "lezhin://present", title, msg);
+        return new ResponseInfo(ResponseCode.LEZHIN_OK);
+    }
 }

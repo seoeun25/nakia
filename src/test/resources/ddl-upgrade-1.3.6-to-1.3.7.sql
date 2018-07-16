@@ -6,3 +6,4 @@ ALTER TABLE `adevent`
   CHANGE `attpAt` `attp_at` DATETIME DEFAULT NULL,
   CHANGE `postbackAt` `postback_at` DATETIME DEFAULT NULL,
   CHANGE `rewardAt` `reward_at` DATETIME DEFAULT NULL;
+

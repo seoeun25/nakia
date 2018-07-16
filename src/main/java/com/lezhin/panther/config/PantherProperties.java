@@ -16,6 +16,7 @@ public class PantherProperties {
     private String webUrl;
     private String apiUrl;
     private String cmsUrl;
+    private String walletUrl;
     private String cmsToken;
     private String pantherUrl;
     private String slackChannel;
@@ -28,7 +29,7 @@ public class PantherProperties {
     private LPoint lpoint;
     private String pushUrl;
     private Pincrux pincrux;
-    private Wallets wallets;
+    private Tapjoy tapjoy;
 
     @Data
     public static class Happypoint {
@@ -61,9 +62,19 @@ public class PantherProperties {
         private String testFlag;
         private int cacheRetention;
         private int timeout; // milliseconds
+        private Integer companyEventId;
+        private Integer usageRestrictionId;
     }
 
     @Data
+    public static class Tapjoy {
+        private String secretKey;
+        private Integer companyEventId;
+        private Integer usageRestrictionId;
+    }
+
+    @Data
+    @Deprecated
     public static class Wallets {
         private String apiUrl;
         private Integer companyEventIdPinCrux;

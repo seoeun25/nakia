@@ -1,21 +1,23 @@
-package com.lezhin.panther.pg.pincrux;
+package com.lezhin.panther.internal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import java.io.Serializable;
+import lombok.NoArgsConstructor;
 
 /**
- * 선물함 지급
- *
- * @author benjamin
- * @since 2018.02.01
+ * @author taemmy
+ * @since 2018. 7. 3.
  */
-@Deprecated
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Wallets implements Serializable {
+public class Wallet {
     private Long userId;
     private String locale;
     private String platform;
@@ -28,6 +30,4 @@ public class Wallets implements Serializable {
     private String presentDescription;
     private Integer amount;
     private Boolean immediate;
-
-    public Wallets(){}
 }

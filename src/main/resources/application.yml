@@ -28,6 +28,9 @@ spring:
     view:
       prefix: /WEB-INF/jsp/
       suffix: .jsp
+  messages:
+    basename: messages/message
+
 server:
   error:
     include-stacktrace: always
@@ -36,6 +39,7 @@ panther:
   apiUrl: https://beta-api.lezhin.com/api/v2/internal/payments
   cmsUrl: https://cms-dot-lezhincomix-beta.appspot.com
   cmsToken: 4fd4643b-46e0-45e6-a743-a744b2f0bb9f
+  walletUrl: https://cms-dot-lezhincomix-beta.appspot.com/v2/wallets
   pantherUrl: https://beta-panther.lezhin.com
   slackChannel: panther_beta
   cloudWatch: https://ap-northeast-2.console.aws.amazon.com/cloudwatch
@@ -57,15 +61,17 @@ panther:
     testFlag: n
     cacheRetention: 900000
     timeout: 40000
+    companyEventId: 50
+    usageRestrictionId: 40
+  tapjoy:
+    secretKey: WJcsNGadIzOIaUpKFU2t
+    companyEventId: 83
+    usageRestrictionId: 40
   lpoint:
     lpointUrl: https://devop.lpoint.com:8903/op
     copMcnoWeb: P012500002
     copMcnoMobile: P012500003
     keyPath: /etc/panther/conf/beta/lpoint
-  wallets:
-    apiUrl: https://cms-dot-lezhincomix-beta.appspot.com/v2/wallets
-    companyEventIdPinCrux: 50
-    usageRestrictionIdPinCrux: 40
   actuator:
     security:
       enabled: true
@@ -90,6 +96,7 @@ panther:
   webUrl: https://www.lezhin.com
   apiUrl: https://api.lezhin.com/api/v2/internal/payments
   cmsUrl: https://cms-dot-lezhincomix-api.appspot.com
+  walletUrl: https://cms-dot-lezhincomix-api.appspot.com/v2/wallets
   cmsToken: 81ad2d4b-3963-409d-b9f1-aeba8665b873
   pantherUrl: https://panther.lezhin.com
   pushUrl: http://35.194.168.16/messages
@@ -104,14 +111,15 @@ panther:
   pincrux:
     pincruxUrl: http://api.pincrux.com
     testFlag: n
+    companyEventId: 199
+    usageRestrictionId: 12
+  tapjoy:
+    companyEventId: 283
+    usageRestrictionId: 12
   lpoint:
     lpointUrl: https://op.lpoint.com/op
     copMcnoWeb: P008900002
     copMcnoMobile: P008900003
-  wallets:
-    apiUrl: https://cms-dot-lezhincomix-api.appspot.com/v2/wallets
-    companyEventIdPinCrux: 199
-    usageRestrictionIdPinCrux: 12
 ---
 spring:
   profiles: staging
@@ -119,16 +127,13 @@ panther:
   webUrl: https://mirror-www.lezhin.com
   apiUrl: https://mirror-www.lezhin.com/api/v2/internal/payments
   cmsUrl: https://cms-dot-lezhincomix-mirror.appspot.com
+  walletUrl: https://cms-dot-lezhincomix-mirror.appspot.com/v2/wallets
   cmsToken: 81ad2d4b-3963-409d-b9f1-aeba8665b873
   pantherUrl: https://staging-panther.lezhin.com
   pushUrl: http://35.194.168.16/messages
   happypoint:
     hpcUrl: http://outbound-proxy.lezhin.net/spc/processHpc
     mchtNo: 100031405
-  wallets:
-    apiUrl: https://cms-dot-lezhincomix-api.appspot.com/v2/wallets
-    companyEventIdPinCrux: 299
-    usageRestrictionIdPinCrux: 12
 ---
 spring:
   profiles: mirror
@@ -136,15 +141,18 @@ panther:
   webUrl: https://mirror-www.lezhin.com
   apiUrl: https://mirror-www.lezhin.com/api/v2/internal/payments
   cmsUrl: https://cms-dot-lezhincomix-mirror.appspot.com
+  walletUrl: https://lezhin-nbackoffice-mirror.appspot.com/v2/wallets
   cmsToken: c63a7469-08dc-41d9-b477-000e195cae87
   pantherUrl: https://staging-panther.lezhin.com
   happypoint:
     hpcUrl: http://outbound-proxy.lezhin.net/spc/processHpc
     mchtNo: 100031405
-  wallets:
-    apiUrl: https://lezhin-nbackoffice-mirror.appspot.com/v2/wallets
-    companyEventIdPinCrux: 724
-    usageRestrictionIdPinCrux: 774
+  pincrux:
+    companyEventId: 724
+    usageRestrictionId: 774
+  tapjoy:
+    companyEventId: 746
+    usageRestrictionId: 774
 ---
 spring:
   profiles: qa
@@ -154,12 +162,15 @@ panther:
   webUrl: https://q-www.lezhin.com
   apiUrl: https://q-api.lezhin.com/api/v2/internal/payments
   cmsUrl: https://cms-dot-lezhincomix-qa.appspot.com
+  walletUrl: https://cms-dot-lezhincomix-qa.appspot.com/v2/wallets
   cmsToken: f632a8cc-65f0-48dd-bdae-a63ff2e0470e
   pantherUrl: https://qa-panther.lezhin.com
-  wallets:
-    apiUrl: https://cms-dot-lezhincomix-qa.appspot.com/v2/wallets
-    companyEventIdPinCrux: 281
-    usageRestrictionIdPinCrux: 911
+  pincrux:
+    companyEventId: 281
+    usageRestrictionId: 911
+  tapjoy:
+    companyEventId: 346
+    usageRestrictionId: 911
 appengine:
   serviceAccountId: id-aws-image-server-qa@lezhincomix-qa.iam.gserviceaccount.com
   privateKey: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdkFJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLWXdnZ1NpQWdFQUFvSUJBUUN5N21rRnA2bmZ2YjBCXG55ZExrSVVZUW82NlRUcWphWEE0K3J5R3RCdU14SGJMSnB0czRDMDZodk9QL0hNVzRnY1gxNzNsdmJpbml5Q0V1XG5WeGFlMTNEaDloOEh1NHJXS0NDZzFYS0R1cUZvVkUvYmdGL005NGhwZllCS1p4ZFdYcjVzbmhuZ2RBd2puOTh5XG5YVG9YRVROK05kZ3JnN3Y5Z1BrbW5EVG4xdDV4UW9jRGlVUS9wQ2EyTk1Kd1ZxaEo4b3hHakZUR2hMbElKZDViXG5aTnJ5Y1E0UU1KbDFrQ3UvbnBwR0RnWGdaZSt4SElOcDNOSDAzbWMraUVzMlpxV3phK1FLVFJYcGdkZHljRDFiXG5GREZiVzhNZjJIYWxLRFU0M0hVeXpKRE1NSWZXeUVhM0N2cExpZ1hwV2NvcVpMZ0xTODVodmp5WFYvekpnd1RlXG5FYTYwaWxGNUFnTUJBQUVDZ2dFQURHWGlsd2E0Q1kyL0UrbWxHRE9LQkVzakpJZlZ3Vk9SbFJ4VGJBYkhKVGNXXG5sVXhmY2pHdVlCeVRlN0RGcm5RbmdGUDRpUlVNQisrd0JPTDU2VVdxUjYzakZva1RKS1doSlNQRkRJV1krMzZrXG5EZVNHUHRDRC9qTTQrVzdOT2luVWJmaENlTC94dTJJdmQvRG52b050bXZnbUkxVzhaK05RNERFQXBYUEk4L1gzXG5kRVptVXNYVGtJalUrRFl4WnJKNDAxYTErY3grU3k5ZnRwSnY0RVBqdkRLdzJYK1V0UEJheGVGZStBNWtVV2x0XG5sT1c2ZVNuaGdURE43Q0ljajFSYy9YaWRoNExmQmM4TzNrZzdVOUpNa1BkdVZOTFlMZzNROForczdtOFhFemlsXG5aUzZlaHdKeU1YRjVTQVlMZXg5Y3dvTkt2dG5TaGszNHdoWnpLZXMxZ1FLQmdRRGF4SGlhR1JHbUlHc05QVERiXG43L213V1NSWThsckZUdE1Ca095cU9FODJwWE0zU01XYWNNUTBBRUZ3b2d0ODZxYytoemk0V3FSK3dJM0NJck9iXG5XQjd0WFpqR0ZraVZoYWdZdFd6dFo3ZDhkTUtHNzh6YW5DVm1vWURmZDJLRzBHYytwWk51cTEyemxvcDJRZCtuXG43VXpsVUJZQTlIVlROeWc3UlhNMit0SGRjUUtCZ1FEUllrN1FGTnlzVDl3NkV1UlA0WS9OY3hrWTFWSkJrSHdGXG5xbjhLK1BLSzZTcGFxcGk0WnpRcVJyRnJLZDVtMWJHWFNaOEJYZjlhWGJidlpzdHBiOU5ZR2JNdkxUdDdnSWxxXG5hNk02ZWtsdkJKd1h1SEtVa2xlZEhhS1hqOFdodTdLU1hjeFpwRW8rMHVuSWhVZnNlb1F3S2twTUZ2eUVlRG1VXG5OSmo4TDcvUWlRS0JnR251Tk0rNVQ5aDNYaDdkQUdtZk8vSnVWN0ZTT1MzTlMxTTR6OEJrMzhhQU90Z01QdExYXG53OG5DVGUyeUtZbmxQZktERzYzNUJpbnlKekpZQjB3elVWWnl1ZVZCS1FodDNjV0pKQ09ZMHpwS2QxOUxncEJnXG5oNk80bEdTZ3RHNi9QeDhRb2VFMnpYcUdiS2x5b0UvNkVmLy8xWWZFMTRMaDlITXUzK2xCYnBtaEFvR0Flc1UwXG54d2RrZU5oK25jS1VBazZVdmZkZDROUzczVnUxakxEeXV1RkxmYTNIdXMvS3FsMUJGZ1RMWkxWeEJVVUpVMWJFXG5sODJndTBDMTBkdXBLNUo1RG5CTFF6ODNZR3YycHVLa0c5YTJGaFZTM1FtMmpXemRXRytXOVYxRW1WZHdGaWhQXG5lTVEvRUdVazFRRnBNYnlJbzZFNFhUTWhMeDg3UzY0bmdiOFJybGtDZ1lCYld5ZjBDUUVpSTRIa2hnMTRUQVMyXG5PNzNmam5MQjlNaTlzSmZ1dVMrSmkxdXhyWnJObHdFaFhFaW9JQmtaSHNrckxGTVh3ZEdlS1dxMkx0Zm0rcDY4XG5yQ2E3WnB6bWc3OC91Y1VHdVB6cmxobkhSVTFyWTVMYWZjcENtVUkySTJXOS9xaVZ2dWJIbHpjdWNFS0Y3WnIxXG5hVFlCRnFCN0VsR1ZCcmlYY0xHMGd3PT1cbi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0=
@@ -171,12 +182,15 @@ panther:
   webUrl: https://beta-www.lezhin.com
   apiUrl: https://beta-api.lezhin.com/api/v2/internal/payments
   cmsUrl: https://cms-dot-lezhincomix-beta.appspot.com
+  walletUrl: https://cms-dot-lezhincomix-beta.appspot.com/v2/wallets
   cmsToken: 4fd4643b-46e0-45e6-a743-a744b2f0bb9f
   pantherUrl: https://beta-panther.lezhin.com
-  wallets:
-    apiUrl: https://cms-dot-lezhincomix-beta.appspot.com/v2/wallets
-    companyEventIdPinCrux: 50
-    usageRestrictionIdPinCrux: 40
+  pincrux:
+    companyEventId: 50
+    usageRestrictionId: 40
+  tapjoy:
+    companyEventId: 83
+    usageRestrictionId: 40
 #appengine:
 #  serviceAccountId: aws-image-server-beta@lezhincomix-beta.iam.gserviceaccount.com
 #  privateKey: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdmdJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLZ3dnZ1NrQWdFQUFvSUJBUURKM3gvVmZhbm53ajRvXG5NSUhRR0xwL1FwdmRxSUdLcFV1Yi85Vk1VT05UQzVQblZPdFU3czNTdk9tcldnK09XMDM3bkJ5VVEwaDJIbGNJXG5aREVOTzh3NDJoSC9URW5nTkVZR0x6cGc0ajNHc1hEOG94ZGU3R2xKRXh0Q1ZtakJrbUQ4VCtJaEFHWjlmeDVSXG5LbXN6cUFTaGJmMUhJdGs0ejg5MGxiR2F4bTlqdnBBQ3FnZXUzcmdENXBPcXBralkvVnllOGhsRFFud3lmUWhkXG43bUFuNWpLMnJaZEpoTlI3M0h3MnplTGRwNEVOaDFTYU9Fb2FKTkNDak02djNodUJmZ0FQZmF3N1JoZFhyc3k1XG5iS2VxZzZOa2s4R093aDZwdlNSVzJBWkx1MllqOVVsOG8zUEdVcEtBUndnSnQrdDJaM3B5S1dMdmdzU0NGaFhhXG5XeWgxRGxpREFnTUJBQUVDZ2dFQUM5TTlLeVZjVVk0b1UvUmJkbFFzZ0kzblVYbXdkTzJ2MnlpR1Z4MFo0K0IyXG52b05UOGJxM1pkUFpJRWQ3Ujh5RGFlekFJOU01S0dvb2tQNUZmVS8yYTVJaW9jRFhSd0hvNUMzYURwalNJNVI3XG5XT0U0MmorZy96M1dSL0dGMjJqMnMzRCtmdzVsOG80Q3VhQnhmU29uYzBsZEg5Q2p4dGN0Z05mUCtwQUxNRjE3XG5pN3lPZWhGQTUwMjRaR3dWbGNLZ1FaaGpoNkQ0SzB2dHF3eFlLQkl4NTk5Q0Y5NWk2S3luY0ZjelQ3N00vSCtIXG4rdm1LTmNVb1hRZitLbjRqcjFvL2JGMWIwNnI2SnhqZGFlNmdyVU9FcElaVFkrV3VUWjFmVzVONmtTN1VsUE1wXG4yWGdSUVpYTUNJWlgvSlI1cmRIWm9CbjdDMXpPU2pmTVlRNVBuendoTVFLQmdRRDh0eENXU29MNFp4UlpsUkNmXG5saTAwMmQxTnlUbGQyem9uUHI4VlI3U1MwWWt4aTcxb05xTTY1TFBiTTNudmFHR1dsZUprQm1nN1J4Rm1ZU2wrXG5FODZya1pOQnFBbTZKQlR0TE5LZkpQbGpaa0laU1ZyckVoc1NTUytpV0REVjAwVFR5MVFDa1FHZ2VHbnYrQnlTXG5JcExDWEp0MjZLNlliNkdMTHQ2eGhpdE15UUtCZ1FETWZ0OWhXS1BWK3pSRno2ci81TmRiS3lHb0VQbVlPTGFsXG5MS2R4aGxqV0dzL1lLYVJMbDFkQlkwTjJ3NU8vSzUxWGJGUHozQ29SdUFZcDdPMG1zclVVYnpGc0NsaTNmSjV3XG51K0MrazRmYkIreHZ4bDJFM0VYSUdxd01hdklqeEt0NHlOcjJxb3NOZTZzdUpYS25oeldEdlk3SGRnQkdBclpBXG5sL2ZyRDNIODZ3S0JnRWw2TkxGdUFyeVV3Lzd6NzN4bkhzZkNISzFVTjRESmtCUC9FM0h0Z2x3NTNrandsMmFvXG5sRGM0YmU3cS9hWVZWR0tETytyWFRoRUdMZEgxcUNuSE9vejU2N1hvVk1PeFlBQkJ5dytJb1pZOEVqWGw5VEJwXG4rRU1OMG5MQ2I1aU1ML1BncDVHRGRkU2hqak8ra1JnUVExbU5zWW9XUjBWOUY1d3ZTWUtXUHhxNUFvR0JBSnVHXG5obmR2eGJMeFNWRXEzcCtkdUpmeTFyY09xZlUyZE5wc2VyQ2hmNkRlWldLK1VPRFlxaGpsMktKVG5tT1BWU3Z2XG5ERzV6N0Y3cmVXeWJiOFcxdG5oakZOQlpraDJDbnJHWWdoWU8rQTBDR3JUcnhhWk5MSmxDaDhVdDlSaDA5QUI1XG5xZVpkMEVHaDQ0L0dGVXdLVGczeXRjdEhHSEFta2R2UWVGSUN2aXVmQW9HQkFJeUdTZUFsRzZURXpzNFdmRktaXG5YWU0zK2hKSm5FQWlZSVdEOW91STdZV2I1YU9OanRRTEs3MEpDZGI1SDFNNXJNbm5NZjk2NEFiWWhnbHgvZUQ0XG5vMXd5TnplL2JHUmhkNDZYaUJFaGlKNVd5R1hldXk2Mlpzd3Y4eUxzVXJpTDVndHpKSXR6SDV2Mmo3NFZFc0NvXG4wOXB3Tk95R0o1cDQrcXBSS05SdHFHbzFcbi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0=
@@ -188,12 +202,15 @@ panther:
   webUrl: https://a-www.lezhin.com
   apiUrl: https://a-api.lezhin.com/api/v2/internal/payments
   cmsUrl: https://cms-dot-lezhincomix-alpha.appspot.com
+  walletUrl: https://cms-dot-lezhincomix-alpha.appspot.com/v2/wallets
   cmsToken: c63a7469-08dc-41d9-b477-000e195cae87
   pantherUrl: https://alpha-panther.lezhin.com
-  wallets:
-    apiUrl: https://cms-dot-lezhincomix-alpha.appspot.com/v2/wallets
-    companyEventIdPinCrux: 262
-    usageRestrictionIdPinCrux: 51
+  pincrux:
+    companyEventId: 262
+    usageRestrictionId: 51
+  tapjoy:
+    companyEventId: 262
+    usageRestrictionId: 51
 appengine:
   serviceAccountId: aws-image-server-alpha@lezhincomix-alpha.iam.gserviceaccount.com
   privateKey: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdmdJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLZ3dnZ1NrQWdFQUFvSUJBUUROa2h4SXdtb24xM21pXG5wVUJpZEdrTkY0anZQYnhIM29nelArTG5tWk1JZjdDUVlEWExPWEI4Y2QyMlVnVGVkTDdPTmdRRTF6ZUNvZkU0XG5sRmpQQTVWT29sVWJwZjhQV0RUTWxXc0EzcVU0ZGxncmFBWTl5TVlGNFowNG54MkZwZHoxMkxXQy82L2dnVHNUXG54UWxmSm9HR1JlaHRNK2JheHRWakRienhBRkRTVlptZmg0TjVuQU00aEVqOWtFWnBZZDZPN2QzZStTRHJ0Q05EXG55Y3RnNm9VYWRkZm9GZ3U5dnE4ZXpjN2thYkFkWTFHZUY5Y0Q1bllvRmtuVmFIZC9jbUtxclZBOEhrU1BKM0JYXG5wbnZGUmEwWndnNlhjZzJqVmthSlU1WkdvUzNGUlp2N09YWEhibEpTMzQ2S3A4VkRXWDNSRmRoVEh5aEhnTzIxXG5aZWVMQzBFUEFnTUJBQUVDZ2dFQUk1clY2VWc3Q0xHS2NNQThlWkQrRFBWeGt6WlhJUCtMQ1kxY0tJN3g1M3Z1XG5RZU5ZRGQzaC9MdmdFYzc4NXViRGtZWExobWNjUnpUelNjQnY3Vk1LampjUmxKdFlwUGk3RkdBZ3kyTEVyUlhhXG5TWkpYMm1XbTNxZm9Da0dNNUhRSTVFL25pRXZ1MDJ5dXBjcnZ4NW9zdnV2bXlOcy9kYzhRY0hxVnFneEs4MUx1XG5hNnBHZG9ZRDU0bDU3UmlXMEYxZmMyVGE1TFE3R0dqUnl6TFZhZ3hadlVvNnFXa3JFRmt1d3VKb2FKNTJUeUd6XG4xR1FhcXhodUhFRUR5NnFtTngxSkJyaUhQNnQzUXZ2ZFpMSTh5S0E4YmtTemtaYml4K2hoR3ZXWDdBWU5iZTlaXG5qSWZmNDhieExIQjlrT2dDN0NaZkNVM1hWZG9BMjhCZFdaRkpTVmQyNlFLQmdRRDVuZEh0SDV2OG8zUkNOME5GXG50WFNCNEdzZ1Z4ekZpTHJxejlVWldMcC9jSHYzZDB6bXg5bkI4bkdjK0Fodm1sem9FSEJBSStyM2o0YVdqeGl3XG4rVmlDRWFaOUFoUUJuWXRkU2p5dVkwT2hvNTFvb3BmdlQ2VnlWSTF0bThua0JJZ2xWdVIybisxSmhEWjdlM2dRXG4yMmlYdk0zcFZyYm5PcndEM0xnZ1BTcEczUUtCZ1FEUzArNzFuc3g3ZG1HL2xZMU51UDlYUy9ncThoVTlpTkhMXG5EQ3pMTG11Y3RjV2xGc2U4UWVwRTRYVWgwZUlJSGFCSytDRVUyaGdFL3pLVDE4VFo1dnBTaVNqS2JUSm9VNTliXG4wWXNPcDQrdFJMbjBEUnZmK09rMkdmY2FDZjQwV2Exd21iTXhBU1VodUVYWFBWYm41QnlVY2NRcC9lTmErQW15XG50S1d2YmN3SzJ3S0JnSDBmV2dKRnJQZzNxdWdpTVd0NDZKek50SVV5aFc2UytqY0gxT2J1cmhXQmVmSnk3NjVqXG5FVW1CME9lQkFTR0lPL2ZyZllqNU9DZTkzeFlMUnJJM1d1RmdIWmRkK2s5US9ISFg2NUR5bXcwa0tad3duSDVOXG42ejNqR2oyT01PWkdTMFNFU09NWmlXVW5pL1BiMFRTSjl1VFF0RnE1cDlkQ2ZzcGswanIremZsVkFvR0JBSUNjXG5EcHJCYTRZcFdrblFCbW9TWDVtMlcwWi9kUnVibWpkZVR2a0hjVmdndnRnTnhIeUFUVlFGb1RtbldsYVBGQmlIXG5zMDZRR0xUN3BMUHhuVUU4R1JvK1Y2YmM1REltU1FGdkc0QXVFWVNtZHpWOHhiTmttWWVLWVdYK0VKZUkyVGZtXG5XeHlhMFRiM3ZZc20vUnZxMk5CcGNqd1hpQmtYVkhzeW5od2RRNnFmQW9HQkFMMnFBaGFkMEI2RzY3TWp3dFVVXG56VjdGMWVkR3dqaGpBYWJ2ZG5UZENrRXk2ak5NcWRVSFlXQjVneVNEZjBjV3htNXlzdVVuWE1lazBXQTE3cjNUXG43dGVGSWJkRDd2bnlGU043TXVIcFpvMWkyMWkxZFY1RGxPOFZhL3JEYlRXWWQwdktkS1c4aXdueFdzSUJVbWlHXG4wMTJEUElSTjFmdHIyUXpJVDZyYkJMOFVcbi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0=
@@ -227,16 +244,19 @@ panther:
   webUrl: https://a-www.lezhin.com
   apiUrl: https://a-api.lezhin.com/api/v2/internal/payments
   cmsUrl: https://cms-dot-lezhincomix-alpha.appspot.com
+  walletUrl: https://cms-dot-lezhincomix-alpha.appspot.com/v2/wallets
   cmsToken: c63a7469-08dc-41d9-b477-000e195cae87
   pantherUrl: https://localhost:9443
   lguplus:
     confDir: conf/local/lgdacom
   lpoint:
     keyPath: conf/local/lpoint
-  wallets:
-    apiUrl: https://cms-dot-lezhincomix-qa.appspot.com/v2/wallets
-    companyEventIdPinCrux: 281
-    usageRestrictionIdPinCrux: 911
+  pincrux:
+    companyEventId: 262
+    usageRestrictionId: 51
+  tapjoy:
+    companyEventId: 262
+    usageRestrictionId: 51
   actuator:
     security:
       enabled: false

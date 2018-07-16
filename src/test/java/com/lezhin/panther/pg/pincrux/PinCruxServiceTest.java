@@ -52,7 +52,7 @@ public class PinCruxServiceTest {
     @BeforeEach
     public void setUp() {
         pinCruxService = new PinCruxService(pantherProperties, null, null, null,
-                adEventRepository);
+                adEventRepository, null, null);
     }
 
     /**
