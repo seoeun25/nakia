@@ -47,7 +47,7 @@ class MessageManagerTest {
         String msgKey = "tapjoy.present.title";
 
         String msg = "16 보너스코인";
-        String msgEn = "16 Bonus Coins";
+        String msgEn = "16 Bonus Coin";
         String msgJp = "16 ボーナスコイン";
 
         // ko_KR
