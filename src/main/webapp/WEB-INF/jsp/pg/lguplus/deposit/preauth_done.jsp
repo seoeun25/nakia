@@ -76,10 +76,10 @@
                     if (payReqMap.get(key) instanceof String[]) {
                         String[] valueArr = (String[]) payReqMap.get(key);
                         for (int k = 0; k < valueArr.length; k++)
-                            out.println("<input context='hidden' name='" + key + "' id='" + key + "'value='" + valueArr[k] + "'/>");
+                            out.println("<input type='hidden' name='" + key + "' id='" + key + "'value='" + valueArr[k] + "'/>");
                     } else {
                         String value = payReqMap.get(key) == null ? "" : (String) payReqMap.get(key);
-                        out.println("<input context='hidden' name='" + key + "' id='" + key + "'value='" + value + "'/>");
+                        out.println("<input type='hidden' name='" + key + "' id='" + key + "'value='" + value + "'/>");
                     }
                 }
             %>

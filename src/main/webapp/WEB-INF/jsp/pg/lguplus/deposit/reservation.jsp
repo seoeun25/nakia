@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <%
 	for(Iterator i = payReqMap.keySet().iterator(); i.hasNext();){
 		Object key = i.next();
-		out.println("<input context='hidden' name='" + key + "' id='"+key+"' value='" + payReqMap.get(key) + "'>" );
+		out.println("<input type='hidden' name='" + key + "' id='"+key+"' value='" + payReqMap.get(key) + "'>" );
 	}
 %>
 </form>
