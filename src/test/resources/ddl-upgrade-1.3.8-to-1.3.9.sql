@@ -13,5 +13,5 @@ CREATE TABLE `tapjoyevent` (
   `reward_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `tapjoyevent_snuid` (`snuid`),
-  KEY `tapjoyevent_request_id` (`requst_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+  KEY `tapjoyevent_request_id` (`request_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
