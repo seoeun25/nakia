@@ -143,8 +143,8 @@ public class TapjoyService {
         logger.info("postback attempt count: {}, rewarded: {}", events.size(), optional.isPresent());
         if (optional.isPresent()) {
             TapjoyEvent exist = optional.get();
-            logger.warn("Already rewarded. id: {}, users: {}, requestId: {}, rewaredAt: {}", exist.getId(), exist.getSnuid(), exist.getRequestId(), exist.getRewardAt());
-            throw new TapjoyException(String.format("TapjoyEvent is already rewarded. requestId: %s, user: %s", exist.getRequestId(), exist.getSnuid()));
+            throw new TapjoyException(String.format("TapjoyEvent is already rewarded. requestId: %s, user: %s, rewaredAt: %s",
+                    exist.getRequestId(), exist.getSnuid(), exist.getRewardAt()));
         }
     }
 
