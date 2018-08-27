@@ -23,7 +23,8 @@ public class ApiKeyManager {
     // FIXME how to persist. how to manage.
     private static final Map<String, String> apiKeyMap = ImmutableMap.of(
             "lezhin", "20E6530ADA31EECE7AF3BAA8180A1109",
-            "payletter", "A4A3683F36D4B93CFF3B4D591A59101F");
+            "payletter", "A4A3683F36D4B93CFF3B4D591A59101F",
+            "wincube", "E6570D8EFE1BD4B4A2751B19DF8F2CC0");
 
     public static String generate(byte[] seed) throws NoSuchAlgorithmException {
         KeyGenerator kgen = KeyGenerator.getInstance("AES");

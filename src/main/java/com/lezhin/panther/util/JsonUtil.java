@@ -31,6 +31,14 @@ public class JsonUtil {
         }
     }
 
+    public static <T> T fromJson(String jsonString, TypeReference typeReference) {
+        try {
+            return getObjectMapper().readValue(jsonString, typeReference);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static <T> T fromJson(InputStream inputStream, Class<T> claz) {
         try{
             return getObjectMapper().readValue(inputStream, claz);

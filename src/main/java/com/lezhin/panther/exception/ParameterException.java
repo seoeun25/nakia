@@ -1,7 +1,9 @@
 package com.lezhin.panther.exception;
 
+import com.lezhin.constant.PGCompany;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.notification.NotificationLevel;
+import com.mysql.fabric.xmlrpc.base.Param;
 
 /**
  * @author seoeun
@@ -22,4 +24,15 @@ public class ParameterException extends PantherException {
         super(type, e);
     }
 
+    public ParameterException(PGCompany pg, String message) {
+        super(pg, message);
+    }
+
+    public ParameterException(PGCompany pg, Throwable e) {
+        super(pg, e);
+    }
+
+    public ParameterException(PGCompany pg, String message, Throwable e) {
+        super(pg, message, e);
+    }
 }

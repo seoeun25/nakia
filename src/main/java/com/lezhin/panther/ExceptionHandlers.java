@@ -12,6 +12,7 @@ import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.exception.ParameterException;
 import com.lezhin.panther.exception.PreconditionException;
 import com.lezhin.panther.exception.TapjoyException;
+import com.lezhin.panther.exception.UnauthorizedException;
 import com.lezhin.panther.model.ResponseInfo.ResponseCode;
 import com.lezhin.panther.notification.SlackEvent;
 import com.lezhin.panther.notification.SlackMessage;
@@ -78,6 +79,14 @@ public class ExceptionHandlers {
     public ErrorInfo handleLPointException(final LPointException e) {
         logger.error("LPointException", e);
         return new ErrorInfo(e.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ResponseBody
+    public ErrorInfo handleLPointException(final UnauthorizedException e) {
+        logger.error("UnauthorizedException", e);
+        return new ErrorInfo(ResponseCode.LEZHIN_UNAUTHORIZATION.getCode(), e.getMessage());
     }
 
     @ExceptionHandler(PreconditionException.class)

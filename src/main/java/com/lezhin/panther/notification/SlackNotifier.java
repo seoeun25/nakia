@@ -1,5 +1,6 @@
 package com.lezhin.panther.notification;
 
+import com.lezhin.constant.PGCompany;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.PantherException;
 import com.lezhin.panther.executor.Executor;
@@ -86,17 +87,25 @@ public class SlackNotifier {
 
     public void notify(Throwable e) {
         Executor.Type type = Executor.Type.UNKNOWN;
+        PGCompany pg = PGCompany.unknown;
         SlackMessage.LEVEL slackLevel = levelOf(e);
         String title = e.getMessage();
         String message = "";
         if (e instanceof PantherException) {
             PantherException pantherException = (PantherException) e;
             type = pantherException.getExecutorType().orElse(Executor.Type.UNKNOWN);
+            pg = pantherException.getPg().orElse(PGCompany.unknown);
         } else {
             title = "Unexpected error";
             message = e.getMessage();
         }
-        String header = type == Executor.Type.UNKNOWN ? "" : type.name();
+        String header = "";
+        if(type != Executor.Type.UNKNOWN) {
+            header = type.name();
+        } else if(pg != PGCompany.unknown) {
+            header = pg.name();
+        }
+
         if (slackLevel != null) {
             notify(SlackEvent.builder()
                     .header(header)

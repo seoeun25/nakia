@@ -1,5 +1,6 @@
 package com.lezhin.panther.exception;
 
+import com.lezhin.constant.PGCompany;
 import com.lezhin.panther.Context;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.notification.NotificationLevel;
@@ -17,6 +18,7 @@ public class PantherException extends RuntimeException {
 
     protected Optional<Context> context = Optional.empty();
     protected Optional<Executor.Type> executorType;
+    protected Optional<PGCompany> pg;
 
     public PantherException(String message) {
         super(message);
@@ -24,6 +26,21 @@ public class PantherException extends RuntimeException {
 
     public PantherException(Throwable e) {
         super(e);
+    }
+
+    public PantherException(PGCompany pg, String message) {
+        super(pg.name() + ": "+ message);
+        this.pg = Optional.of(pg);
+    }
+
+    public PantherException(PGCompany pg, Throwable e) {
+        super(pg.name(), e);
+        this.pg = Optional.of(pg);
+    }
+
+    public PantherException(PGCompany pg, String message, Throwable e) {
+        super(pg.name() + ": "+ message, e);
+        this.pg = Optional.of(pg);
     }
 
     public PantherException(Context context, String message) {
@@ -62,5 +79,9 @@ public class PantherException extends RuntimeException {
 
     public Optional<Executor.Type> getExecutorType() {
         return Optional.ofNullable(executorType).orElse(context.map(c -> c.getType()));
+    }
+
+    public Optional<PGCompany> getPg() {
+        return Optional.ofNullable(pg).orElse(Optional.of(PGCompany.unknown));
     }
 }

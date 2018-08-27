@@ -1,5 +1,6 @@
 package com.lezhin.panther;
 
+import com.lezhin.constant.PGCompany;
 import com.lezhin.panther.config.PantherProperties;
 import com.lezhin.panther.exception.HttpClientException;
 import com.lezhin.panther.exception.InternalPaymentException;
@@ -42,6 +43,34 @@ public class HttpClientService {
                              final PantherProperties pantherProperties) {
         this.clientHttpRequestFactory = clientHttpRequestFactory;
         this.pantherProperties = pantherProperties;
+    }
+
+    public <T> ResponseEntity<T> exchange(PGCompany pg, String url, HttpMethod method, HttpEntity<?> request, Class<T> responseType) {
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+        ResponseEntity<T> response = null;
+        for(int i=1 ; i<=RETRY_COUNT +1 ; i++) {
+            try{
+                response = restTemplate.exchange(url, method, request, responseType);
+                break;
+            }catch(Throwable e) {
+                if (TRANSIENT_EXECPTIONS.contains(e.getClass()) && i <= RETRY_COUNT) {
+                    logger.info("Failed to exchange: " + e.getMessage(), e);
+                    logger.info("Retrying ...... [{}]", i);
+                    try {
+                        Thread.sleep(500 * i);
+                    } catch (Exception ea) {
+                        logger.warn("Failed", ea);
+                    }
+                } else {
+                    if (i == RETRY_COUNT + 1) {
+                        logger.warn("All retry failed : " + e.getMessage());
+                    }
+                    throw new HttpClientException(pg, e);
+                }
+            }
+        }
+
+        return response;
     }
 
     /**

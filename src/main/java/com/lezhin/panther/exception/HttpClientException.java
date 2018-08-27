@@ -1,5 +1,6 @@
 package com.lezhin.panther.exception;
 
+import com.lezhin.constant.PGCompany;
 import com.lezhin.panther.executor.Executor;
 import com.lezhin.panther.notification.NotificationLevel;
 
@@ -12,6 +13,18 @@ public class HttpClientException extends PantherException {
 
     public HttpClientException(String message) {
         super(message);
+    }
+
+    public HttpClientException(PGCompany pg, String message) {
+        super(pg, message);
+    }
+
+    public HttpClientException(PGCompany pg, Throwable e) {
+        super(pg, e);
+    }
+
+    public HttpClientException(PGCompany pg, String message, Throwable e) {
+        super(pg, message, e);
     }
 
     public HttpClientException(Executor.Type type, String message) {

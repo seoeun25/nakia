@@ -74,6 +74,8 @@ public class ResponseInfo implements Serializable {
         LEZHIN_CI("1008", "No ConnectionInfo"),
         LEZHIN_SESSION("1009", "No Session"),
         LEZHIN_OWNER("1010", "Payment Owner Error"),
+
+        LEZHIN_UNAUTHORIZATION("5001", "Unauthorized Request"),
         LEZHIN_THROWABLE("9001", "Unexpected Error");
 
         private String code;

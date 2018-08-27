@@ -37,6 +37,9 @@ public class ApiKeyManagerTest {
         String payletterApiKey = ApiKeyManager.generate("payletter".getBytes());
         logger.info(payletterApiKey);
 
+        String wincubeApiKey = ApiKeyManager.generate("wincube".getBytes());
+        logger.info(wincubeApiKey);
+
     }
 
     @Test
