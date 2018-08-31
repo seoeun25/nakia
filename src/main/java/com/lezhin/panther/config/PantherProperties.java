@@ -4,6 +4,8 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 /**
  * @author seoeun
  * @since 2017.11.06
@@ -30,6 +32,7 @@ public class PantherProperties {
     private String pushUrl;
     private Pincrux pincrux;
     private Tapjoy tapjoy;
+    private Map<String, String> apiKey;
 
     @Data
     public static class Happypoint {

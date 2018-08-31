@@ -1,6 +1,7 @@
 package com.lezhin.panther.util;
 
 import com.google.common.collect.ImmutableMap;
+import com.lezhin.panther.config.PantherProperties;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.KeyGenerator;
@@ -9,7 +10,6 @@ import javax.xml.bind.DatatypeConverter;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Map;
-import java.util.function.Predicate;
 
 /**
  * @author seoeun
@@ -20,13 +20,18 @@ public class ApiKeyManager {
 
     private static final int KEY_LENGTH = 16; // bytes
 
-    // FIXME how to persist. how to manage.
-    private static final Map<String, String> apiKeyMap = ImmutableMap.of(
-            "lezhin", "20E6530ADA31EECE7AF3BAA8180A1109",
-            "payletter", "A4A3683F36D4B93CFF3B4D591A59101F",
-            "wincube", "E6570D8EFE1BD4B4A2751B19DF8F2CC0");
+    private static Map<String, String> apiKeyMap = ImmutableMap.of("lezhin", "20E6530ADA31EECE7AF3BAA8180A1109");
+    public ApiKeyManager(final PantherProperties pantherProperties) {
+        if(pantherProperties.getApiKey() != null){
+            apiKeyMap = pantherProperties.getApiKey();
+        }
+    }
 
     public static String generate(byte[] seed) throws NoSuchAlgorithmException {
+        /**
+         * wincube 부터 환경별 api-key 분리
+         * (lezhin, payletter 는 기존과 동일)
+         */
         KeyGenerator kgen = KeyGenerator.getInstance("AES");
         SecureRandom sr = SecureRandom.getInstance("SHA1PRNG"); //Pseudo-Random Number Generator
         sr.setSeed(seed);
